@@ -12,9 +12,11 @@ namespace Ceebeetle
         itpNone = 0,
         itpGameAdder,
         itpCharacterAdder,
+        itpPropertyAdder,
         itpGame,
         itpCharacter,
-        itpBag
+        itpBag,
+        itpProperty
     }
 
     public class CCBTreeViewItem : TreeViewItem
@@ -24,7 +26,6 @@ namespace Ceebeetle
 
         static CCBTreeViewItem()
         {
-            //TreeViewItem.FocusableProperty.OverrideMetadata(typeof(CCBTreeViewItem), new UIPropertyMetadata(true));
         }
         public CCBCharacter Character
         {
@@ -68,6 +69,13 @@ namespace Ceebeetle
             this.Header = game.Name;
             this.m_data = game;
         }
+        public CCBTreeViewItem(string name, CCBCharacterProperty property)
+            : base()
+        {
+            m_itp = CCBItemType.itpProperty;
+            this.Header = name;
+            this.m_data = property;
+        }
     }
     class CCBTreeViewGameAdder : CCBTreeViewItem
     {
@@ -95,6 +103,20 @@ namespace Ceebeetle
             this.FontStyle = FontStyles.Italic;
         }
     }
+    class CCBTreeViewPropertyAdder : CCBTreeViewItem
+    {
+        public CCBTreeViewPropertyAdder()
+            : base(CCBItemType.itpPropertyAdder, "+ add property")
+        {
+            this.FontStyle = FontStyles.Italic;
+        }
+        public CCBTreeViewPropertyAdder(string header)
+            : base(CCBItemType.itpPropertyAdder, header)
+        {
+            this.FontStyle = FontStyles.Italic;
+        }
+    }
+
     class CCBTreeViewGame : CCBTreeViewItem
     {
         private CCBTreeViewCharacterAdder m_characterAdder;
@@ -104,14 +126,14 @@ namespace Ceebeetle
             : base(CCBItemType.itpGame)
         {
             m_characterAdder = new CCBTreeViewCharacterAdder();
-            m_quickEdit = false;
+            m_quickEdit = true;
             base.Items.Add(m_characterAdder);
         }
         public CCBTreeViewGame(CCBGame game)
             : base(game)
         {
             m_characterAdder = new CCBTreeViewCharacterAdder();
-            m_quickEdit = false;
+            m_quickEdit = true;
             base.Items.Add(m_characterAdder);
         }
 
@@ -135,6 +157,52 @@ namespace Ceebeetle
         public CCBTreeViewItem Add(CCBCharacter character)
         {
             CCBTreeViewItem newNode = new CCBTreeViewItem(character);
+
+            base.Items.Add(newNode);
+            AddOrMoveAdder();
+            return newNode;
+        }
+    }
+    class CCBTreeViewCharacter : CCBTreeViewItem
+    {
+        private CCBTreeViewPropertyAdder m_propertyAdder;
+        private bool m_quickEdit;
+
+        public CCBTreeViewCharacter(string name)
+            : base(CCBItemType.itpCharacter)
+        {
+            m_propertyAdder = new CCBTreeViewPropertyAdder();
+            m_quickEdit = false;
+            base.Items.Add(m_propertyAdder);
+        }
+        public CCBTreeViewCharacter(CCBCharacter character)
+            : base(character)
+        {
+            m_propertyAdder = new CCBTreeViewPropertyAdder();
+            m_quickEdit = false;
+            base.Items.Add(m_propertyAdder);
+        }
+
+        public void StartBulkEdit()
+        {
+            m_quickEdit = false;
+        }
+        public void EndBulkEdit()
+        {
+            m_quickEdit = true;
+            AddOrMoveAdder();
+        }
+        protected void AddOrMoveAdder()
+        {
+            if (m_quickEdit)
+            {
+                base.Items.Remove(m_propertyAdder);
+                base.Items.Add(m_propertyAdder);
+            }
+        }
+        public CCBTreeViewItem Add(string propertyName, CCBCharacterProperty property)
+        {
+            CCBTreeViewItem newNode = new CCBTreeViewItem(propertyName, property);
 
             base.Items.Add(newNode);
             AddOrMoveAdder();

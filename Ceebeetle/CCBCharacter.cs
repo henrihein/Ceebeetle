@@ -30,6 +30,12 @@ namespace Ceebeetle
         }
         public readonly uint     m_id;
 
+        private CharacterPropertyList m_propertyList;
+        public CharacterPropertyList PropertyList
+        {
+            get { return m_propertyList; }
+        }
+
         public CCBCharacter()
         {
             m_id = m_nextId++;
@@ -70,6 +76,22 @@ namespace Ceebeetle
             if (ReferenceEquals(rhs, null)) return true;
             return lhs.m_id != rhs.m_id;
         }
+
+        //Properties
+        /*
+        public void SetProperty(string name, object value)
+        {
+            m_propertyList[name] = value;
+        }
+        public void SetProperty(string name, int value)
+        {
+            m_propertyList[name] = (object)value;
+        }
+        public string GetProperty(string name)
+        {
+            return m_propertyList[name].ToString();
+        }
+         * */
     }
 
     public class CCBCharacterList : List<CCBCharacter>
@@ -84,6 +106,14 @@ namespace Ceebeetle
             lock (this)
             {
                 base.Add(character);
+            }
+        }
+        public void DeleteSafe(CCBCharacter character)
+        {
+            CCBDirty.kDirty = true;
+            lock (this)
+            {
+                base.Remove(character);
             }
         }
         public void DeleteSafe(List<Object> list)
@@ -165,6 +195,10 @@ namespace Ceebeetle
         {
             CCBDirty.kDirty = true;
             m_characters.Add(newCharacter);
+        }
+        public void DeleteCharacter(CCBCharacter delCharacter)
+        {
+            m_characters.DeleteSafe(delCharacter);
         }
     }
     public class CCBGames : List<CCBGame>

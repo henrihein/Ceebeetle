@@ -18,60 +18,27 @@ using System.IO;    //For IOException
 
 namespace Ceebeetle
 {
-    enum CCBEditMode
-    {
-        em_None = 0,
-        em_Frozen,
-        em_AddGame,
-        em_ModifyGame,
-        em_AddCharacter,
-        em_ModifyCharacter
-    }
-    public class CEditNode : DependencyObject
-    {
-        public static readonly DependencyProperty 
-                                EditNode =
-                                    DependencyProperty.RegisterAttached("EditNode", typeof(object), typeof(CEditNode), new PropertyMetadata(""));
-        public static CCBTreeViewItem GetEditNode(DependencyObject ctl)
-        {
-            object propValue = ctl.GetValue(EditNode);
-
-            if (null != propValue)
-                return (CCBTreeViewItem)propValue;
-            return null;
-        }
-        public static void SetEditNode(DependencyObject ctl, CCBTreeViewItem value)
-        {
-            ctl.SetValue(EditNode, value);
-        }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool m_deleteEnabled;
         CCBConfig m_config;
         CCBGames m_games;
-        NewCharacter m_characterWnd;
-        private bool m_deleteEnabled;
         BackgroundWorker m_worker;
         DoWorkEventHandler m_loaderD;
         Timer m_timer;
         private delegate void DOnCharacterListUpdate(TStatusUpdate[] args);
         DOnCharacterListUpdate m_onCharacterListUpdateD;
-        CCBEditMode m_mode;
-        int m_adderIx;
         CCBTreeViewGameAdder m_gameAdderEntry;
 
         public MainWindow()
         {
             m_config = new CCBConfig();
             m_games = new CCBGames();
-            m_mode = CCBEditMode.em_Frozen;
             m_deleteEnabled = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
-            m_adderIx = -1;
             m_gameAdderEntry = new CCBTreeViewGameAdder();
             m_worker = new BackgroundWorker();
             m_worker.WorkerReportsProgress = true;
@@ -123,7 +90,7 @@ namespace Ceebeetle
         private void AddOrMoveAdder()
         {
             tvGames.Items.Remove(m_gameAdderEntry);
-            m_adderIx = tvGames.Items.Add(m_gameAdderEntry);
+            tvGames.Items.Add(m_gameAdderEntry);
         }
         public void MergeCharacterList()
         {
@@ -162,8 +129,6 @@ namespace Ceebeetle
                         tvGames.IsEnabled = true;
                         btnAddGame.IsEnabled = true;
                         btnSave.IsEnabled = true;
-                        if (CCBEditMode.em_Frozen == m_mode)
-                            m_mode = CCBEditMode.em_None;
                         break;
                     case TStatusUpdate.tsuFileNothingLoaded:
                         tbLastError.Text = "No file to load";
@@ -171,8 +136,6 @@ namespace Ceebeetle
                         tvGames.IsEnabled = true;
                         btnAddGame.IsEnabled = true;
                         btnSave.IsEnabled = true;
-                        if (CCBEditMode.em_Frozen == m_mode)
-                            m_mode = CCBEditMode.em_None;
                         break;
                     default:
                         tbLastError.Text = "Unknown tsu in persistence event.";
@@ -195,12 +158,7 @@ namespace Ceebeetle
             else if (null != evtArgs.Error)
                 tsu = TStatusUpdate.tsuError;
             else if (null != evtArgs.Result)
-            {
                 tsu = (TStatusUpdate)evtArgs.Result;
-
-                if (null == tsu)
-                    tsu = TStatusUpdate.tsuNone;
-            }
             TStatusUpdate[] args = new TStatusUpdate[1] { tsu };
 
             if (Application.Current.Dispatcher.CheckAccess())
@@ -215,8 +173,6 @@ namespace Ceebeetle
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (CCBEditMode.em_Frozen == m_mode)
-                return;
             if (m_deleteEnabled)
             {
                 CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
@@ -228,7 +184,27 @@ namespace Ceebeetle
                     switch (selItem.ItemType)
                     {
                         case CCBItemType.itpCharacter:
+                        {
+                            CCBCharacter character = selItem.Character;
+
+                            if (null == character)
+                                tbLastError.Text = String.Format("Mismatch in CBTVI selected ({0})", selItem.ItemType);
+                            else
+                            {
+                                CCBTreeViewGame gameNode = FindGameFromNode(selItem);
+
+                                if (null == gameNode)
+                                    tbLastError.Text = "Internal error: cannot find game node.";
+                                else
+                                {
+                                    CCBGame game = gameNode.Game;
+
+                                    gameNode.Items.Remove(selItem);
+                                    game.DeleteCharacter(character);
+                                }
+                            }
                             break;
+                        }
                         case CCBItemType.itpGame:
                         {
                             CCBGame game = selItem.Game;
@@ -287,15 +263,18 @@ namespace Ceebeetle
         }
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
-            if (CCBEditMode.em_Frozen == m_mode)
-                return;
-            switch (m_mode)
+            CEditMode editMode = CEditModeProperty.GetEditNode(tbItem);
+
+            if (null == editMode) return;
+            if (EEditMode.em_Frozen == editMode.EditMode) return;
+            switch (editMode.EditMode)
             {
-                case CCBEditMode.em_None:
+                case EEditMode.em_None:
                     tbLastError.Text = "No mode.";
                     break;
-                case CCBEditMode.em_AddCharacter:
-                    CCBTreeViewGame currentGameNode = FindCurrentGame();
+                case EEditMode.em_AddCharacter:
+                {
+                    CCBTreeViewGame currentGameNode = FindGameFromNode(editMode.Node);
 
                     if ((null == currentGameNode) || (CCBItemType.itpGame != currentGameNode.ItemType))
                         tbLastError.Text = "No game selected.";
@@ -307,97 +286,105 @@ namespace Ceebeetle
                         currentGameNode.Game.AddCharacter(newCharacter);
                     }
                     break;
-                case CCBEditMode.em_AddGame:
+                }
+                case EEditMode.em_AddGame:
                     CCBGame newGame = m_games.AddGame(tbItem.Text);
 
                     tvGames.Items.Add(new CCBTreeViewGame(newGame));
                     AddOrMoveAdder();
                     break;
-                case CCBEditMode.em_ModifyCharacter:
-                    CCBTreeViewItem editNode = CEditNode.GetEditNode(tbItem);
-
-                    if (null == editNode)
+                case EEditMode.em_ModifyCharacter:
+                    if (null == editMode.Node)
                     {
-                        tbLastError.Text = "No node to edit.";
+                        tbLastError.Text = "Internal error: No edit node.";
                         return;
                     }
-                    editNode.Header = tbItem.Text;
-                    editNode.Character.Name = tbItem.Text;
+                    editMode.Node.Header = tbItem.Text;
+                    editMode.Node.Character.Name = tbItem.Text;
                     break;
-                case CCBEditMode.em_ModifyGame:
+                case EEditMode.em_ModifyGame:
+                {
+                    CCBTreeViewGame currentGameNode = FindGameFromNode(editMode.Node);
+
+                    currentGameNode.Game.Name = tbItem.Text;
+                    currentGameNode.Header = tbItem.Text;
                     break;
+                }
                 default:
                     tbLastError.Text = "Unknown mode.";
                     break;
             }
         }
 
-        private void AddCharacterView()
+        private EEditMode AddCharacterView()
         {
-            m_mode = CCBEditMode.em_AddCharacter;
             gbItemView.Header = "Add Character";
             btnSave.Content = "Add";
             tbItem.Text = "New Hero";
+            return EEditMode.em_AddCharacter;
         }
-        private void AddGameView()
+        private EEditMode AddGameView()
         {
-            m_mode = CCBEditMode.em_AddGame;
             gbItemView.Header = "Add Game";
             btnSave.Content = "Add";
             tbItem.Text = "New Game";
+            return EEditMode.em_AddGame;
         }
-        private void ModifyCharacterView(CCBCharacter character)
+        private EEditMode ModifyCharacterView(CCBCharacter character)
         {
-            m_mode = CCBEditMode.em_ModifyCharacter;
             gbItemView.Header = "Modify Character";
             btnSave.Content = "Save";
             if (null != character)
                 tbItem.Text = character.Name;
             else
                 tbItem.Text = "";
+            return EEditMode.em_ModifyCharacter;
         }
-        private void ModifyGameView(CCBGame game)
+        private EEditMode ModifyGameView(CCBGame game)
         {
-            m_mode = CCBEditMode.em_ModifyGame;
             gbItemView.Header = "Modify Game";
             btnSave.Content = "Save";
             if (null != game)
                 tbItem.Text = game.Name;
             else
                 tbItem.Text = "";
+            return EEditMode.em_ModifyGame;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
 
-            if (CCBEditMode.em_Frozen == m_mode)
-                return;
             if (null == selItem)
+            {
                 tbLastError.Text = "Wrong item in treeview:";
+                btnSave.IsEnabled = false;
+            }
             else
             {
+                CEditMode em = new CEditMode(selItem);
+
                 btnSave.IsEnabled = true;
-                CEditNode.SetEditNode(tbItem, selItem);
                 switch (selItem.ItemType)
                 {
                     case CCBItemType.itpCharacter:
-                        ModifyCharacterView(selItem.Character);
+                        em.EditMode = ModifyCharacterView(selItem.Character);
                         btnDelete.IsEnabled = true;
                         break;
                     case CCBItemType.itpGame:
-                        ModifyGameView(selItem.Game);
+                        em.EditMode = ModifyGameView(selItem.Game);
                         btnDelete.IsEnabled = true;
                         break;
                     case CCBItemType.itpGameAdder:
-                        AddGameView();
+                        em.EditMode = AddGameView();
                         btnDelete.IsEnabled = false;
                         break;
                     case CCBItemType.itpCharacterAdder:
-                        AddCharacterView();
+                        em.EditMode = AddCharacterView();
                         btnDelete.IsEnabled = false;
                         break;
                 }
                 tbItem.SelectAll();
+                CEditModeProperty.SetEditNode(tbItem, em);
                 //tbItem.Focus();
             }
         }

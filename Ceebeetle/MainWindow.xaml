@@ -3,14 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="483" Width="707">
     <Grid>
-        <Grid Margin="12,48,12,0">
+        <Grid Margin="12,0,12,12" Height="396" VerticalAlignment="Bottom">
             <Button Content="Close" Height="32" HorizontalAlignment="Left" Margin="494,358,0,0" Name="btnClose" VerticalAlignment="Top" Width="167" Click="btnClose_Click" />
-            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Right" Margin="0,330,296,0" Name="btnDelete" VerticalAlignment="Top" Width="138" Click="btnDelete_Click" IsEnabled="False" />
-            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="577,330,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
-            <TreeView Height="301" HorizontalAlignment="Left" Margin="16,15,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
-            <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="6,332,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="200" IsEnabled="False" />
-            <GroupBox Header="Edit" Height="301" HorizontalAlignment="Left" Margin="221,15,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
-                <Grid>
+            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Right" Margin="0,358,455,0" Name="btnDelete" VerticalAlignment="Top" Width="190" Click="btnDelete_Click" IsEnabled="False" />
+            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="410,370,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
+            <TreeView Height="344" HorizontalAlignment="Left" Margin="16,6,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
+            <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,358,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="123" IsEnabled="False" />
+            <GroupBox Header="Edit" Height="310" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
+                <Grid Height="310">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30*" />
                         <ColumnDefinition Width="150*" />
@@ -19,13 +19,13 @@
                         <ColumnDefinition Width="24*" />
                         <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
-                    <ListBox Height="187" HorizontalAlignment="Left" Margin="15,72,0,0" Name="lbCharacters" VerticalAlignment="Top" Width="167" SelectionMode="Multiple" Grid.ColumnSpan="3" />
-                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="48,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="117" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" />
-                    <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="167" Grid.ColumnSpan="3" />
+                    <ListBox Height="233" HorizontalAlignment="Left" Margin="15,59,0,0" Name="lbCharacters" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
+                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="87,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="124" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" Grid.ColumnSpan="2" />
+                    <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
                 </Grid>
             </GroupBox>
         </Grid>
-        <TextBlock Height="18" HorizontalAlignment="Left" Margin="11,422,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Top" Width="703" DataContext="{Binding}" />
+        <TextBlock Height="18" HorizontalAlignment="Left" Margin="11,428,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Top" Width="703" DataContext="{Binding}" />
         <TextBlock Height="22" HorizontalAlignment="Left" Margin="193,1,0,0" Name="tbLastError" Text="" VerticalAlignment="Top" Width="480" />
     </Grid>
 </Window>

@@ -67,6 +67,8 @@
     <Compile Include="CCBConfig.cs" />
     <Compile Include="CCBObserver.cs" />
     <Compile Include="CCBTreeViewItem.cs" />
+    <Compile Include="CharacterProperty.cs" />
+    <Compile Include="EditMode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
