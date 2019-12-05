@@ -9,7 +9,7 @@
             <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="410,370,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
             <TreeView Height="344" HorizontalAlignment="Left" Margin="16,6,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
             <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,358,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="123" IsEnabled="False" />
-            <GroupBox Header="Edit" Height="310" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
+            <GroupBox Header="Edit" Height="331" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
                 <Grid Height="310">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30*" />
@@ -19,9 +19,10 @@
                         <ColumnDefinition Width="24*" />
                         <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
-                    <ListBox Height="233" HorizontalAlignment="Left" Margin="15,59,0,0" Name="lbCharacters" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
+                    <ListBox Height="198" HorizontalAlignment="Left" Margin="15,94,0,0" Name="lbCharacters" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
                     <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="87,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="124" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" Grid.ColumnSpan="2" />
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
+                    <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,54,0,0" Name="tbValue" VerticalAlignment="Top" Width="210" />
                 </Grid>
             </GroupBox>
         </Grid>

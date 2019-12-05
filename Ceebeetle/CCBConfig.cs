@@ -8,7 +8,9 @@ namespace Ceebeetle
 {
     class CCBConfig
     {
-        private static uint m_version = 2;
+        private static readonly uint m_version = 3;
+        private static readonly uint m_minVersion = 3;
+
         private string m_filename;
         public string DocPath { get; set; }
 
@@ -34,7 +36,7 @@ namespace Ceebeetle
             string fileToCheck = DocPath;
             uint prevVer = m_version;
 
-            while (prevVer > 0)
+            while (prevVer >= m_minVersion)
             {
                 if (File.Exists(fileToCheck))
                     return fileToCheck;

@@ -5,7 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Xml;
 using System.Xml.Serialization;
+using System.Xml.Schema;
 using System.Threading;
 
 namespace Ceebeetle
@@ -15,10 +18,12 @@ namespace Ceebeetle
         public static bool kDirty;
     }
 
+    [DataContract(Name = "Character", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBCharacter
     {
         static uint m_nextId = 1;
 
+        [DataMember(Name="Name")]
         private string m_name;
         public string Name
         {
@@ -30,6 +35,7 @@ namespace Ceebeetle
         }
         public readonly uint     m_id;
 
+        [DataMember(Name="PropertyList")]
         private CharacterPropertyList m_propertyList;
         public CharacterPropertyList PropertyList
         {
@@ -40,11 +46,13 @@ namespace Ceebeetle
         {
             m_id = m_nextId++;
             m_name = System.String.Format("NewCharacter{0}", m_id);
+            m_propertyList = new CharacterPropertyList();
         }
         public CCBCharacter(string name)
         {
             m_id = m_nextId++;
             m_name = name;
+            m_propertyList = new CharacterPropertyList();
         }
         public override string ToString()
         {
@@ -78,22 +86,31 @@ namespace Ceebeetle
         }
 
         //Properties
-        /*
-        public void SetProperty(string name, object value)
+        public CCBCharacterProperty AddProperty(string name, string value)
         {
-            m_propertyList[name] = value;
+            CCBCharacterProperty newProperty = new CCBCharacterProperty(name, value);
+
+            CCBDirty.kDirty = true;
+            m_propertyList.AddSafe(newProperty);
+            return newProperty;
         }
-        public void SetProperty(string name, int value)
+        public void RemovePropertySafe(CCBCharacterProperty property)
         {
-            m_propertyList[name] = (object)value;
+            if (null != property) lock (this)
+            {
+                CCBDirty.kDirty = true;
+                m_propertyList.Remove(property);
+            }
         }
-        public string GetProperty(string name)
+        public void RemoveProperty(string name)
         {
-            return m_propertyList[name].ToString();
+            CCBCharacterProperty property = m_propertyList.FindSafe(name);
+
+            RemovePropertySafe(property);
         }
-         * */
     }
 
+    [CollectionDataContract(Name = "Characters", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBCharacterList : List<CCBCharacter>
     {
         public CCBCharacterList() : base()
@@ -134,40 +151,14 @@ namespace Ceebeetle
             }
             CCBDirty.kDirty = true;
         }
-        public string AsXML()
-        {
-            XmlSerializer xsSubmit = new XmlSerializer(typeof(CCBCharacterList));
-            StringWriter sww = new StringWriter();
-
-            lock (this)
-            {
-                xsSubmit.Serialize(sww, this);
-            }
-            return sww.ToString();
-        }
-        public void SaveCharacters(object sender, DoWorkEventArgs evtArgs)
-        {
-            string xmlData = AsXML();
-
-            try
-            {
-                System.IO.StreamWriter writer = new System.IO.StreamWriter(evtArgs.Argument.ToString());
-
-                writer.Write(xmlData);
-                writer.Flush();
-                writer.Close();
-            }
-            catch (IOException iox)
-            {
-                System.Diagnostics.Debug.Write(iox.ToString());
-                evtArgs.Cancel = true;
-            }
-        }
     }
 
+    [DataContract(Name = "Game", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBGame
     {
+        [DataMember(Name="Name")]
         private string m_name;
+        [DataMember(Name="Characters")]
         private CCBCharacterList m_characters;
         public string Name
         {
@@ -201,6 +192,7 @@ namespace Ceebeetle
             m_characters.DeleteSafe(delCharacter);
         }
     }
+    [CollectionDataContract(Name = "Games", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBGames : List<CCBGame>
     {
         public CCBGames() : base()
@@ -255,7 +247,7 @@ namespace Ceebeetle
         }
         public void LoadGames(object sender, DoWorkEventArgs evtArgs)
         {
-            XmlSerializer xsReader = new XmlSerializer(typeof(CCBGames));
+            //XmlSerializer xsReader = new XmlSerializer(typeof(CCBGames));
             BackgroundWorker wSender = (BackgroundWorker)sender;
 
             if (null != wSender)
@@ -272,10 +264,12 @@ namespace Ceebeetle
             System.Diagnostics.Debug.Write("Loading:" + evtArgs.Argument.ToString());
             try
             {
-                System.IO.StreamReader reader = new System.IO.StreamReader(evtArgs.Argument.ToString());
-                CCBGames loadedGames = (CCBGames)xsReader.Deserialize(reader);
+                string xmlDocPath = evtArgs.Argument.ToString();
+                XmlReader xsReader = XmlReader.Create(xmlDocPath);
+                DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBGames));
+                CCBGames loadedGames = (CCBGames)dsReader.ReadObject(xsReader);
 
-                reader.Close();
+                xsReader.Close();
                 foreach (CCBGame game in loadedGames)
                 {
                     AddSafe(game);
@@ -308,13 +302,16 @@ namespace Ceebeetle
         }
         public void SaveGames(string path)
         {
-            string xmlData = AsXML();
+            lock (this)
+            {
+                DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGames));
+                //string xmlData = AsXML();
+                XmlWriter xmlWriter = XmlWriter.Create(path);
 
-            System.IO.StreamWriter writer = new System.IO.StreamWriter(path);
-
-            writer.Write(xmlData);
-            writer.Flush();
-            writer.Close();
+                dsWriter.WriteObject(xmlWriter, this);
+                xmlWriter.Flush();
+                xmlWriter.Close();
+            }
         }
     }
 }

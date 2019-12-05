@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Ceebeetle
 {
@@ -13,10 +14,12 @@ namespace Ceebeetle
         cpt_Numeric
     }
 
-    public class CCBCharacterPropertyTemplate
+    [DataContract(Name="PropertyTemplate", Namespace=@"http://www.w3.org/2001/XMLSchema")]
+    [KnownType(typeof(CCBCharacterProperty))]
+    public class CCBCharacterPropertyTemplate : IEquatable<CCBCharacterPropertyTemplate>, IComparable<CCBCharacterPropertyTemplate>
     {
-        private CPType m_cpt;
-        private string m_name;
+        [DataMember(Name="Type")] private CPType m_cpt;
+        [DataMember(Name="Name")] private string m_name;
         static int m_propId = 1;
 
         public CPType Type
@@ -29,6 +32,38 @@ namespace Ceebeetle
             get { return m_name; }
             set { m_name = value; }
         }
+
+        //Overrides for equality and comparisons
+        #region Comparisons
+        public static bool operator ==(CCBCharacterPropertyTemplate lhs, CCBCharacterPropertyTemplate rhs)
+        {
+            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null)) return false;
+            return lhs.m_name == rhs.m_name;
+        }
+        public static bool operator !=(CCBCharacterPropertyTemplate lhs, CCBCharacterPropertyTemplate rhs)
+        {
+            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null)) return true;
+            return lhs.m_name != rhs.m_name;
+        }
+        public override bool Equals(object obj)
+        {
+            return m_name.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return m_name.GetHashCode();
+        }
+        //IEquatable
+        public bool Equals(CCBCharacterPropertyTemplate rhs)
+        {
+            return m_name.Equals(rhs.m_name);
+        }
+        //IComparable
+        public int CompareTo(CCBCharacterPropertyTemplate rhs)
+        {
+            return m_name.CompareTo(rhs.m_name);
+        }
+        #endregion
 
         public CCBCharacterPropertyTemplate()
         {
@@ -57,8 +92,10 @@ namespace Ceebeetle
         }
     }
 
+    [DataContract(Name = "CharacterProperty", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBCharacterProperty : CCBCharacterPropertyTemplate
     {
+        [DataMember(Name="Value")]
         private object m_value;
 
         public string Value
@@ -80,11 +117,11 @@ namespace Ceebeetle
         {
             m_value = "";
         }
-        public CCBCharacterProperty(string value) : base()
+        public CCBCharacterProperty(string name, string value) : base(name)
         {
             m_value = value;
         }
-        public CCBCharacterProperty(int value) : base(CPType.cpt_Numeric)
+        public CCBCharacterProperty(string name, int value) : base(name, CPType.cpt_Numeric)
         {
             m_value = (object) value;
         }
@@ -94,18 +131,70 @@ namespace Ceebeetle
         }
     }
 
+    #region PredicateHelper
+    //Helper class for Predicates
+    public class ComparePropertyToName
+    {
+        private readonly string m_name;
+        public ComparePropertyToName(string name)
+        {
+            m_name = name;
+        }
+        private ComparePropertyToName() {}
+        public Predicate<CCBCharacterPropertyTemplate> GetPredicate
+        {
+            get { return IsThisProperty; }
+        }
+        private bool IsThisProperty(CCBCharacterPropertyTemplate property)
+        {
+            return m_name == property.Name;
+        }
+    }
+    #endregion
+
+    [CollectionDataContract(Name = "PropertyTemplateList", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CharacterPropertyTemplateList : List<CCBCharacterPropertyTemplate>
     {
         public CharacterPropertyTemplateList()
             : base()
         {
         }
+
+        public void AddSafe(CCBCharacterPropertyTemplate propertyTemplate)
+        {
+            lock (this)
+            {
+                base.Add(propertyTemplate);
+            }
+        }
+        public CCBCharacterPropertyTemplate Find(string name)
+        {
+            ComparePropertyToName comparer = new ComparePropertyToName(name);
+            return base.Find(comparer.GetPredicate);
+        }
     }
+    [CollectionDataContract(Name = "CharacterPropertyList", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CharacterPropertyList : List<CCBCharacterProperty>
     {
         public CharacterPropertyList()
             : base()
         {
+        }
+
+        public void AddSafe(CCBCharacterProperty property)
+        {
+            lock (this)
+            {
+                base.Add(property);
+            }
+        }
+        public CCBCharacterProperty FindSafe(string name)
+        {
+            lock (this)
+            {
+                ComparePropertyToName comparer = new ComparePropertyToName(name);
+                return base.Find(comparer.GetPredicate);
+            }
         }
     }
 }

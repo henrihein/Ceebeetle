@@ -15,8 +15,8 @@ namespace Ceebeetle
         em_ModifyGame,
         em_AddCharacter,
         em_ModifyCharacter,
-        em_EditProperty,
-        em_AddProperty
+        em_AddProperty,
+        em_ModifyProperty
     }
 
     public class CEditModeProperty : DependencyObject

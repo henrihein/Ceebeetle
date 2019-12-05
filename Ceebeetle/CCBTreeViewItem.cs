@@ -35,6 +35,10 @@ namespace Ceebeetle
         {
             get { return (CCBGame)m_data; }
         }
+        public CCBCharacterProperty Property
+        {
+            get { return (CCBCharacterProperty)m_data; }
+        }
         public CCBItemType ItemType
         {
             get { return m_itp; }
@@ -69,11 +73,11 @@ namespace Ceebeetle
             this.Header = game.Name;
             this.m_data = game;
         }
-        public CCBTreeViewItem(string name, CCBCharacterProperty property)
+        public CCBTreeViewItem(CCBCharacterProperty property)
             : base()
         {
             m_itp = CCBItemType.itpProperty;
-            this.Header = name;
+            this.Header = property.Name;
             this.m_data = property;
         }
     }
@@ -154,9 +158,9 @@ namespace Ceebeetle
                 base.Items.Add(m_characterAdder);
             }
         }
-        public CCBTreeViewItem Add(CCBCharacter character)
+        public CCBTreeViewCharacter Add(CCBCharacter character)
         {
-            CCBTreeViewItem newNode = new CCBTreeViewItem(character);
+            CCBTreeViewCharacter newNode = new CCBTreeViewCharacter(character);
 
             base.Items.Add(newNode);
             AddOrMoveAdder();
@@ -172,14 +176,14 @@ namespace Ceebeetle
             : base(CCBItemType.itpCharacter)
         {
             m_propertyAdder = new CCBTreeViewPropertyAdder();
-            m_quickEdit = false;
+            m_quickEdit = true;
             base.Items.Add(m_propertyAdder);
         }
         public CCBTreeViewCharacter(CCBCharacter character)
             : base(character)
         {
             m_propertyAdder = new CCBTreeViewPropertyAdder();
-            m_quickEdit = false;
+            m_quickEdit = true;
             base.Items.Add(m_propertyAdder);
         }
 
@@ -200,9 +204,9 @@ namespace Ceebeetle
                 base.Items.Add(m_propertyAdder);
             }
         }
-        public CCBTreeViewItem Add(string propertyName, CCBCharacterProperty property)
+        public CCBTreeViewItem Add(CCBCharacterProperty property)
         {
-            CCBTreeViewItem newNode = new CCBTreeViewItem(propertyName, property);
+            CCBTreeViewItem newNode = new CCBTreeViewItem(property);
 
             base.Items.Add(newNode);
             AddOrMoveAdder();
