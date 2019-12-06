@@ -6,7 +6,7 @@
         <Grid Margin="12,0,12,12" Height="396" VerticalAlignment="Bottom">
             <Button Content="Close" Height="32" HorizontalAlignment="Left" Margin="494,358,0,0" Name="btnClose" VerticalAlignment="Top" Width="167" Click="btnClose_Click" />
             <Button Content="Enable Delete" Height="27" HorizontalAlignment="Right" Margin="0,358,455,0" Name="btnDelete" VerticalAlignment="Top" Width="190" Click="btnDelete_Click" IsEnabled="False" />
-            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="410,370,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
+            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="410,370,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" Visibility="Hidden" />
             <TreeView Height="344" HorizontalAlignment="Left" Margin="16,6,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
             <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,358,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="123" IsEnabled="False" />
             <GroupBox Header="Edit" Height="331" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
@@ -19,7 +19,7 @@
                         <ColumnDefinition Width="24*" />
                         <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
-                    <ListBox Height="198" HorizontalAlignment="Left" Margin="15,94,0,0" Name="lbCharacters" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
+                    <ListBox Height="198" HorizontalAlignment="Left" Margin="15,94,0,0" Name="lbEntities" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
                     <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="87,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="124" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" Grid.ColumnSpan="2" />
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
                     <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />

@@ -276,6 +276,7 @@ namespace Ceebeetle
             }
         }
 
+        #region SelectionViewHelpers
         private CCBTreeViewGame FindCurrentGame()
         {
             return FindGameFromNode((TreeViewItem)tvGames.SelectedItem);
@@ -348,10 +349,33 @@ namespace Ceebeetle
                     AddBagToCharacterNode(characterNode, bag);
             }
         }
-        
+        private void ResetEntitiesList()
+        {
+            lbEntities.Items.Clear();
+        }
+        private void ShowCharacters(CCBGame gameFrom)
+        {
+            ResetEntitiesList();
+            lbEntities.Items.Add(string.Format("{0}:", gameFrom.Name));
+            foreach (CCBCharacter character in gameFrom.Characters)
+                lbEntities.Items.Add(string.Format("  {0}", character.Name));
+        }
+        private void ShowProperties(CCBCharacter characterFrom)
+        {
+            ResetEntitiesList();
+            foreach (CCBCharacterProperty property in characterFrom.PropertyList)
+                lbEntities.Items.Add(string.Format("{0}:{1}", property.Name, property.Value));
+        }
+        private void ShowItems(CCBBag bag)
+        {
+            ResetEntitiesList();
+            foreach (CCBBagItem item in bag.Items)
+                lbEntities.Items.Add(item.Item);
+        }
+        #endregion //SelectionViewHelpers
+
         private void btnTest_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(m_games.AsXML());
         }
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
@@ -493,6 +517,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
+            ResetEntitiesList();
             return EEditMode.em_AddCharacter;
         }
         private EEditMode AddGameView()
@@ -505,6 +530,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
+            ResetEntitiesList();
             return EEditMode.em_AddGame;
         }
         private EEditMode AddPropertyView()
@@ -517,6 +543,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = true;
             btnDelete.IsEnabled = false;
+            ResetEntitiesList();
             return EEditMode.em_AddProperty;
         }
         private EEditMode AddBagView()
@@ -529,6 +556,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
+            ResetEntitiesList();
             return EEditMode.em_AddBag;
         }
         private EEditMode AddBagItemView()
@@ -541,6 +569,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
+            ResetEntitiesList();
             return EEditMode.em_AddBagItem;
         }
         private EEditMode ModifyCharacterView(CCBCharacter character)
@@ -556,6 +585,7 @@ namespace Ceebeetle
                 tbItem.Text = "";
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
+            ShowProperties(character);
             return EEditMode.em_ModifyCharacter;
         }
         private EEditMode ModifyGameView(CCBGame game)
@@ -571,6 +601,7 @@ namespace Ceebeetle
                 tbItem.Text = "";
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
+            ShowCharacters(game);
             return EEditMode.em_ModifyGame;
         }
         private EEditMode ModifyPropertyView(CCBCharacterProperty property)
@@ -591,6 +622,7 @@ namespace Ceebeetle
             }
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
+            ResetEntitiesList();
             return EEditMode.em_ModifyProperty;
         }
         private EEditMode ModifyBagView(CCBBag bag)
@@ -616,6 +648,7 @@ namespace Ceebeetle
             }
             tbValue.Text = "";
             tbValue.IsEnabled = true;
+            ShowItems(bag);
             return EEditMode.em_ModifyBag;
         }
         private EEditMode ModifyBagItemView(CCBBagItem bagItem)
@@ -631,6 +664,7 @@ namespace Ceebeetle
                 tbItem.Text = "";
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
+            ResetEntitiesList();
             return EEditMode.em_ModifyBagItem;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
