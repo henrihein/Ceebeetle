@@ -20,7 +20,6 @@ namespace Ceebeetle
     {
         [DataMember(Name="Type")] private CPType m_cpt;
         [DataMember(Name="Name")] private string m_name;
-        static int m_propId = 1;
 
         public CPType Type
         {
@@ -37,16 +36,25 @@ namespace Ceebeetle
         #region Comparisons
         public static bool operator ==(CCBCharacterPropertyTemplate lhs, CCBCharacterPropertyTemplate rhs)
         {
+            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null)) return true;
             if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null)) return false;
-            return lhs.m_name == rhs.m_name;
+            return 0 == string.Compare(lhs.m_name, rhs.m_name);
         }
         public static bool operator !=(CCBCharacterPropertyTemplate lhs, CCBCharacterPropertyTemplate rhs)
         {
+            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null)) return false;
             if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null)) return true;
-            return lhs.m_name != rhs.m_name;
+            return 0 == string.Compare(lhs.m_name, rhs.m_name);
         }
         public override bool Equals(object obj)
         {
+            if (obj is CCBCharacterPropertyTemplate)
+            {
+                CCBCharacterPropertyTemplate propt = (CCBCharacterPropertyTemplate)obj;
+
+                if (null != propt)
+                    return m_name.Equals(propt.m_name);
+            }
             return m_name.Equals(obj);
         }
         public override int GetHashCode()
@@ -68,12 +76,12 @@ namespace Ceebeetle
         public CCBCharacterPropertyTemplate()
         {
             m_cpt = CPType.cpt_Normal;
-            m_name = string.Format("Property {0}", m_propId++);
+            m_name = "Unknown Property";
         }
         public CCBCharacterPropertyTemplate(CPType type)
         {
             m_cpt = type;
-            m_name = string.Format("Property {0}", m_propId++);
+            m_name = "Unknown Property";
         }
         public CCBCharacterPropertyTemplate(string name, CPType type)
         {
@@ -181,20 +189,10 @@ namespace Ceebeetle
         {
         }
 
-        public void AddSafe(CCBCharacterProperty property)
+        public CCBCharacterProperty Find(string name)
         {
-            lock (this)
-            {
-                base.Add(property);
-            }
-        }
-        public CCBCharacterProperty FindSafe(string name)
-        {
-            lock (this)
-            {
-                ComparePropertyToName comparer = new ComparePropertyToName(name);
-                return base.Find(comparer.GetPredicate);
-            }
+            ComparePropertyToName comparer = new ComparePropertyToName(name);
+            return base.Find(comparer.GetPredicate);
         }
     }
 }

@@ -42,17 +42,35 @@ namespace Ceebeetle
             get { return m_propertyList; }
         }
 
+        [DataMember(Name = "Items")]
+        private CCBBag m_items;
+        public CCBBag Items
+        {
+            get { return m_items; }
+        }
+
+        [DataMember(Name = "CharacterBags")]
+        private CCBBags m_bags;
+        public CCBBags BagList
+        {
+            get { return m_bags; }
+        }
+
         public CCBCharacter()
         {
             m_id = m_nextId++;
             m_name = System.String.Format("NewCharacter{0}", m_id);
             m_propertyList = new CharacterPropertyList();
+            m_items = new CCBLockedBag("Items");
+            m_bags = new CCBBags();
         }
         public CCBCharacter(string name)
         {
             m_id = m_nextId++;
             m_name = name;
             m_propertyList = new CharacterPropertyList();
+            m_items = new CCBLockedBag("Items");
+            m_bags = new CCBBags();
         }
         public override string ToString()
         {
@@ -91,7 +109,7 @@ namespace Ceebeetle
             CCBCharacterProperty newProperty = new CCBCharacterProperty(name, value);
 
             CCBDirty.kDirty = true;
-            m_propertyList.AddSafe(newProperty);
+            m_propertyList.Add(newProperty);
             return newProperty;
         }
         public void RemovePropertySafe(CCBCharacterProperty property)
@@ -104,9 +122,25 @@ namespace Ceebeetle
         }
         public void RemoveProperty(string name)
         {
-            CCBCharacterProperty property = m_propertyList.FindSafe(name);
+            CCBCharacterProperty property = m_propertyList.Find(name);
 
             RemovePropertySafe(property);
+        }
+
+        public CCBBag AddBag(string name)
+        {
+            CCBBag newBag = new CCBBag(name);
+
+            CCBDirty.kDirty = true;
+            if (null == m_bags)
+                m_bags = new CCBBags();
+            m_bags.Add(newBag);
+            return newBag;
+        }
+        public void RemoveBag(string name)
+        {
+            if (null != m_bags)
+                m_bags.Remove(name);
         }
     }
 
@@ -247,8 +281,9 @@ namespace Ceebeetle
         }
         public void LoadGames(object sender, DoWorkEventArgs evtArgs)
         {
-            //XmlSerializer xsReader = new XmlSerializer(typeof(CCBGames));
             BackgroundWorker wSender = (BackgroundWorker)sender;
+            CCBConfig config = (CCBConfig)evtArgs.Argument;
+            string docPath;
 
             if (null != wSender)
             {
@@ -261,11 +296,30 @@ namespace Ceebeetle
                     System.Diagnostics.Debug.Write("ReportProgress: " + ex.ToString());
                 }
             }
-            System.Diagnostics.Debug.Write("Loading:" + evtArgs.Argument.ToString());
+            if (null == config)
+            {
+                System.Diagnostics.Debug.Write("No config found. Not loading games.");
+                evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
+                return;
+            }
+            else
+            {
+                docPath = config.DocPath;
+                if (!System.IO.File.Exists(docPath))
+                {
+                    docPath = config.GetLoadFile();
+                    if (!System.IO.File.Exists(docPath))
+                    {
+                        System.Diagnostics.Debug.Write("Load file does not exist. Not loading games.");
+                        evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
+                        return;
+                    }
+                }
+            }
+            System.Diagnostics.Debug.Write("Loading:" + docPath);
             try
             {
-                string xmlDocPath = evtArgs.Argument.ToString();
-                XmlReader xsReader = XmlReader.Create(xmlDocPath);
+                XmlReader xsReader = XmlReader.Create(docPath);
                 DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBGames));
                 CCBGames loadedGames = (CCBGames)dsReader.ReadObject(xsReader);
 
@@ -305,7 +359,6 @@ namespace Ceebeetle
             lock (this)
             {
                 DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGames));
-                //string xmlData = AsXML();
                 XmlWriter xmlWriter = XmlWriter.Create(path);
 
                 dsWriter.WriteObject(xmlWriter, this);

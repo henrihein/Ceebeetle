@@ -64,6 +64,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Bags.cs" />
     <Compile Include="CCBCharacter.cs" />
     <Compile Include="CCBConfig.cs" />
     <Compile Include="CCBObserver.cs" />

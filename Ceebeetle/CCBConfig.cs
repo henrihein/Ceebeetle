@@ -8,8 +8,8 @@ namespace Ceebeetle
 {
     class CCBConfig
     {
-        private static readonly uint m_version = 3;
-        private static readonly uint m_minVersion = 3;
+        private static readonly uint m_version = 7;
+        private static readonly uint m_minVersion = 6;
 
         private string m_filename;
         public string DocPath { get; set; }
@@ -20,11 +20,11 @@ namespace Ceebeetle
         }
         private string MakeFileName(uint version)
         {
-            return String.Format(@"ceebeetle{0:D2}.xml", m_version);
+            return String.Format(@"ceebeetle{0:D2}.xml", version);
         }
         private string MakeDocPath(string filename)
         {
-            return System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), m_filename);
+            return System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), filename);
         }
         public void Initialize()
         {

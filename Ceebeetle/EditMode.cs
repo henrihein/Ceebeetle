@@ -16,7 +16,11 @@ namespace Ceebeetle
         em_AddCharacter,
         em_ModifyCharacter,
         em_AddProperty,
-        em_ModifyProperty
+        em_ModifyProperty,
+        em_AddBag,
+        em_ModifyBag,
+        em_AddBagItem,
+        em_ModifyBagItem
     }
 
     public class CEditModeProperty : DependencyObject

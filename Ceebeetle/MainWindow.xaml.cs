@@ -30,7 +30,9 @@ namespace Ceebeetle
         DoWorkEventHandler m_loaderD;
         Timer m_timer;
         private delegate void DOnCharacterListUpdate(TStatusUpdate[] args);
+        private delegate void DOnAddingNewEntityMode();
         DOnCharacterListUpdate m_onCharacterListUpdateD;
+        DOnAddingNewEntityMode m_onAddingNewEntityModeD;
         CCBTreeViewGameAdder m_gameAdderEntry;
 
         public MainWindow()
@@ -39,6 +41,7 @@ namespace Ceebeetle
             m_games = new CCBGames();
             m_deleteEnabled = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
+            m_onAddingNewEntityModeD = new DOnAddingNewEntityMode(OnAddingNewEntityMode);
             m_gameAdderEntry = new CCBTreeViewGameAdder();
             m_worker = new BackgroundWorker();
             m_worker.WorkerReportsProgress = true;
@@ -61,7 +64,7 @@ namespace Ceebeetle
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
             m_loaderD = new DoWorkEventHandler(m_games.LoadGames);
             m_worker.DoWork += m_loaderD;
-            m_worker.RunWorkerAsync(m_config.DocPath);
+            m_worker.RunWorkerAsync(m_config);
             AddOrMoveAdder();
         }
 
@@ -108,6 +111,7 @@ namespace Ceebeetle
                     newCharacterItem.StartBulkEdit();
                     foreach (CCBCharacterProperty property in character.PropertyList)
                         newCharacterItem.Add(property);
+                    AddBagsToCharacterNode(newCharacterItem);
                     newCharacterItem.EndBulkEdit();
                 }
                 newGameItem.EndBulkEdit();
@@ -186,7 +190,13 @@ namespace Ceebeetle
                     m_worker.RunWorkerAsync(m_config.DocPath);
             }
         }
-
+        private void OnAddingNewEntityMode()
+        {
+            //Still cannot set focus here, as it deselects child nodes in the treeview control.
+            //TODO, sigh.
+            //tbItem.Focus();
+            return;
+        }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -253,6 +263,9 @@ namespace Ceebeetle
                             }
                             break;
                         }
+                        case CCBItemType.itpBagItem:
+                        case CCBItemType.itpBag:
+                        break;
                     }
                 }
             }
@@ -297,6 +310,45 @@ namespace Ceebeetle
             }
             return null;
         }
+        private CCBTreeViewBag FindBagFromNode(TreeViewItem node)
+        {
+            while (null != node)
+            {
+                if (node is CCBTreeViewBag)
+                {
+                    CCBTreeViewBag bag = (CCBTreeViewBag)node;
+
+                    if (null != bag)
+                        return bag;
+                }
+                node = (TreeViewItem)node.Parent;
+            }
+            return null;
+        }
+        private void AddBagToCharacterNode(CCBTreeViewCharacter characterNode, CCBBag bag)
+        {
+            if (null != bag)
+            {
+                CCBTreeViewBag bagNode = characterNode.Add(bag);
+
+                bagNode.StartBulkEdit();
+                foreach (CCBBagItem bagItem in bag.Items)
+                    bagNode.Add(bagItem);
+                bagNode.EndBulkEdit();
+            }
+        }
+        private void AddBagsToCharacterNode(CCBTreeViewCharacter characterNode)
+        {
+            CCBCharacter character = characterNode.Character;
+
+            AddBagToCharacterNode(characterNode, character.Items);
+            if (null != character.BagList)
+            {
+                foreach (CCBBag bag in character.BagList)
+                    AddBagToCharacterNode(characterNode, bag);
+            }
+        }
+        
         private void btnTest_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(m_games.AsXML());
@@ -321,9 +373,12 @@ namespace Ceebeetle
                     else
                     {
                         CCBCharacter newCharacter = new CCBCharacter(tbItem.Text);
-                        CCBTreeViewItem characterNode = currentGameNode.Add(newCharacter);
+                        CCBTreeViewCharacter characterNode = currentGameNode.Add(newCharacter);
 
                         currentGameNode.Game.AddCharacter(newCharacter);
+                        characterNode.StartBulkEdit();
+                        AddBagsToCharacterNode(characterNode);
+                        characterNode.EndBulkEdit();
                     }
                     break;
                 }
@@ -347,6 +402,34 @@ namespace Ceebeetle
                     CCBCharacterProperty newProperty = characterNode.Character.AddProperty(tbItem.Text, tbValue.Text);
 
                     characterNode.Add(newProperty);
+                    break;
+                }
+                case EEditMode.em_AddBag:
+                {
+                    CCBTreeViewCharacter characterNode = FindCharacterFromNode(editMode.Node);
+
+                    if (null == characterNode)
+                    {
+                        tbLastError.Text = "Internal error[b]: Cannot find node.";
+                        return;
+                    }
+                    CCBBag newBag = characterNode.Character.AddBag(tbItem.Text);
+
+                    characterNode.Add(newBag);
+                    break;
+                }
+                case EEditMode.em_AddBagItem:
+                {
+                    CCBTreeViewBag bagNode = FindBagFromNode(editMode.Node);
+
+                    if (null == bagNode)
+                    {
+                        tbLastError.Text = "Internal error[b]: Cannot find bag node.";
+                        return;
+                    }
+                    CCBBagItem newItem = bagNode.Bag.AddItem(tbItem.Text);
+
+                    bagNode.Add(newItem);
                     break;
                 }
                 case EEditMode.em_ModifyCharacter:
@@ -376,6 +459,24 @@ namespace Ceebeetle
                     editMode.Node.Property.Name = tbItem.Text;
                     editMode.Node.Property.Value = tbValue.Text;
                     break;
+                case EEditMode.em_ModifyBag:
+                    if (null == editMode.Node)
+                    {
+                        tbLastError.Text = "No bag node.";
+                        return;
+                    }
+                    editMode.Node.Header = tbItem.Text;
+                    editMode.Node.Bag.Name = tbItem.Text;
+                    break;
+                case EEditMode.em_ModifyBagItem:
+                    if (null == editMode.Node)
+                    {
+                        tbLastError.Text = "No bag item node.";
+                        return;
+                    }
+                    editMode.Node.Header = tbItem.Text;
+                    editMode.Node.BagItem.Item = tbItem.Text;
+                    break;
                 default:
                     tbLastError.Text = "Unknown mode.";
                     break;
@@ -386,57 +487,97 @@ namespace Ceebeetle
         {
             gbItemView.Header = "Add Character";
             btnSave.Content = "Add";
+            btnSave.IsEnabled = true;
             tbItem.Text = "New Hero";
+            tbItem.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = false;
+            btnDelete.IsEnabled = false;
             return EEditMode.em_AddCharacter;
         }
         private EEditMode AddGameView()
         {
             gbItemView.Header = "Add Game";
             btnSave.Content = "Add";
+            btnSave.IsEnabled = true;
             tbItem.Text = "New Game";
+            tbItem.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = false;
+            btnDelete.IsEnabled = false;
             return EEditMode.em_AddGame;
         }
         private EEditMode AddPropertyView()
         {
             gbItemView.Header = "Add Property";
             btnSave.Content = "Add";
+            btnSave.IsEnabled = true;
             tbItem.Text = "New Property";
+            tbItem.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = true;
+            btnDelete.IsEnabled = false;
             return EEditMode.em_AddProperty;
+        }
+        private EEditMode AddBagView()
+        {
+            gbItemView.Header = "Add Bag";
+            btnSave.Content = "Add";
+            btnSave.IsEnabled = true;
+            tbItem.Text = "New Bag";
+            tbItem.IsEnabled = true;
+            tbValue.Text = "";
+            tbValue.IsEnabled = false;
+            btnDelete.IsEnabled = false;
+            return EEditMode.em_AddBag;
+        }
+        private EEditMode AddBagItemView()
+        {
+            gbItemView.Header = "Add Bag Item";
+            btnSave.Content = "Add";
+            btnSave.IsEnabled = true;
+            tbItem.Text = "New Item";
+            tbItem.IsEnabled = true;
+            tbValue.Text = "";
+            tbValue.IsEnabled = false;
+            btnDelete.IsEnabled = false;
+            return EEditMode.em_AddBagItem;
         }
         private EEditMode ModifyCharacterView(CCBCharacter character)
         {
             gbItemView.Header = "Modify Character";
             btnSave.Content = "Save";
+            btnSave.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             if (null != character)
                 tbItem.Text = character.Name;
             else
                 tbItem.Text = "";
+            tbItem.IsEnabled = true;
+            btnDelete.IsEnabled = true;
             return EEditMode.em_ModifyCharacter;
         }
         private EEditMode ModifyGameView(CCBGame game)
         {
             gbItemView.Header = "Modify Game";
             btnSave.Content = "Save";
+            btnSave.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             if (null != game)
                 tbItem.Text = game.Name;
             else
                 tbItem.Text = "";
+            tbItem.IsEnabled = true;
+            btnDelete.IsEnabled = true;
             return EEditMode.em_ModifyGame;
         }
         private EEditMode ModifyPropertyView(CCBCharacterProperty property)
         {
             gbItemView.Header = "Modify Property";
             btnSave.Content = "Save";
+            btnSave.IsEnabled = true;
             tbValue.IsEnabled = true;
             if (null != property)
             {
@@ -448,7 +589,49 @@ namespace Ceebeetle
                 tbItem.Text = "";
                 tbValue.Text = "";
             }
+            tbItem.IsEnabled = true;
+            btnDelete.IsEnabled = true;
             return EEditMode.em_ModifyProperty;
+        }
+        private EEditMode ModifyBagView(CCBBag bag)
+        {
+            if (null != bag)
+                tbItem.Text = bag.Name;
+            else
+                tbItem.Text = "";
+            if (bag.IsLocked)
+            {
+                gbItemView.Header = "View Bag";
+                btnSave.IsEnabled = false;
+                btnDelete.IsEnabled = false;
+                tbItem.IsEnabled = false;
+            }
+            else
+            {
+                gbItemView.Header = "Modify Bag";
+                btnSave.Content = "Save";
+                btnSave.IsEnabled = true;
+                btnDelete.IsEnabled = true;
+                tbItem.IsEnabled = true;
+            }
+            tbValue.Text = "";
+            tbValue.IsEnabled = true;
+            return EEditMode.em_ModifyBag;
+        }
+        private EEditMode ModifyBagItemView(CCBBagItem bagItem)
+        {
+            gbItemView.Header = "Modify Bag Item";
+            btnSave.Content = "Save";
+            btnSave.IsEnabled = true;
+            tbValue.Text = "";
+            tbValue.IsEnabled = false;
+            if (null != bagItem)
+                tbItem.Text = bagItem.Item;
+            else
+                tbItem.Text = "";
+            tbItem.IsEnabled = true;
+            btnDelete.IsEnabled = true;
+            return EEditMode.em_ModifyBagItem;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
@@ -468,32 +651,39 @@ namespace Ceebeetle
                 {
                     case CCBItemType.itpCharacter:
                         em.EditMode = ModifyCharacterView(selItem.Character);
-                        btnDelete.IsEnabled = true;
                         break;
                     case CCBItemType.itpGame:
                         em.EditMode = ModifyGameView(selItem.Game);
-                        btnDelete.IsEnabled = true;
+                        break;
+                    case CCBItemType.itpBag:
+                        em.EditMode = ModifyBagView(selItem.Bag);
+                        break;
+                    case CCBItemType.itpBagItem:
+                        em.EditMode = ModifyBagItemView(selItem.BagItem);
                         break;
                     case CCBItemType.itpGameAdder:
                         em.EditMode = AddGameView();
-                        btnDelete.IsEnabled = false;
                         break;
                     case CCBItemType.itpCharacterAdder:
                         em.EditMode = AddCharacterView();
-                        btnDelete.IsEnabled = false;
                         break;
                     case CCBItemType.itpProperty:
                         em.EditMode = ModifyPropertyView(selItem.Property);
-                        btnDelete.IsEnabled = true;
                         break;
                     case CCBItemType.itpPropertyAdder:
                         em.EditMode = AddPropertyView();
-                        btnDelete.IsEnabled = false;
+                        break;
+                    case CCBItemType.itpBagAdder:
+                        em.EditMode = AddBagView();
+                        break;
+                    case CCBItemType.itpBagItemAdder:
+                        em.EditMode = AddBagItemView();
                         break;
                 }
-                tbItem.SelectAll();
                 CEditModeProperty.SetEditNode(tbItem, em);
-                //tbItem.Focus();
+                tbItem.SelectAll();
+                //Cannot set focus here, so post event.
+                Dispatcher.Invoke(m_onAddingNewEntityModeD);
             }
         }
 
