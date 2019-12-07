@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Ceebeetle.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="./app.ico"
         Title="Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="483" Width="707">
     <Grid>
         <Grid Margin="12,0,12,12" Height="396" VerticalAlignment="Bottom">
@@ -14,15 +15,18 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30*" />
                         <ColumnDefinition Width="150*" />
-                        <ColumnDefinition Width="172*" />
-                        <ColumnDefinition Width="40*" />
-                        <ColumnDefinition Width="24*" />
+                        <ColumnDefinition Width="215*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="12*" />
                         <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
                     <ListBox Height="198" HorizontalAlignment="Left" Margin="15,94,0,0" Name="lbEntities" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
-                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="87,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="124" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" Grid.ColumnSpan="2" />
+                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="77,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="134" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" />
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
                     <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />
+                    <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Left" Margin="77,54,0,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
                 </Grid>
             </GroupBox>
         </Grid>

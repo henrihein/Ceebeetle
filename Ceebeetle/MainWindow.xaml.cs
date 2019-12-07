@@ -45,7 +45,7 @@ namespace Ceebeetle
             m_gameAdderEntry = new CCBTreeViewGameAdder();
             m_worker = new BackgroundWorker();
             m_worker.WorkerReportsProgress = true;
-            m_timer = new Timer(11777); //133337);
+            m_timer = new Timer(133337);
             m_timer.Elapsed += new ElapsedEventHandler(OnTimer);
             m_timer.Start();
 
@@ -60,6 +60,7 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write("Error caught in Main.");
                 System.Diagnostics.Debug.Write(ex.ToString());
             }
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             m_worker.ProgressChanged += new ProgressChangedEventHandler(Worker_OnProgressChanged);
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
             m_loaderD = new DoWorkEventHandler(m_games.LoadGames);
@@ -197,6 +198,10 @@ namespace Ceebeetle
             //tbItem.Focus();
             return;
         }
+        private void OnIsCountableChecked(object sender, RoutedEventArgs e)
+        {
+            tbValue.IsEnabled = (true == cbCountable.IsChecked);
+        }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -263,9 +268,40 @@ namespace Ceebeetle
                             }
                             break;
                         }
-                        case CCBItemType.itpBagItem:
                         case CCBItemType.itpBag:
-                        break;
+                        {
+                            CCBBag bag = selItem.Bag;
+
+                            if (null == bag)
+                                tbLastError.Text = String.Format("Mismatch in CBTVI selected ({0})", selItem.ItemType);
+                            else
+                            {
+                                CCBTreeViewCharacter characterNode = FindCharacterFromNode(selItem);
+
+                                if (null != characterNode)
+                                    characterNode.Character.RemoveBag(bag);
+                                characterNode.Items.Remove(selItem);
+                            }
+                            break;
+                        }
+                        case CCBItemType.itpBagItem:
+                        {
+                            CCBBagItem bagItem = selItem.BagItem;
+
+                            if (null == bagItem)
+                                tbLastError.Text = String.Format("Mismatch in CBTVI selected ({0})", selItem.ItemType);
+                            else
+                            {
+                                CCBTreeViewBag bagNode = FindBagFromNode(selItem);
+
+                                if (null != bagNode)
+                                    bagNode.Bag.RemoveItem(bagItem);
+                                bagNode.Items.Remove(selItem);
+                            }
+                            break;
+                        }
+                        default:
+                            break;
                     }
                 }
             }
@@ -358,13 +394,13 @@ namespace Ceebeetle
             ResetEntitiesList();
             lbEntities.Items.Add(string.Format("{0}:", gameFrom.Name));
             foreach (CCBCharacter character in gameFrom.Characters)
-                lbEntities.Items.Add(string.Format("  {0}", character.Name));
+                lbEntities.Items.Add(string.Format("  {0}", character.ToString()));
         }
         private void ShowProperties(CCBCharacter characterFrom)
         {
             ResetEntitiesList();
             foreach (CCBCharacterProperty property in characterFrom.PropertyList)
-                lbEntities.Items.Add(string.Format("{0}:{1}", property.Name, property.Value));
+                lbEntities.Items.Add(property.ToString());
         }
         private void ShowItems(CCBBag bag)
         {
@@ -445,14 +481,24 @@ namespace Ceebeetle
                 case EEditMode.em_AddBagItem:
                 {
                     CCBTreeViewBag bagNode = FindBagFromNode(editMode.Node);
+                    bool isCountable = true == cbCountable.IsChecked;
+                    CCBBagItem newItem;
 
                     if (null == bagNode)
                     {
                         tbLastError.Text = "Internal error[b]: Cannot find bag node.";
                         return;
                     }
-                    CCBBagItem newItem = bagNode.Bag.AddItem(tbItem.Text);
+                    if (true == cbCountable.IsChecked)
+                    {
+                        int count = 1;
 
+                        if (!Int32.TryParse(tbValue.Text, out count))
+                            tbLastError.Text = string.Format("Use number. Could not parse [{0}]", tbValue.Text);
+                        newItem = bagNode.Bag.AddCountableItem(tbItem.Text, count);
+                    }
+                    else
+                        newItem = bagNode.Bag.AddItem(tbItem.Text);
                     bagNode.Add(newItem);
                     break;
                 }
@@ -500,6 +546,15 @@ namespace Ceebeetle
                     }
                     editMode.Node.Header = tbItem.Text;
                     editMode.Node.BagItem.Item = tbItem.Text;
+                    if (editMode.Node.BagItem.IsCountable)
+                    {
+                        int count;
+
+                        if (Int32.TryParse(tbValue.Text, out count))
+                            editMode.Node.BagItem.Count = count;
+                        else
+                            tbLastError.Text = string.Format("{0} not a number", tbValue.Text);
+                    }
                     break;
                 default:
                     tbLastError.Text = "Unknown mode.";
@@ -517,6 +572,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             ResetEntitiesList();
             return EEditMode.em_AddCharacter;
         }
@@ -531,6 +587,7 @@ namespace Ceebeetle
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
             ResetEntitiesList();
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddGame;
         }
         private EEditMode AddPropertyView()
@@ -544,6 +601,7 @@ namespace Ceebeetle
             tbValue.IsEnabled = true;
             btnDelete.IsEnabled = false;
             ResetEntitiesList();
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddProperty;
         }
         private EEditMode AddBagView()
@@ -557,6 +615,7 @@ namespace Ceebeetle
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
             ResetEntitiesList();
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddBag;
         }
         private EEditMode AddBagItemView()
@@ -570,6 +629,9 @@ namespace Ceebeetle
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
             ResetEntitiesList();
+            cbCountable.Visibility = System.Windows.Visibility.Visible;
+            cbCountable.IsEnabled = true;
+            cbCountable.IsChecked = false;
             return EEditMode.em_AddBagItem;
         }
         private EEditMode ModifyCharacterView(CCBCharacter character)
@@ -586,6 +648,7 @@ namespace Ceebeetle
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ShowProperties(character);
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyCharacter;
         }
         private EEditMode ModifyGameView(CCBGame game)
@@ -602,6 +665,7 @@ namespace Ceebeetle
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ShowCharacters(game);
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyGame;
         }
         private EEditMode ModifyPropertyView(CCBCharacterProperty property)
@@ -623,6 +687,7 @@ namespace Ceebeetle
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ResetEntitiesList();
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyProperty;
         }
         private EEditMode ModifyBagView(CCBBag bag)
@@ -649,6 +714,7 @@ namespace Ceebeetle
             tbValue.Text = "";
             tbValue.IsEnabled = true;
             ShowItems(bag);
+            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyBag;
         }
         private EEditMode ModifyBagItemView(CCBBagItem bagItem)
@@ -656,8 +722,6 @@ namespace Ceebeetle
             gbItemView.Header = "Modify Bag Item";
             btnSave.Content = "Save";
             btnSave.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
             if (null != bagItem)
                 tbItem.Text = bagItem.Item;
             else
@@ -665,6 +729,22 @@ namespace Ceebeetle
             tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ResetEntitiesList();
+            if (bagItem.IsCountable)
+            {
+                CCBCountedBagItem countedBagItem = (CCBCountedBagItem)bagItem;
+
+                cbCountable.IsChecked = true;
+                tbValue.Text = countedBagItem.Count.ToString();
+                tbValue.IsEnabled = true;
+            }
+            else
+            {
+                cbCountable.IsChecked = false;
+                tbValue.Text = "";
+                tbValue.IsEnabled = false;
+            }
+            cbCountable.IsEnabled = false;
+            cbCountable.Visibility = System.Windows.Visibility.Visible;
             return EEditMode.em_ModifyBagItem;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -720,6 +800,5 @@ namespace Ceebeetle
                 Dispatcher.Invoke(m_onAddingNewEntityModeD);
             }
         }
-
     }
 }

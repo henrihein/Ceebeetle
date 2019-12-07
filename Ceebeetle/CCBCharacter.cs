@@ -74,7 +74,9 @@ namespace Ceebeetle
         }
         public override string ToString()
         {
-            return m_name;
+            if (0 == m_propertyList.Count)
+                return m_name;
+            return string.Format("{0} [{1}]", m_name, m_propertyList[0].ToString());
         }
         public override int GetHashCode()
         {
@@ -141,6 +143,11 @@ namespace Ceebeetle
         {
             if (null != m_bags)
                 m_bags.Remove(name);
+        }
+        public void RemoveBag(CCBBag bag)
+        {
+            if (null != m_bags)
+                m_bags.Remove(bag);
         }
     }
 

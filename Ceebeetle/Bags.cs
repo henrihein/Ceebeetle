@@ -18,6 +18,15 @@ namespace Ceebeetle
             get { return m_item; }
             set { m_item = value; }
         }
+        public virtual bool IsCountable
+        {
+            get { return false; }
+        }
+        public virtual int Count
+        {
+            get { return 0; }
+            set { }
+        }
 
         public CCBBagItem()
         {
@@ -75,10 +84,14 @@ namespace Ceebeetle
         [DataMember]
         private int m_count;
 
-        public int Count
+        public override int Count
         {
             get { return m_count; }
             set { m_count = value; }
+        }
+        public override bool IsCountable
+        {
+            get { return true; }
         }
 
         public CCBCountedBagItem() : base()
@@ -177,6 +190,15 @@ namespace Ceebeetle
         public CCBBagItem AddItem(string item)
         {
             CCBBagItem bagItem = new CCBBagItem(item);
+
+            if (null == m_items)
+                m_items = new List<CCBBagItem>();
+            m_items.Add(bagItem);
+            return bagItem;
+        }
+        public CCBBagItem AddCountableItem(string item, int value)
+        {
+            CCBCountedBagItem bagItem = new CCBCountedBagItem(item, value);
 
             if (null == m_items)
                 m_items = new List<CCBBagItem>();
