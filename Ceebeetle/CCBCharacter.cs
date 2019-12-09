@@ -197,10 +197,14 @@ namespace Ceebeetle
     [DataContract(Name = "Game", Namespace = @"http://www.w3.org/2001/XMLSchema")]
     public class CCBGame
     {
+        static readonly string m_kGroupItemLabel = "Group Items";
+
         [DataMember(Name="Name")]
         private string m_name;
         [DataMember(Name="Characters")]
         private CCBCharacterList m_characters;
+        [DataMember(Name = "GroupItems")]
+        private CCBBag m_groupItems;
         public string Name
         {
             get { return m_name; }
@@ -213,15 +217,22 @@ namespace Ceebeetle
         {
             get { return m_characters; }
         }
+        public CCBBag GroupItems
+        {
+            get { return m_groupItems; }
+        }
+
         public CCBGame()
         {
             m_name = "My RPG";
             m_characters = new CCBCharacterList();
+            m_groupItems = new CCBBag(m_kGroupItemLabel);
         }
         public CCBGame(string name)
         {
             m_name = name;
             m_characters = new CCBCharacterList();
+            m_groupItems = new CCBBag(m_kGroupItemLabel);
         }
         public void AddCharacter(CCBCharacter newCharacter)
         {
@@ -231,6 +242,14 @@ namespace Ceebeetle
         public void DeleteCharacter(CCBCharacter delCharacter)
         {
             m_characters.DeleteSafe(delCharacter);
+        }
+        public void AddGroupItem(string item)
+        {
+            m_groupItems.AddItem(item);
+        }
+        public bool RemoveGroupItem(string item)
+        {
+            return m_groupItems.RemoveItem(item);
         }
     }
     [CollectionDataContract(Name = "Games", Namespace = @"http://www.w3.org/2001/XMLSchema")]

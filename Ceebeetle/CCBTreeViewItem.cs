@@ -28,6 +28,8 @@ namespace Ceebeetle
         private readonly CCBItemType m_itp;
         object m_data;
         private bool m_quickEdit;
+        private static uint m_kNodeId = 1;
+        private readonly uint m_nodeId;
 
         public CCBCharacter Character
         {
@@ -66,11 +68,13 @@ namespace Ceebeetle
             : base()
         {
             m_itp = CCBItemType.itpNone;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBItemType itp)
             : base()
         {
             m_itp = itp;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBItemType itp, string name)
             : base()
@@ -78,6 +82,7 @@ namespace Ceebeetle
             m_itp = itp;
             m_quickEdit = true;
             this.Header = name;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBCharacter character)
             : base()
@@ -86,6 +91,7 @@ namespace Ceebeetle
             m_quickEdit = true;
             this.Header = character.Name;
             this.m_data = character;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBGame game)
             : base()
@@ -94,6 +100,7 @@ namespace Ceebeetle
             m_quickEdit = true;
             this.Header = game.Name;
             this.m_data = game;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBCharacterProperty property)
             : base()
@@ -102,6 +109,7 @@ namespace Ceebeetle
             m_quickEdit = true;
             this.Header = property.Name;
             this.m_data = property;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBBag bag)
         {
@@ -109,6 +117,7 @@ namespace Ceebeetle
             m_quickEdit = true;
             this.Header = bag.Name;
             this.m_data = bag;
+            m_nodeId = m_kNodeId++;
         }
         public CCBTreeViewItem(CCBBagItem item)
         {
@@ -116,6 +125,7 @@ namespace Ceebeetle
             m_quickEdit = true;
             this.Header = item.Item;
             this.m_data = item;
+            m_nodeId = m_kNodeId++;
         }
 
         public void StartBulkEdit()
@@ -134,6 +144,14 @@ namespace Ceebeetle
                 base.Items.Remove(Adder);
                 base.Items.Add(Adder);
             }
+        }
+
+        public virtual CCBTreeViewBag Add(CCBBag bag)
+        {
+            CCBTreeViewBag bagNode = new CCBTreeViewBag(bag);
+
+            base.Items.Add(bagNode);
+            return bagNode;
         }
     }
     class CCBTreeViewGameAdder : CCBTreeViewItem
@@ -233,7 +251,7 @@ namespace Ceebeetle
         }
     }
 
-    class CCBTreeViewBag : CCBTreeViewItem
+    public class CCBTreeViewBag : CCBTreeViewItem
     {
         private CCBTreeViewBagItemAdder m_itemAdder;
 
@@ -304,7 +322,7 @@ namespace Ceebeetle
             AddOrMoveAdder();
             return newNode;
         }
-        public CCBTreeViewBag Add(CCBBag bag)
+        public override CCBTreeViewBag Add(CCBBag bag)
         {
             CCBTreeViewBag newNode = new CCBTreeViewBag(bag);
 

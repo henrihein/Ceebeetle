@@ -96,7 +96,7 @@ namespace Ceebeetle
             tvGames.Items.Remove(m_gameAdderEntry);
             tvGames.Items.Add(m_gameAdderEntry);
         }
-        public void MergeCharacterList()
+        public void LoadCharacterList()
         {
             tvGames.Items.Clear();
             foreach (CCBGame game in m_games)
@@ -113,8 +113,10 @@ namespace Ceebeetle
                     foreach (CCBCharacterProperty property in character.PropertyList)
                         newCharacterItem.Add(property);
                     AddBagsToCharacterNode(newCharacterItem);
+
                     newCharacterItem.EndBulkEdit();
                 }
+                AddBagToNode(newGameItem, game.GroupItems);
                 newGameItem.EndBulkEdit();
             }
             AddOrMoveAdder();
@@ -136,7 +138,7 @@ namespace Ceebeetle
                         break;
                     case TStatusUpdate.tsuFileLoaded:
                         tbLastError.Text = "File loaded";
-                        MergeCharacterList();
+                        LoadCharacterList();
                         btnDelete.IsEnabled = true;
                         tvGames.IsEnabled = true;
                         btnAddGame.IsEnabled = true;
@@ -362,17 +364,22 @@ namespace Ceebeetle
             }
             return null;
         }
-        private void AddBagToCharacterNode(CCBTreeViewCharacter characterNode, CCBBag bag)
+        private void AddBagToNode(CCBTreeViewItem node, CCBBag bag)
         {
             if (null != bag)
             {
-                CCBTreeViewBag bagNode = characterNode.Add(bag);
+                CCBTreeViewBag bagNode;
 
-                bagNode.StartBulkEdit();
+                node.StartBulkEdit();
+                bagNode = node.Add(bag);
                 foreach (CCBBagItem bagItem in bag.Items)
                     bagNode.Add(bagItem);
-                bagNode.EndBulkEdit();
+                node.EndBulkEdit();
             }
+        }
+        private void AddBagToCharacterNode(CCBTreeViewCharacter characterNode, CCBBag bag)
+        {
+            AddBagToNode(characterNode, bag);
         }
         private void AddBagsToCharacterNode(CCBTreeViewCharacter characterNode)
         {
@@ -445,8 +452,10 @@ namespace Ceebeetle
                 case EEditMode.em_AddGame:
                 {
                     CCBGame newGame = m_games.AddGame(tbItem.Text);
+                    CCBTreeViewGame gameNode = new CCBTreeViewGame(newGame);
 
-                    tvGames.Items.Add(new CCBTreeViewGame(newGame));
+                    tvGames.Items.Add(gameNode);
+                    AddBagToNode(gameNode, newGame.GroupItems);
                     AddOrMoveAdder();
                     break;
                 }
