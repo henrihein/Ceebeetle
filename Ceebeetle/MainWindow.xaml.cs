@@ -60,12 +60,12 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write("Error caught in Main.");
                 System.Diagnostics.Debug.Write(ex.ToString());
             }
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             m_worker.ProgressChanged += new ProgressChangedEventHandler(Worker_OnProgressChanged);
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
             m_loaderD = new DoWorkEventHandler(m_games.LoadGames);
             m_worker.DoWork += m_loaderD;
             m_worker.RunWorkerAsync(m_config);
+            SetDefaultView();
             AddOrMoveAdder();
         }
 
@@ -315,6 +315,10 @@ namespace Ceebeetle
         }
 
         #region SelectionViewHelpers
+        private CCBTreeViewItem GetSelectedNode()
+        {
+            return (CCBTreeViewItem)tvGames.SelectedItem;
+        }
         private CCBTreeViewGame FindCurrentGame()
         {
             return FindGameFromNode((TreeViewItem)tvGames.SelectedItem);
@@ -571,72 +575,62 @@ namespace Ceebeetle
             }
         }
 
-        private EEditMode AddCharacterView()
+        private void SetDefaultView()
         {
-            gbItemView.Header = "Add Character";
-            btnSave.Content = "Add";
+            gbItemView.Header = "Modify";
+            btnSave.Content = "Save";
             btnSave.IsEnabled = true;
-            tbItem.Text = "New Hero";
+            tbItem.Text = "";
             tbItem.IsEnabled = true;
             tbValue.Text = "";
             tbValue.IsEnabled = false;
             btnDelete.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
+            btnBagPicker.IsEnabled = false;
+        }
+        private EEditMode AddCharacterView()
+        {
+            SetDefaultView();
+            gbItemView.Header = "Add Character";
+            btnSave.Content = "Add";
+            tbItem.Text = "New Hero";
             ResetEntitiesList();
             return EEditMode.em_AddCharacter;
         }
         private EEditMode AddGameView()
         {
+            SetDefaultView();
             gbItemView.Header = "Add Game";
             btnSave.Content = "Add";
-            btnSave.IsEnabled = true;
             tbItem.Text = "New Game";
-            tbItem.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
-            btnDelete.IsEnabled = false;
             ResetEntitiesList();
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddGame;
         }
         private EEditMode AddPropertyView()
         {
+            SetDefaultView();
             gbItemView.Header = "Add Property";
             btnSave.Content = "Add";
-            btnSave.IsEnabled = true;
             tbItem.Text = "New Property";
-            tbItem.IsEnabled = true;
-            tbValue.Text = "";
             tbValue.IsEnabled = true;
-            btnDelete.IsEnabled = false;
             ResetEntitiesList();
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddProperty;
         }
         private EEditMode AddBagView()
         {
+            SetDefaultView();
             gbItemView.Header = "Add Bag";
             btnSave.Content = "Add";
-            btnSave.IsEnabled = true;
             tbItem.Text = "New Bag";
-            tbItem.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
-            btnDelete.IsEnabled = false;
             ResetEntitiesList();
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_AddBag;
         }
         private EEditMode AddBagItemView()
         {
+            SetDefaultView();
             gbItemView.Header = "Add Bag Item";
             btnSave.Content = "Add";
-            btnSave.IsEnabled = true;
             tbItem.Text = "New Item";
-            tbItem.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
-            btnDelete.IsEnabled = false;
             ResetEntitiesList();
             cbCountable.Visibility = System.Windows.Visibility.Visible;
             cbCountable.IsEnabled = true;
@@ -645,97 +639,65 @@ namespace Ceebeetle
         }
         private EEditMode ModifyCharacterView(CCBCharacter character)
         {
+            SetDefaultView();
             gbItemView.Header = "Modify Character";
-            btnSave.Content = "Save";
-            btnSave.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
             if (null != character)
                 tbItem.Text = character.Name;
-            else
-                tbItem.Text = "";
-            tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ShowProperties(character);
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyCharacter;
         }
         private EEditMode ModifyGameView(CCBGame game)
         {
+            SetDefaultView();
             gbItemView.Header = "Modify Game";
-            btnSave.Content = "Save";
-            btnSave.IsEnabled = true;
-            tbValue.Text = "";
-            tbValue.IsEnabled = false;
             if (null != game)
                 tbItem.Text = game.Name;
-            else
-                tbItem.Text = "";
-            tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ShowCharacters(game);
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyGame;
         }
         private EEditMode ModifyPropertyView(CCBCharacterProperty property)
         {
+            SetDefaultView();
             gbItemView.Header = "Modify Property";
-            btnSave.Content = "Save";
-            btnSave.IsEnabled = true;
             tbValue.IsEnabled = true;
             if (null != property)
             {
                 tbItem.Text = property.Name;
                 tbValue.Text = property.Value;
             }
-            else
-            {
-                tbItem.Text = "";
-                tbValue.Text = "";
-            }
-            tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ResetEntitiesList();
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
             return EEditMode.em_ModifyProperty;
         }
         private EEditMode ModifyBagView(CCBBag bag)
         {
+            SetDefaultView();
             if (null != bag)
                 tbItem.Text = bag.Name;
-            else
-                tbItem.Text = "";
             if (bag.IsLocked)
             {
                 gbItemView.Header = "View Bag";
                 btnSave.IsEnabled = false;
-                btnDelete.IsEnabled = false;
                 tbItem.IsEnabled = false;
             }
             else
             {
                 gbItemView.Header = "Modify Bag";
-                btnSave.Content = "Save";
-                btnSave.IsEnabled = true;
                 btnDelete.IsEnabled = true;
-                tbItem.IsEnabled = true;
             }
-            tbValue.Text = "";
             tbValue.IsEnabled = true;
             ShowItems(bag);
-            cbCountable.Visibility = System.Windows.Visibility.Hidden;
+            btnBagPicker.IsEnabled = true;
             return EEditMode.em_ModifyBag;
         }
         private EEditMode ModifyBagItemView(CCBBagItem bagItem)
         {
+            SetDefaultView();
             gbItemView.Header = "Modify Bag Item";
-            btnSave.Content = "Save";
-            btnSave.IsEnabled = true;
             if (null != bagItem)
                 tbItem.Text = bagItem.Item;
-            else
-                tbItem.Text = "";
-            tbItem.IsEnabled = true;
             btnDelete.IsEnabled = true;
             ResetEntitiesList();
             if (bagItem.IsCountable)
@@ -749,16 +711,15 @@ namespace Ceebeetle
             else
             {
                 cbCountable.IsChecked = false;
-                tbValue.Text = "";
-                tbValue.IsEnabled = false;
             }
             cbCountable.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Visible;
+            btnBagPicker.IsEnabled = true;
             return EEditMode.em_ModifyBagItem;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
+            CCBTreeViewItem selItem = GetSelectedNode();
 
             if (null == selItem)
             {
@@ -808,6 +769,16 @@ namespace Ceebeetle
                 //Cannot set focus here, so post event.
                 Dispatcher.Invoke(m_onAddingNewEntityModeD);
             }
+        }
+
+        private void OnBagPickerClicked(object sender, RoutedEventArgs evt)
+        {
+            CCBTreeViewBag bagNode = FindBagFromNode(GetSelectedNode());
+
+            System.Diagnostics.Debug.Assert(null != bagNode);
+            Window bagPickerWnd = new BagItemPicker(new BagItemPicker.BagInfo(bagNode.ID, bagNode.Bag));
+
+            bagPickerWnd.Show();
         }
     }
 }

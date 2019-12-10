@@ -63,6 +63,10 @@ namespace Ceebeetle
         {
             get { return m_quickEdit; }
         }
+        public uint ID
+        {
+            get { return m_nodeId; }
+        }
 
         private CCBTreeViewItem()
             : base()

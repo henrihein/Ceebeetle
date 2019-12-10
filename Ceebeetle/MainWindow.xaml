@@ -27,6 +27,7 @@
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
                     <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />
                     <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Left" Margin="77,54,0,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
+                    <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="70,262,0,0" Name="btnBagPicker" VerticalAlignment="Top" Width="140" Click="OnBagPickerClicked" />
                 </Grid>
             </GroupBox>
         </Grid>

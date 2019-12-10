@@ -76,6 +76,11 @@ namespace Ceebeetle
             return m_item.CompareTo(rhs.m_item);
         }
         #endregion
+
+        public override string ToString()
+        {
+            return m_item.ToString();
+        }
     }
 
     [DataContract(Name = "CountedBagItem", Namespace = @"http://www.w3.org/2001/XMLSchema")]
