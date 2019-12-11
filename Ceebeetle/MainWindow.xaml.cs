@@ -88,6 +88,7 @@ namespace Ceebeetle
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            WindowManager.CloseAll();
             this.Close();
         }
 

@@ -16,7 +16,7 @@ namespace Ceebeetle
     /// <summary>
     /// Interaction logic for BagItemPicker.xaml
     /// </summary>
-    public partial class BagItemPicker : Window
+    public partial class BagItemPicker : CCBChildWindow
     {
         public struct BagInfo
         {
@@ -42,7 +42,7 @@ namespace Ceebeetle
 
         private BagItemPicker()
         {}
-        public BagItemPicker(BagInfo bagInfo)
+        public BagItemPicker(BagInfo bagInfo) : base()
         {
             m_bagInfo = bagInfo;
             m_rand = new Random();
