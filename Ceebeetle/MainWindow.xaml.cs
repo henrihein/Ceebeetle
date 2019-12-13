@@ -25,7 +25,8 @@ namespace Ceebeetle
     {
         private bool m_deleteEnabled;
         CCBConfig m_config;
-        CCBGames m_games;
+        CCBGameData m_games;
+        List<CCBGameTemplate> m_templates;
         BackgroundWorker m_worker;
         DoWorkEventHandler m_loaderD;
         Timer m_timer;
@@ -38,7 +39,8 @@ namespace Ceebeetle
         public MainWindow()
         {
             m_config = new CCBConfig();
-            m_games = new CCBGames();
+            m_games = new CCBGameData();
+            m_templates = new List<CCBGameTemplate>();
             m_deleteEnabled = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
             m_onAddingNewEntityModeD = new DOnAddingNewEntityMode(OnAddingNewEntityMode);

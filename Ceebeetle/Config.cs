@@ -8,8 +8,8 @@ namespace Ceebeetle
 {
     class CCBConfig
     {
-        private static readonly uint m_version = 9;
-        private static readonly uint m_minVersion = 6;
+        private static readonly uint m_version = 10;
+        private static readonly uint m_minVersion = 10;
 
         private string m_filename;
         public string DocPath { get; set; }

@@ -173,10 +173,6 @@ namespace Ceebeetle
         {
         }
 
-        public void Add(CCBCharacterPropertyTemplate propertyTemplate)
-        {
-            base.Add(propertyTemplate);
-        }
         public int AddFrom(CharacterPropertyList propertyList)
         {
             int cBefore = this.Count;

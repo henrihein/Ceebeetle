@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -145,18 +146,39 @@ namespace Ceebeetle
                 m_propertyTemplateList.AddNew(new CCBCharacterPropertyTemplate(property.Name));
         }
     }
+
+    [CollectionDataContract(Name = "GameTemplateList")]
+    public class CCBGameTemplateList : List<CCBGameTemplate>
+    {
+    }
+
     [CollectionDataContract(Name = "Games")]
     public class CCBGames : List<CCBGame>
     {
-        public CCBGames()
-            : base()
+    }
+
+    [DataContract(Name="GameData")]
+    public class CCBGameData : IEnumerable
+    {
+        [DataMember(Name="GameTemplates")]
+        CCBGameTemplateList m_templates;
+        [DataMember(Name="Games")]
+        CCBGames m_games;
+
+        public CCBGameData()
         {
             CCBDirty.kDirty = false;
+            m_templates = new CCBGameTemplateList();
+            m_games = new CCBGames();
         }
 
         public bool IsDirty
         {
             get { return CCBDirty.kDirty; }
+        }
+        public IEnumerator GetEnumerator()
+        {
+            return m_games.GetEnumerator();
         }
 
         public CCBGame AddGame(string name)
@@ -164,20 +186,20 @@ namespace Ceebeetle
             CCBGame newGame = new CCBGame(name);
 
             CCBDirty.kDirty = true;
-            base.Add(newGame);
+            m_games.Add(newGame);
             return newGame;
         }
         public void DeleteGame(CCBGame game)
         {
             CCBDirty.kDirty = true;
-            base.Remove(game);
+            m_games.Remove(game);
         }
         public void DeleteGameSafe(CCBGame game)
         {
             CCBDirty.kDirty = true;
             lock (this)
             {
-                base.Remove(game);
+                m_games.Remove(game);
             }
         }
         public void AddSafe(CCBGame game)
@@ -185,7 +207,16 @@ namespace Ceebeetle
             CCBDirty.kDirty = true;
             lock (this)
             {
-                base.Add(game);
+                m_games.Add(game);
+            }
+        }
+        public void AddSafe(CCBGameTemplate template)
+        {
+            lock (this)
+            {
+                if (null == m_templates)
+                    m_templates = new CCBGameTemplateList();
+                m_templates.Add(template);
             }
         }
         public string AsXML()
@@ -237,40 +268,45 @@ namespace Ceebeetle
                 }
             }
             System.Diagnostics.Debug.Write("Loading:" + docPath);
-            XmlReader xsReader = null;
-            try
+            lock (this)
             {
-                xsReader = XmlReader.Create(docPath);
-                DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBGames));
-                CCBGames loadedGames = (CCBGames)dsReader.ReadObject(xsReader);
-
-                xsReader.Close();
-                foreach (CCBGame game in loadedGames)
+                XmlReader xsReader = null;
+                try
                 {
-                    AddSafe(game);
+                    xsReader = XmlReader.Create(docPath);
+                    DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBGameData));
+                    CCBGameData loadedGames = (CCBGameData)dsReader.ReadObject(xsReader);
+
+                    xsReader.Close();
+                    foreach (CCBGame game in loadedGames.m_games)
+                    {
+                        AddSafe(game);
+                    }
+                    foreach (CCBGameTemplate template in loadedGames.m_templates)
+                        AddSafe(template);
+                    evtArgs.Result = TStatusUpdate.tsuFileLoaded;
                 }
-                evtArgs.Result = TStatusUpdate.tsuFileLoaded;
-            }
-            catch (System.IO.FileNotFoundException nothere)
-            {
-                System.Diagnostics.Debug.Write(String.Format("No data file, not loading games [{0}]", nothere.FileName));
-                evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
-                if (null != xsReader)
-                    xsReader.Close();
-            }
-            catch (System.Runtime.Serialization.SerializationException serex)
-            {
-                System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading games [{0}]", serex.ToString()));
-                evtArgs.Result = TStatusUpdate.tsuParseError;
-                if (null != xsReader)
-                    xsReader.Close();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.Write("Exception reading: " + ex.ToString());
-                evtArgs.Result = TStatusUpdate.tsuError;
-                if (null != xsReader)
-                    xsReader.Close();
+                catch (System.IO.FileNotFoundException nothere)
+                {
+                    System.Diagnostics.Debug.Write(String.Format("No data file, not loading games [{0}]", nothere.FileName));
+                    evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
+                    if (null != xsReader)
+                        xsReader.Close();
+                }
+                catch (System.Runtime.Serialization.SerializationException serex)
+                {
+                    System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading games [{0}]", serex.ToString()));
+                    evtArgs.Result = TStatusUpdate.tsuParseError;
+                    if (null != xsReader)
+                        xsReader.Close();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write("Exception reading: " + ex.ToString());
+                    evtArgs.Result = TStatusUpdate.tsuError;
+                    if (null != xsReader)
+                        xsReader.Close();
+                }
             }
         }
         public void SaveGames(object sender, DoWorkEventArgs evtArgs)
@@ -290,7 +326,7 @@ namespace Ceebeetle
         {
             lock (this)
             {
-                DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGames));
+                DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGameData));
                 XmlWriter xmlWriter = XmlWriter.Create(path);
 
                 dsWriter.WriteObject(xmlWriter, this);
