@@ -1,214 +1,79 @@
-﻿using System;
-using System.ComponentModel;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using System.IO;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Schema;
 using System.Threading;
+using System.IO;
 
 namespace Ceebeetle
 {
-    public class CCBDirty
+    [DataContract(Name="GameTemplate")]
+    public class CCBGameTemplate
     {
-        public static bool kDirty;
-    }
-
-    [DataContract(Name = "Character", Namespace = @"http://www.w3.org/2001/XMLSchema")]
-    public class CCBCharacter
-    {
-        static uint m_nextId = 1;
-
-        [DataMember(Name="Name")]
+        [DataMember(Name="TemplateName")]
         private string m_name;
+        [DataMember(Name="TemplateProperties")]
+        private CharacterPropertyTemplateList m_propertyList;
+        [DataMember(Name="TemplateBags")]
+        private CCBBags m_bags;
+
         public string Name
         {
             get { return m_name; }
-            set {
-                CCBDirty.kDirty = true;
-                m_name = value;
-            }
+            set { m_name = value; }
         }
-        public readonly uint     m_id;
-
-        [DataMember(Name="PropertyList")]
-        private CharacterPropertyList m_propertyList;
-        public CharacterPropertyList PropertyList
+        public CCBGameTemplate()
         {
-            get { return m_propertyList; }
         }
-
-        [DataMember(Name = "Items")]
-        private CCBBag m_items;
-        public CCBBag Items
+        public CCBGameTemplate(string name)
         {
-            get { return m_items; }
-        }
-
-        [DataMember(Name = "CharacterBags")]
-        private CCBBags m_bags;
-        public CCBBags BagList
-        {
-            get { return m_bags; }
-        }
-
-        public CCBCharacter()
-        {
-            m_id = m_nextId++;
-            m_name = System.String.Format("NewCharacter{0}", m_id);
-            m_propertyList = new CharacterPropertyList();
-            m_items = new CCBLockedBag("Items");
-            m_bags = new CCBBags();
-        }
-        public CCBCharacter(string name)
-        {
-            m_id = m_nextId++;
             m_name = name;
-            m_propertyList = new CharacterPropertyList();
-            m_items = new CCBLockedBag("Items");
+            m_propertyList = new CharacterPropertyTemplateList();
             m_bags = new CCBBags();
         }
-        public override string ToString()
+        public CCBGameTemplate(CCBGame gameFrom)
         {
-            if (0 == m_propertyList.Count)
-                return m_name;
-            return string.Format("{0} [{1}]", m_name, m_propertyList[0].ToString());
-        }
-        public override int GetHashCode()
-        {
-            return (int)m_id;
-        }
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-        public bool Equals(CCBCharacter rhs)
-        {
-            return rhs.m_id == m_id;
-        }
-        public static bool operator==(CCBCharacter lhs, CCBCharacter rhs)
-        {
-            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null)) return true;
-            if (ReferenceEquals(lhs, null)) return false;
-            if (ReferenceEquals(rhs, null)) return false;
-            return lhs.m_id == rhs.m_id;
-        }
-        public static bool operator !=(CCBCharacter lhs, CCBCharacter rhs)
-        {
-            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null)) return false;
-            if (ReferenceEquals(lhs, null)) return true;
-            if (ReferenceEquals(rhs, null)) return true;
-            return lhs.m_id != rhs.m_id;
+            m_name = gameFrom.Name + " Template";
+            m_propertyList = new CharacterPropertyTemplateList();
+            m_bags = new CCBBags();
+            Rebase(gameFrom);
         }
 
-        //Properties
-        public CCBCharacterProperty AddProperty(string name, string value)
+        public void Rebase(CCBGame gameFrom)
         {
-            CCBCharacterProperty newProperty = new CCBCharacterProperty(name, value);
-
-            CCBDirty.kDirty = true;
-            m_propertyList.Add(newProperty);
-            return newProperty;
-        }
-        public void RemovePropertySafe(CCBCharacterProperty property)
-        {
-            if (null != property) lock (this)
-            {
-                CCBDirty.kDirty = true;
-                m_propertyList.Remove(property);
-            }
-        }
-        public void RemoveProperty(string name)
-        {
-            CCBCharacterProperty property = m_propertyList.Find(name);
-
-            RemovePropertySafe(property);
-        }
-
-        public CCBBag AddBag(string name)
-        {
-            CCBBag newBag = new CCBBag(name);
-
-            CCBDirty.kDirty = true;
-            if (null == m_bags)
-                m_bags = new CCBBags();
-            m_bags.Add(newBag);
-            return newBag;
-        }
-        public void RemoveBag(string name)
-        {
-            if (null != m_bags)
-                m_bags.Remove(name);
-        }
-        public void RemoveBag(CCBBag bag)
-        {
-            if (null != m_bags)
-                m_bags.Remove(bag);
+            m_propertyList.Clear();
+            foreach (CCBCharacter character in gameFrom.Characters)
+                m_propertyList.AddFrom(character.PropertyList);
+            m_bags.Clear();
+            foreach (CCBBag bag in gameFrom.GroupBags)
+                m_bags.Add(bag);
         }
     }
 
-    [CollectionDataContract(Name = "Characters", Namespace = @"http://www.w3.org/2001/XMLSchema")]
-    public class CCBCharacterList : List<CCBCharacter>
-    {
-        public CCBCharacterList() : base()
-        {
-        }
-
-        public void AddSafe(CCBCharacter character)
-        {
-            CCBDirty.kDirty = true;
-            lock (this)
-            {
-                base.Add(character);
-            }
-        }
-        public void DeleteSafe(CCBCharacter character)
-        {
-            CCBDirty.kDirty = true;
-            lock (this)
-            {
-                base.Remove(character);
-            }
-        }
-        public void DeleteSafe(List<Object> list)
-        {
-            lock (this)
-            {
-                foreach (object obj in list)
-                {
-                    CCBCharacter chararacter = (CCBCharacter)obj;
-
-                    if (chararacter == null)
-                        throw new Exception("Internal error: non-character in character list.");
-                    if (base.Contains(chararacter))
-                    {
-                        base.Remove(chararacter);
-                    }
-                }
-            }
-            CCBDirty.kDirty = true;
-        }
-    }
-
-    [DataContract(Name = "Game", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name = "Game")]
     public class CCBGame
     {
         static readonly string m_kGroupItemLabel = "Group Items";
 
-        [DataMember(Name="Name")]
+        [DataMember(Name = "Name")]
         private string m_name;
-        [DataMember(Name="Characters")]
+        [DataMember(Name = "Characters")]
         private CCBCharacterList m_characters;
         [DataMember(Name = "GroupItems")]
         private CCBBag m_groupItems;
+        [DataMember(Name = "GroupBags")]
+        private CCBBags m_groupBags;
+        [DataMember(Name="GameTemplateProperties")]
+        private CharacterPropertyTemplateList m_propertyTemplateList;
+
         public string Name
         {
             get { return m_name; }
-            set {
+            set
+            {
                 CCBDirty.kDirty = true;
                 m_name = value;
             }
@@ -221,41 +86,70 @@ namespace Ceebeetle
         {
             get { return m_groupItems; }
         }
+        public CCBBags GroupBags
+        {
+            get { return m_groupBags; }
+        }
 
         public CCBGame()
         {
             m_name = "My RPG";
             m_characters = new CCBCharacterList();
             m_groupItems = new CCBBag(m_kGroupItemLabel);
+            m_groupBags = new CCBBags();
+            m_propertyTemplateList = new CharacterPropertyTemplateList();
         }
         public CCBGame(string name)
         {
             m_name = name;
             m_characters = new CCBCharacterList();
             m_groupItems = new CCBBag(m_kGroupItemLabel);
+            m_propertyTemplateList = new CharacterPropertyTemplateList();
         }
         public void AddCharacter(CCBCharacter newCharacter)
         {
             CCBDirty.kDirty = true;
+            if (null != m_propertyTemplateList)
+                newCharacter.AddPropertiesFromTemplate(m_propertyTemplateList);
             m_characters.Add(newCharacter);
         }
         public void DeleteCharacter(CCBCharacter delCharacter)
         {
+            CCBDirty.kDirty = true;
             m_characters.DeleteSafe(delCharacter);
         }
         public void AddGroupItem(string item)
         {
+            CCBDirty.kDirty = true;
             m_groupItems.AddItem(item);
         }
         public bool RemoveGroupItem(string item)
         {
+            CCBDirty.kDirty = true;
             return m_groupItems.RemoveItem(item);
         }
+
+        //Template guff
+        public void CheckPropertyForDeletion(string propertyName)
+        {
+            foreach (CCBCharacter character in m_characters)
+            {
+                if (character.PropertyList.Contains(propertyName))
+                    return;
+            }
+            m_propertyTemplateList.Remove(propertyName);
+        }
+        public void AddPropertyToTemplate(CCBCharacterProperty property)
+        {
+            if (!m_propertyTemplateList.Contains(property.Name))
+                m_propertyTemplateList.AddNew(new CCBCharacterPropertyTemplate(property.Name));
+        }
     }
-    [CollectionDataContract(Name = "Games", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [CollectionDataContract(Name = "Games")]
     public class CCBGames : List<CCBGame>
     {
-        public CCBGames() : base()
+        public CCBGames()
+            : base()
         {
             CCBDirty.kDirty = false;
         }
@@ -343,9 +237,10 @@ namespace Ceebeetle
                 }
             }
             System.Diagnostics.Debug.Write("Loading:" + docPath);
+            XmlReader xsReader = null;
             try
             {
-                XmlReader xsReader = XmlReader.Create(docPath);
+                xsReader = XmlReader.Create(docPath);
                 DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBGames));
                 CCBGames loadedGames = (CCBGames)dsReader.ReadObject(xsReader);
 
@@ -360,11 +255,22 @@ namespace Ceebeetle
             {
                 System.Diagnostics.Debug.Write(String.Format("No data file, not loading games [{0}]", nothere.FileName));
                 evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
+                if (null != xsReader)
+                    xsReader.Close();
+            }
+            catch (System.Runtime.Serialization.SerializationException serex)
+            {
+                System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading games [{0}]", serex.ToString()));
+                evtArgs.Result = TStatusUpdate.tsuParseError;
+                if (null != xsReader)
+                    xsReader.Close();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.Write("Exception reading: " + ex.ToString());
                 evtArgs.Result = TStatusUpdate.tsuError;
+                if (null != xsReader)
+                    xsReader.Close();
             }
         }
         public void SaveGames(object sender, DoWorkEventArgs evtArgs)

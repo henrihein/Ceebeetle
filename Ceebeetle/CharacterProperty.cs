@@ -173,17 +173,51 @@ namespace Ceebeetle
         {
         }
 
-        public void AddSafe(CCBCharacterPropertyTemplate propertyTemplate)
+        public void Add(CCBCharacterPropertyTemplate propertyTemplate)
         {
-            lock (this)
-            {
-                base.Add(propertyTemplate);
-            }
+            base.Add(propertyTemplate);
         }
+        public int AddFrom(CharacterPropertyList propertyList)
+        {
+            int cBefore = this.Count;
+
+            foreach (CCBCharacterProperty property in propertyList)
+            {
+                if (!Contains(property.Name))
+                    this.Add(new CCBCharacterPropertyTemplate(property));
+            }
+            System.Diagnostics.Debug.Assert(this.Count >= cBefore);
+            return this.Count - cBefore;
+        }
+        public bool AddNew(CCBCharacterPropertyTemplate property)
+        {
+            if (!Contains(property.Name))
+            {
+                Add(property);
+                return true;
+            }
+            return false;
+        }
+        public bool Remove(string propertyName)
+        {
+            CCBCharacterPropertyTemplate property = Find(propertyName);
+
+            if (null != property)
+            {
+                base.Remove(property);
+                return true;
+            }
+            return false;
+        }
+
         public CCBCharacterPropertyTemplate Find(string name)
         {
             ComparePropertyToName comparer = new ComparePropertyToName(name);
             return base.Find(comparer.GetPredicate);
+        }
+        public bool Contains(string name)
+        {
+            return null != Find(name);
         }
     }
     [CollectionDataContract(Name = "CharacterPropertyList", Namespace = @"http://www.w3.org/2001/XMLSchema")]
@@ -198,6 +232,18 @@ namespace Ceebeetle
         {
             ComparePropertyToName comparer = new ComparePropertyToName(name);
             return base.Find(comparer.GetPredicate);
+        }
+        public bool Contains(string name)
+        {
+            return (null != Find(name));
+        }
+
+        public void AddTemplateProperties(CharacterPropertyTemplateList templateList)
+        {
+            foreach (CCBCharacterPropertyTemplate templateProperty in templateList)
+            {
+                Add(new CCBCharacterProperty(templateProperty));
+            }
         }
     }
 }

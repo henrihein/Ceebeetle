@@ -108,14 +108,13 @@ namespace Ceebeetle
                 newGameItem.StartBulkEdit();
                 foreach (CCBCharacter character in game.Characters)
                 {
-                    CCBTreeViewCharacter newCharacterItem = newGameItem.Add(character);
+                    CCBTreeViewCharacter newCharacterNode = newGameItem.Add(character);
 
-                    newCharacterItem.StartBulkEdit();
-                    foreach (CCBCharacterProperty property in character.PropertyList)
-                        newCharacterItem.Add(property);
-                    AddBagsToCharacterNode(newCharacterItem);
+                    newCharacterNode.StartBulkEdit();
+                    AddPropertiesToCharacterNode(newCharacterNode);
+                    AddBagsToCharacterNode(newCharacterNode);
 
-                    newCharacterItem.EndBulkEdit();
+                    newCharacterNode.EndBulkEdit();
                 }
                 AddBagToNode(newGameItem, game.GroupItems);
                 newGameItem.EndBulkEdit();
@@ -132,6 +131,7 @@ namespace Ceebeetle
                         tbLastError.Text = "Something was Canceled";
                         break;
                     case TStatusUpdate.tsuError:
+                    case TStatusUpdate.tsuParseError:
                         tbLastError.Text = "Error in saving or loading file:"; // + evtArgs.Error.ToString();
                         break;
                     case TStatusUpdate.tsuFileSaved:
@@ -262,11 +262,18 @@ namespace Ceebeetle
                             else
                             {
                                 CCBTreeViewCharacter characterNode = FindCharacterFromNode(selItem);
+                                CCBTreeViewGame gameNode = FindGameFromNode(selItem);
 
                                 if (null != characterNode)
                                 {
                                     characterNode.Items.Remove(selItem);
                                     characterNode.Character.RemovePropertySafe(property);
+                                    if (null != gameNode)
+                                    {
+                                        CCBGame game = gameNode.Game;
+
+                                        game.CheckPropertyForDeletion(property.Name);
+                                    }
                                 }
                             }
                             break;
@@ -397,6 +404,18 @@ namespace Ceebeetle
                     AddBagToCharacterNode(characterNode, bag);
             }
         }
+        private void AddPropertiesToCharacterNode(CCBTreeViewCharacter characterNode)
+        {
+            CCBCharacter character = characterNode.Character;
+
+            System.Diagnostics.Debug.Assert(null != character);
+            System.Diagnostics.Debug.Assert(null != character.PropertyList);
+            if (null != character.PropertyList)
+            {
+                foreach (CCBCharacterProperty property in character.PropertyList)
+                    characterNode.Add(property);
+            }
+        }
         private void ResetEntitiesList()
         {
             lbEntities.Items.Clear();
@@ -449,6 +468,7 @@ namespace Ceebeetle
 
                         currentGameNode.Game.AddCharacter(newCharacter);
                         characterNode.StartBulkEdit();
+                        AddPropertiesToCharacterNode(characterNode);
                         AddBagsToCharacterNode(characterNode);
                         characterNode.EndBulkEdit();
                     }
@@ -467,6 +487,7 @@ namespace Ceebeetle
                 case EEditMode.em_AddProperty:
                 {
                     CCBTreeViewCharacter characterNode = FindCharacterFromNode(editMode.Node);
+                    CCBTreeViewGame gameNode = FindGameFromNode(editMode.Node);
 
                     if (null == characterNode)
                     {
@@ -476,6 +497,12 @@ namespace Ceebeetle
                     CCBCharacterProperty newProperty = characterNode.Character.AddProperty(tbItem.Text, tbValue.Text);
 
                     characterNode.Add(newProperty);
+                    if (null != gameNode)
+                    {
+                        CCBGame game = gameNode.Game;
+
+                        game.AddPropertyToTemplate(newProperty);
+                    }
                     break;
                 }
                 case EEditMode.em_AddBag:

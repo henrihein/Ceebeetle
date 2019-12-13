@@ -13,7 +13,8 @@ namespace Ceebeetle
         tsuFileNothingLoaded = 0x11,
         tsuFileSaved = 0x20 | tsuFileWork,
         tsuCancelled = 0x40,
-        tsuError = 0x80
+        tsuError = 0x800,
+        tsuParseError = 0x801
     }
 
     public delegate void OnNewCharacter(CCBCharacter newCharacter);

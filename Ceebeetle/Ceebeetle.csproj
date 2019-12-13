@@ -59,6 +59,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Games.cs" />
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
       <SubType>Designer</SubType>
@@ -76,10 +77,10 @@
       <DependentUpon>BagItemPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Bags.cs" />
-    <Compile Include="CCBCharacter.cs" />
-    <Compile Include="CCBConfig.cs" />
-    <Compile Include="CCBObserver.cs" />
-    <Compile Include="CCBTreeViewItem.cs" />
+    <Compile Include="Character.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="Observer.cs" />
+    <Compile Include="TreeViewItem.cs" />
     <Compile Include="CharacterProperty.cs" />
     <Compile Include="EditMode.cs" />
     <Compile Include="MainWindow.xaml.cs">
