@@ -12,7 +12,7 @@ namespace Ceebeetle
         public static bool kDirty;
     }
 
-    [DataContract(Name = "Character", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name = "Character")]
     public class CCBCharacter
     {
         static uint m_nextId = 1;
@@ -150,7 +150,7 @@ namespace Ceebeetle
         }
     }
 
-    [CollectionDataContract(Name = "Characters", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [CollectionDataContract(Name = "Characters")]
     public class CCBCharacterList : List<CCBCharacter>
     {
         public CCBCharacterList() : base()
@@ -181,7 +181,7 @@ namespace Ceebeetle
                 {
                     CCBCharacter chararacter = (CCBCharacter)obj;
 
-                    if (chararacter == null)
+                    if (null == chararacter)
                         throw new Exception("Internal error: non-character in character list.");
                     if (base.Contains(chararacter))
                     {

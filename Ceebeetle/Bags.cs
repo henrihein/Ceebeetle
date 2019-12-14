@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 
 namespace Ceebeetle
 {
-    [DataContract(Name="BagItem", Namespace=@"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name="BagItem")]
     [KnownType(typeof(CCBCountedBagItem))]
     public class CCBBagItem : IEquatable<CCBBagItem>, IComparable<CCBBagItem>
     {
@@ -35,6 +35,10 @@ namespace Ceebeetle
         public CCBBagItem(string item)
         {
             m_item = item;
+        }
+        public CCBBagItem(CCBBagItem item)
+        {
+            m_item = item.m_item;
         }
 
         #region Comparisons
@@ -83,7 +87,7 @@ namespace Ceebeetle
         }
     }
 
-    [DataContract(Name = "CountedBagItem", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name = "CountedBagItem")]
     public class CCBCountedBagItem : CCBBagItem
     {
         [DataMember]
@@ -110,6 +114,10 @@ namespace Ceebeetle
         public CCBCountedBagItem(string item, int count) : base(item)
         {
             m_count = count;
+        }
+        public CCBCountedBagItem(CCBBagItem item) : base(item)
+        {
+            m_count = item.Count;
         }
     }
 
@@ -191,6 +199,18 @@ namespace Ceebeetle
             m_name = name;
             m_items = new List<CCBBagItem>();
         }
+        public CCBBag(CCBBag bagFrom)
+        {
+            m_name = bagFrom.m_name;
+            m_items = new List<CCBBagItem>();
+            foreach (CCBBagItem item in bagFrom.m_items)
+            {
+                if (item.IsCountable)
+                    m_items.Add(new CCBCountedBagItem(item));
+                else
+                    m_items.Add(new CCBBagItem(item));
+            }
+        }
 
         public CCBBagItem AddItem(string item)
         {
@@ -249,7 +269,7 @@ namespace Ceebeetle
         }
     }
 
-    [CollectionDataContract(Name = "Bags", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [CollectionDataContract(Name = "Bags")]
     public class CCBBags : List<CCBBag>
     {
         public bool Remove(string name)

@@ -1,0 +1,15 @@
+﻿<src:CCBChildWindow x:Class="Ceebeetle.GameTemplatePicker"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:src="clr-namespace:Ceebeetle"
+        Title="Game Templates" Height="394" Width="319">
+    <Grid>
+        <Label Content="Templates" Height="27" HorizontalAlignment="Left" Margin="12,0,0,0" Name="label1" VerticalAlignment="Top" Width="164" />
+        <ListBox Height="135" HorizontalAlignment="Left" Margin="12,33,0,0" Name="lbTemplates" VerticalAlignment="Top" Width="263" SelectionChanged="lbTemplates_SelectionChanged" />
+        <Label Content="Name:" Height="24" HorizontalAlignment="Left" Margin="12,180,0,0" Name="label2" VerticalAlignment="Top" Width="105" />
+        <TextBox Height="24" HorizontalAlignment="Right" Margin="0,182,22,0" Name="tbName" VerticalAlignment="Top" Width="169" />
+        <Button Content="Add Game based on template" Height="28" HorizontalAlignment="Left" Margin="12,235,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="263" Click="btnAddGame_Click" />
+        <Button Content="Add Template based on {0}" Height="28" HorizontalAlignment="Left" Margin="12,275,0,0" Name="btnAddTemplate" VerticalAlignment="Top" Width="263" Click="btnAddTemplate_Click" />
+        <Button Content="Close" Height="28" HorizontalAlignment="Left" Margin="165,316,0,0" Name="btnClose" VerticalAlignment="Top" Width="122" Click="btnClose_Click" />
+    </Grid>
+</src:CCBChildWindow>

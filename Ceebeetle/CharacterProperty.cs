@@ -14,7 +14,7 @@ namespace Ceebeetle
         cpt_Numeric
     }
 
-    [DataContract(Name="PropertyTemplate", Namespace=@"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name="PropertyTemplate")]
     [KnownType(typeof(CCBCharacterProperty))]
     public class CCBCharacterPropertyTemplate : IEquatable<CCBCharacterPropertyTemplate>, IComparable<CCBCharacterPropertyTemplate>
     {
@@ -100,7 +100,7 @@ namespace Ceebeetle
         }
     }
 
-    [DataContract(Name = "CharacterProperty", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [DataContract(Name = "CharacterProperty")]
     public class CCBCharacterProperty : CCBCharacterPropertyTemplate
     {
         [DataMember(Name="Value")]
@@ -165,7 +165,7 @@ namespace Ceebeetle
     }
     #endregion
 
-    [CollectionDataContract(Name = "PropertyTemplateList", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [CollectionDataContract(Name = "PropertyTemplateList")]
     public class CharacterPropertyTemplateList : List<CCBCharacterPropertyTemplate>
     {
         public CharacterPropertyTemplateList()
@@ -216,7 +216,7 @@ namespace Ceebeetle
             return null != Find(name);
         }
     }
-    [CollectionDataContract(Name = "CharacterPropertyList", Namespace = @"http://www.w3.org/2001/XMLSchema")]
+    [CollectionDataContract(Name = "CharacterPropertyList")]
     public class CharacterPropertyList : List<CCBCharacterProperty>
     {
         public CharacterPropertyList()

@@ -26,14 +26,33 @@ namespace Ceebeetle
             get { return m_name; }
             set { m_name = value; }
         }
+        public CharacterPropertyTemplateList PropertyTemplateList
+        {
+            get { return m_propertyList; }
+        }
+        public CCBBags Bags
+        {
+            get { return m_bags; }
+        }
+
         public CCBGameTemplate()
         {
+            m_name = "";
+            m_propertyList = new CharacterPropertyTemplateList();
+            m_bags = new CCBBags();
         }
         public CCBGameTemplate(string name)
         {
             m_name = name;
             m_propertyList = new CharacterPropertyTemplateList();
             m_bags = new CCBBags();
+        }
+        public CCBGameTemplate(string name, CCBGame gameFrom)
+        {
+            m_name = name;
+            m_propertyList = new CharacterPropertyTemplateList();
+            m_bags = new CCBBags();
+            Rebase(gameFrom);
         }
         public CCBGameTemplate(CCBGame gameFrom)
         {
@@ -49,8 +68,26 @@ namespace Ceebeetle
             foreach (CCBCharacter character in gameFrom.Characters)
                 m_propertyList.AddFrom(character.PropertyList);
             m_bags.Clear();
-            foreach (CCBBag bag in gameFrom.GroupBags)
-                m_bags.Add(bag);
+            if (null != gameFrom.GroupBags)
+                foreach (CCBBag bag in gameFrom.GroupBags)
+                    m_bags.Add(bag);
+        }
+
+        public CCBBag AddBag(string name)
+        {
+            CCBBag newBag = new CCBBag(name);
+
+            if (null == m_bags)
+                m_bags = new CCBBags();
+            m_bags.Add(newBag);
+            return newBag;
+        }
+        public CCBBag AddBag(CCBBag bag)
+        {
+            if (null == m_bags)
+                m_bags = new CCBBags();
+            m_bags.Add(bag);
+            return bag;
         }
     }
 
@@ -105,7 +142,20 @@ namespace Ceebeetle
             m_name = name;
             m_characters = new CCBCharacterList();
             m_groupItems = new CCBBag(m_kGroupItemLabel);
+            m_groupBags = new CCBBags();
             m_propertyTemplateList = new CharacterPropertyTemplateList();
+        }
+        public CCBGame(string name, CCBGameTemplate templateFrom)
+        {
+            m_name = name;
+            m_characters = new CCBCharacterList();
+            m_groupItems = new CCBBag(m_kGroupItemLabel);
+            m_groupBags = new CCBBags();
+            m_propertyTemplateList = new CharacterPropertyTemplateList();
+            foreach (CCBCharacterPropertyTemplate templateProperty in templateFrom.PropertyTemplateList)
+                m_propertyTemplateList.Add(new CCBCharacterPropertyTemplate(templateProperty));
+            foreach (CCBBag bag in templateFrom.Bags)
+                m_groupBags.Add(new CCBBag(bag));
         }
         public void AddCharacter(CCBCharacter newCharacter)
         {
@@ -180,14 +230,30 @@ namespace Ceebeetle
         {
             return m_games.GetEnumerator();
         }
+        public CCBGameTemplateList TemplateList
+        {
+            get { return m_templates; }
+        }
 
         public CCBGame AddGame(string name)
         {
-            CCBGame newGame = new CCBGame(name);
+            return AddGame(name, null);
+        }
+        public CCBGame AddGame(string name, CCBGameTemplate template)
+        {
+            CCBGame newGame = (null == template) ? new CCBGame(name) : new CCBGame(name, template);
 
             CCBDirty.kDirty = true;
-            m_games.Add(newGame);
+            AddSafe(newGame);
             return newGame;
+        }
+        public CCBGameTemplate AddTemplate(string name, CCBGame gameFrom)
+        {
+            CCBGameTemplate newTemplate = (null == gameFrom) ? new CCBGameTemplate(name) : new CCBGameTemplate(name, gameFrom);
+
+            CCBDirty.kDirty = true;
+            AddSafe(newTemplate);
+            return newTemplate;
         }
         public void DeleteGame(CCBGame game)
         {

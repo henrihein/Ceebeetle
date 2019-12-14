@@ -34,6 +34,8 @@ namespace Ceebeetle
         private delegate void DOnAddingNewEntityMode();
         DOnCharacterListUpdate m_onCharacterListUpdateD;
         DOnAddingNewEntityMode m_onAddingNewEntityModeD;
+        DOnCreateNewGame m_onCreateNewGameD;
+        DOnCreateNewTemplate m_onCreateNewTemplateD;
         CCBTreeViewGameAdder m_gameAdderEntry;
 
         public MainWindow()
@@ -44,13 +46,14 @@ namespace Ceebeetle
             m_deleteEnabled = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
             m_onAddingNewEntityModeD = new DOnAddingNewEntityMode(OnAddingNewEntityMode);
+            m_onCreateNewGameD = new DOnCreateNewGame(OnCreateNewGame);
+            m_onCreateNewTemplateD = new DOnCreateNewTemplate(OnCreateNewTemplate);
             m_gameAdderEntry = new CCBTreeViewGameAdder();
             m_worker = new BackgroundWorker();
             m_worker.WorkerReportsProgress = true;
             m_timer = new Timer(133337);
             m_timer.Elapsed += new ElapsedEventHandler(OnTimer);
             m_timer.Start();
-
             InitializeComponent();
             try
             {
@@ -118,7 +121,7 @@ namespace Ceebeetle
 
                     newCharacterNode.EndBulkEdit();
                 }
-                AddBagToNode(newGameItem, game.GroupItems);
+                AddBagsToGameNode(newGameItem);
                 newGameItem.EndBulkEdit();
             }
             AddOrMoveAdder();
@@ -202,6 +205,21 @@ namespace Ceebeetle
             //TODO, sigh.
             //tbItem.Focus();
             return;
+        }
+        private void OnCreateNewGame(CCBGameTemplate template, string name)
+        {
+            CCBGame newGame = m_games.AddGame(name, template);
+            CCBTreeViewGame gameNode = new CCBTreeViewGame(newGame);
+
+            tvGames.Items.Add(gameNode);
+            AddBagsToGameNode(gameNode);
+            AddOrMoveAdder();
+        }
+        private CCBGameTemplate OnCreateNewTemplate(CCBGame gameFrom, string name)
+        {
+            CCBGameTemplate newTemplate = m_games.AddTemplate(name, gameFrom);
+
+            return newTemplate;
         }
         private void OnIsCountableChecked(object sender, RoutedEventArgs e)
         {
@@ -418,6 +436,17 @@ namespace Ceebeetle
                     characterNode.Add(property);
             }
         }
+        private void AddBagsToGameNode(CCBTreeViewGame gameNode)
+        {
+            CCBGame game = gameNode.Game;
+
+            AddBagToNode(gameNode, game.GroupItems);
+            if (null != game.GroupBags)
+            {
+                foreach (CCBBag bag in game.GroupBags)
+                    AddBagToNode(gameNode, bag);
+            }
+        }
         private void ResetEntitiesList()
         {
             lbEntities.Items.Clear();
@@ -617,6 +646,7 @@ namespace Ceebeetle
             btnDelete.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
             btnBagPicker.IsEnabled = false;
+            btnTemplates.IsEnabled = false;
         }
         private EEditMode AddCharacterView()
         {
@@ -674,6 +704,7 @@ namespace Ceebeetle
             if (null != character)
                 tbItem.Text = character.Name;
             btnDelete.IsEnabled = true;
+            btnTemplates.IsEnabled = true;
             ShowProperties(character);
             return EEditMode.em_ModifyCharacter;
         }
@@ -684,6 +715,7 @@ namespace Ceebeetle
             if (null != game)
                 tbItem.Text = game.Name;
             btnDelete.IsEnabled = true;
+            btnTemplates.IsEnabled = true;
             ShowCharacters(game);
             return EEditMode.em_ModifyGame;
         }
@@ -698,6 +730,7 @@ namespace Ceebeetle
                 tbValue.Text = property.Value;
             }
             btnDelete.IsEnabled = true;
+            btnTemplates.IsEnabled = true;
             ResetEntitiesList();
             return EEditMode.em_ModifyProperty;
         }
@@ -720,6 +753,7 @@ namespace Ceebeetle
             tbValue.IsEnabled = true;
             ShowItems(bag);
             btnBagPicker.IsEnabled = true;
+            btnTemplates.IsEnabled = true;
             return EEditMode.em_ModifyBag;
         }
         private EEditMode ModifyBagItemView(CCBBagItem bagItem)
@@ -745,6 +779,7 @@ namespace Ceebeetle
             cbCountable.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Visible;
             btnBagPicker.IsEnabled = true;
+            btnTemplates.IsEnabled = true;
             return EEditMode.em_ModifyBagItem;
         }
         private void OnItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -809,6 +844,22 @@ namespace Ceebeetle
             Window bagPickerWnd = new BagItemPicker(new BagItemPicker.BagInfo(bagNode.ID, bagNode.Bag));
 
             bagPickerWnd.Show();
+        }
+
+        private void OnGameTemplatesClicked(object sender, RoutedEventArgs e)
+        {
+            CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
+            CCBGame gameModel = null;
+
+            if (null != selItem)
+            {
+                CCBTreeViewGame gameNode = FindGameFromNode(selItem);
+
+                gameModel = gameNode.Game;
+            }
+            Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
+
+            templatePickerWnd.Show();
         }
     }
 }

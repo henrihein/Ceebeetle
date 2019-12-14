@@ -60,8 +60,16 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Games.cs" />
+    <Compile Include="GameTemplatePicker.xaml.cs">
+      <DependentUpon>GameTemplatePicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="StockTemplates.cs" />
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameTemplatePicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
