@@ -212,6 +212,10 @@ namespace Ceebeetle
             }
         }
 
+        public override string ToString()
+        {
+            return m_name;
+        }
         public CCBBagItem AddItem(string item)
         {
             CCBBagItem bagItem = new CCBBagItem(item);
@@ -266,6 +270,32 @@ namespace Ceebeetle
         public override bool IsLocked
         {
             get { return true; }
+        }
+    }
+
+    class CCBOwnedBag : CCBBag
+    {
+        private readonly CCBCharacter m_character;
+
+        public CCBCharacter Character
+        {
+            get { return m_character; }
+        }
+
+        private CCBOwnedBag()
+        {
+            m_character = null;
+        }
+        public CCBOwnedBag(CCBCharacter character, CCBBag bag) : base(bag)
+        {
+            m_character = character;
+        }
+
+        public override string ToString()
+        {
+            if (null != m_character)
+                return string.Format("{0}:{1}", m_character.Name, this.Name);
+            return base.ToString();
         }
     }
 

@@ -195,6 +195,26 @@ namespace Ceebeetle
             if (!m_propertyTemplateList.Contains(property.Name))
                 m_propertyTemplateList.AddNew(new CCBCharacterPropertyTemplate(property.Name));
         }
+
+        public CCBBag[] GetAllBags(CCBBag bagExcept)
+        {
+            List<CCBBag> allBags = new List<CCBBag>();
+
+            allBags.Add(m_groupItems);
+            if (null != m_groupBags)
+                foreach (CCBBag groupBag in m_groupBags)
+                    if (!ReferenceEquals(groupBag, bagExcept)) 
+                        allBags.Add(groupBag);
+            foreach (CCBCharacter character in m_characters)
+            {
+                if (!ReferenceEquals(character.Items, bagExcept))
+                    allBags.Add(new CCBOwnedBag(character, character.Items));
+                foreach (CCBBag characterBag in character.BagList)
+                    if (!ReferenceEquals(characterBag, bagExcept)) 
+                        allBags.Add(new CCBOwnedBag(character, characterBag));
+            }
+            return allBags.ToArray();
+        }
     }
 
     [CollectionDataContract(Name = "GameTemplateList")]

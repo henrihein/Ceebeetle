@@ -63,6 +63,12 @@
     <Compile Include="GameTemplatePicker.xaml.cs">
       <DependentUpon>GameTemplatePicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NamePicker.xaml.cs">
+      <DependentUpon>NamePicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Names\CharacterNames.cs" />
+    <Compile Include="Names\femalenames.cs" />
+    <Compile Include="Names\malenames.cs" />
     <Compile Include="StockTemplates.cs" />
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
@@ -87,7 +93,7 @@
     <Compile Include="Bags.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="Observer.cs" />
+    <Compile Include="CeebeetleDefs.cs" />
     <Compile Include="TreeViewItem.cs" />
     <Compile Include="CharacterProperty.cs" />
     <Compile Include="EditMode.cs" />
@@ -95,6 +101,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NamePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

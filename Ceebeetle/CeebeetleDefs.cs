@@ -22,8 +22,6 @@ namespace Ceebeetle
     public delegate CCBGameTemplate DOnCreateNewTemplate(CCBGame game, string name);
     public delegate void DOnCharacterListUpdate();
     public delegate void DOnGameUpdate(CCBGame game);
-
-    class CCBObserver
-    {
-    }
+    public delegate void DOnCopyBagItems(CCBBag targetBag, string[] bagItems);
+    public delegate void DOnDeleteBagItems(CCBBag targetBag, string[] bagItems);
 }

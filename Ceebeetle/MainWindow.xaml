@@ -28,7 +28,7 @@
                     <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />
                     <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Left" Margin="77,54,0,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
                     <Button Content="Templates" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,202,0,0" Name="btnTemplates" VerticalAlignment="Top" Width="134" Click="OnGameTemplatesClicked" />
-                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,235,0,0" Name="btnNamePicker" VerticalAlignment="Top" Width="134" />
+                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,235,0,0" Name="btnNamePicker" VerticalAlignment="Top" Width="134" Click="btnNamePicker_Click" />
                     <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,267,0,0" Name="btnBagPicker" VerticalAlignment="Top" Width="134" Click="OnBagPickerClicked" />
                 </Grid>
             </GroupBox>

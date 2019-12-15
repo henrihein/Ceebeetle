@@ -225,6 +225,26 @@ namespace Ceebeetle
         {
             tbValue.IsEnabled = (true == cbCountable.IsChecked);
         }
+        public void OnCopyBagItems(CCBBag targetBag, string[] bagItems)
+        {
+            CCBTreeViewBag bagNode = FindBagNodeFromBag(targetBag);
+
+            if (null != bagNode)
+            {
+                CCBBag bag = bagNode.Bag;
+
+                bagNode.StartBulkEdit();
+                foreach (string item in bagItems)
+                {
+                    bag.RemoveItem(item);
+                    bagNode.Items.Remove(item);
+                }
+                bagNode.EndBulkEdit();
+            }
+        }
+        public void OnDeleteBagItems(CCBBag targetBag, string[] bagItems)
+        {
+        }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -393,6 +413,36 @@ namespace Ceebeetle
                         return bag;
                 }
                 node = (TreeViewItem)node.Parent;
+            }
+            return null;
+        }
+        private CCBTreeViewBag FindBagNodeFromBag(CCBBag bag)
+        {
+            foreach (TreeViewItem gameNode in tvGames.Items)
+            {
+                foreach (TreeViewItem subNode in gameNode.Items)
+                {
+                    if (subNode.GetType() == typeof(CCBTreeViewBag))
+                    {
+                        CCBTreeViewBag bagNode = (CCBTreeViewBag)subNode;
+
+                        if (ReferenceEquals(bagNode.Bag, bag))
+                            return bagNode;
+                    }
+                    if (subNode.GetType() == typeof(CCBTreeViewCharacter))
+                    {
+                        foreach (TreeViewItem characterSubNode in subNode.Items)
+                        {
+                            if (subNode.GetType() == typeof(CCBTreeViewBag))
+                            {
+                                CCBTreeViewBag bagNode = (CCBTreeViewBag)subNode;
+
+                                if (ReferenceEquals(bagNode.Bag, bag))
+                                    return bagNode;
+                            }
+                        }
+                    }
+                }
             }
             return null;
         }
@@ -838,11 +888,14 @@ namespace Ceebeetle
 
         private void OnBagPickerClicked(object sender, RoutedEventArgs evt)
         {
+            CCBTreeViewGame gameNode = FindGameFromNode(GetSelectedNode());
             CCBTreeViewBag bagNode = FindBagFromNode(GetSelectedNode());
 
             System.Diagnostics.Debug.Assert(null != bagNode);
-            Window bagPickerWnd = new BagItemPicker(new BagItemPicker.BagInfo(bagNode.ID, bagNode.Bag));
+            BagItemPicker bagPickerWnd = new BagItemPicker(new BagItemPicker.BagInfo(bagNode.ID, bagNode.Bag, gameNode.Game.GetAllBags(bagNode.Bag)));
 
+            bagPickerWnd.CopyBagItemsCallback = new DOnCopyBagItems(OnCopyBagItems);
+            bagPickerWnd.DeleteBagItemsCallback = new DOnDeleteBagItems(OnDeleteBagItems);
             bagPickerWnd.Show();
         }
 
@@ -860,6 +913,13 @@ namespace Ceebeetle
             Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
 
             templatePickerWnd.Show();
+        }
+
+        private void btnNamePicker_Click(object sender, RoutedEventArgs e)
+        {
+            Window namePickerWnd = new NamePicker();
+
+            namePickerWnd.Show();
         }
     }
 }
