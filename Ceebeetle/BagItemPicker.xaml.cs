@@ -93,14 +93,20 @@ namespace Ceebeetle
             if (null != m_bagInfo.TargetBags)
             {
                 foreach (CCBBag bag in m_bagInfo.TargetBags)
-                    lbTargetBag.Items.Add(bag.ToString());
+                    lbTargetBag.Items.Add(bag);
             }
         }
+        private CCBBag GetTargetBag()
+        {
+            if (-1 != lbTargetBag.SelectedIndex)
+                return (CCBBag)lbTargetBag.SelectedItem;
+            return null;
+        }
+        
         private void OnClosePicker(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
-
         private void PickFromAllItems()
         {
             if (!lbBagItems.Items.IsEmpty)
@@ -211,7 +217,18 @@ namespace Ceebeetle
 
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
+            if (null != m_copyBagItemsCallback)
+            {
+                CCBBag targetBag = GetTargetBag();
 
+                if (null != targetBag)
+                {
+                    string[] itemsToCopy = new string[lbPickedItems.Items.Count];
+
+                    lbPickedItems.Items.CopyTo(itemsToCopy, 0);
+                    m_copyBagItemsCallback(targetBag, itemsToCopy);
+                }
+            }
         }
 
         private void lbTargetBag_SelectionChanged(object sender, SelectionChangedEventArgs e)

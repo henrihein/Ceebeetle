@@ -236,14 +236,28 @@ namespace Ceebeetle
                 bagNode.StartBulkEdit();
                 foreach (string item in bagItems)
                 {
-                    bag.RemoveItem(item);
-                    bagNode.Items.Remove(item);
+                    bag.AddItem(item);
+                    bagNode.Items.Add(item);
                 }
                 bagNode.EndBulkEdit();
             }
         }
         public void OnDeleteBagItems(CCBBag targetBag, string[] bagItems)
         {
+            CCBTreeViewBag bagNode = FindBagNodeFromBag(targetBag);
+
+            if (null != bagNode)
+            {
+                CCBBag bag = bagNode.Bag;
+
+                bagNode.StartBulkEdit();
+                foreach (string item in bagItems)
+                {
+                    bag.RemoveItem(item);
+                    bagNode.Items.Remove(item);
+                }
+                bagNode.EndBulkEdit();
+            }
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
