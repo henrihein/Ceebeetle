@@ -242,7 +242,7 @@ namespace Ceebeetle
                 bagNode.EndBulkEdit();
             }
         }
-        public void OnDeleteBagItems(CCBBag targetBag, string[] bagItems)
+        public bool OnDeleteBagItems(CCBBag targetBag, string[] bagItems)
         {
             CCBTreeViewBag bagNode = FindBagNodeFromBag(targetBag);
 
@@ -254,10 +254,13 @@ namespace Ceebeetle
                 foreach (string item in bagItems)
                 {
                     bag.RemoveItem(item);
-                    bagNode.Items.Remove(item);
+                    bagNode.Remove(item);
                 }
                 bagNode.EndBulkEdit();
+                ResetEntitiesList();
+                return true;
             }
+            return false;
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
@@ -447,9 +450,9 @@ namespace Ceebeetle
                     {
                         foreach (TreeViewItem characterSubNode in subNode.Items)
                         {
-                            if (subNode.GetType() == typeof(CCBTreeViewBag))
+                            if (characterSubNode.GetType() == typeof(CCBTreeViewBag))
                             {
-                                CCBTreeViewBag bagNode = (CCBTreeViewBag)subNode;
+                                CCBTreeViewBag bagNode = (CCBTreeViewBag)characterSubNode;
 
                                 if (ReferenceEquals(bagNode.Bag, bag))
                                     return bagNode;

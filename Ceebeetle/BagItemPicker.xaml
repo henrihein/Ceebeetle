@@ -20,7 +20,7 @@
         <Label Content="Target bag:" Height="28" HorizontalAlignment="Left" Margin="421,12,0,0" Name="label4" VerticalAlignment="Top" Width="171" />
         <ListBox Height="158" HorizontalAlignment="Left" Margin="421,46,0,0" Name="lbTargetBag" VerticalAlignment="Top" Width="175" SelectionChanged="lbTargetBag_SelectionChanged" />
         <Button Content="_Copy Item(s)" Height="28" HorizontalAlignment="Left" Margin="465,229,0,0" Name="btnCopy" VerticalAlignment="Top" Width="127" Click="btnCopy_Click" />
-        <Button Content="_Delete Item(s)" Height="28" HorizontalAlignment="Left" Margin="465,262,0,0" Name="btnDelete" VerticalAlignment="Top" Width="127" />
+        <Button Content="_Delete Item(s)" Height="28" HorizontalAlignment="Left" Margin="465,262,0,0" Name="btnDelete" VerticalAlignment="Top" Width="127" Click="btnDelete_Click" />
         <Button Content="Close" Height="28" HorizontalAlignment="Left" Margin="430,339,0,0" Name="btnClosePicker" VerticalAlignment="Top" Width="165" Click="OnClosePicker" />
     </Grid>
 </src:CCBChildWindow>

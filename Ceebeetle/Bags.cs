@@ -63,6 +63,13 @@ namespace Ceebeetle
                 if (null != item)
                     return m_item.Equals(item.m_item);
             }
+            if (obj is string)
+            {
+                string strItem = (string)obj;
+
+                if (null != strItem)
+                    return 0 == m_item.CompareTo(strItem);
+            }
             return m_item.Equals(obj);
         }
         public override int GetHashCode()

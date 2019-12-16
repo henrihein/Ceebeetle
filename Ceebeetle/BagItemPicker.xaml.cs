@@ -230,10 +230,27 @@ namespace Ceebeetle
                 }
             }
         }
-
         private void lbTargetBag_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             btnCopy.IsEnabled = (!lbPickedItems.Items.IsEmpty && (-1 != lbTargetBag.SelectedIndex) && (null != m_copyBagItemsCallback));
+        }
+        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (null != m_deleteBagItemsCallback)
+            {
+                string strConfirmMessage = string.Format("{0} items will be deleted from {1}. This cannot be reverted. Click 'Yes' to continue.",
+                                                            lbPickedItems.Items.Count, m_bagInfo.Bag.ToString());
+                MessageBoxResult mbr = System.Windows.MessageBox.Show(strConfirmMessage, "Confirm Item Deletion", MessageBoxButton.YesNo);
+
+                if (MessageBoxResult.Yes == mbr)
+                {
+                    string[] itemsToCopy = new string[lbPickedItems.Items.Count];
+
+                    lbPickedItems.Items.CopyTo(itemsToCopy, 0);
+                    if (m_deleteBagItemsCallback(m_bagInfo.Bag, itemsToCopy))
+                        lbPickedItems.Items.Clear();
+                }
+            }
         }
     }
 }

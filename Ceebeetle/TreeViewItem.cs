@@ -158,6 +158,7 @@ namespace Ceebeetle
             return bagNode;
         }
     }
+
     class CCBTreeViewGameAdder : CCBTreeViewItem
     {
         public CCBTreeViewGameAdder()
@@ -278,6 +279,20 @@ namespace Ceebeetle
             base.Items.Add(newNode);
             AddOrMoveAdder();
             return newNode;
+        }
+        public bool Remove(string itemToFind)
+        {
+            if (null != itemToFind) foreach (CCBTreeViewItem itemNode in base.Items)
+            {
+                CCBBagItem itemToCompare = itemNode.BagItem;
+
+                if (itemToCompare.Equals(itemToFind))
+                {
+                    base.Items.Remove(itemNode);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
