@@ -4,11 +4,9 @@ namespace Ceebeetle.Names
 {
     partial class CharacterNames
     {
-        static private string[] m_westernMale = null;
-
-        private void InitializeWesternMaleNames()
+        protected string[] GetWesternMaleNames()
         {
-            if (null == m_westernMale) m_westernMale = new string[] {
+            return new string[] {
             "ABDUL",
             "ABE",
             "ABEL",

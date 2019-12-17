@@ -539,9 +539,17 @@ namespace Ceebeetle
         }
         #endregion //SelectionViewHelpers
 
+        #region Testers
         private void btnTest_Click(object sender, RoutedEventArgs e)
         {
+            Names.CharacterNameGenerators nameGenerators = new Names.CharacterNameGenerators(); 
+            Names.CharacterNames names = nameGenerators.GetWesternFemaleNameGenerator();
+            Random rnd = new Random();
+
+            tbLastError.Text = "Word: " + names.GenerateRandomName(rnd);
         }
+        #endregion //Testers
+
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             CEditMode editMode = CEditModeProperty.GetEditNode(tbItem);
@@ -714,6 +722,7 @@ namespace Ceebeetle
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
             btnBagPicker.IsEnabled = false;
             btnTemplates.IsEnabled = false;
+            btnTest.Visibility = System.Windows.Visibility.Hidden;
         }
         private EEditMode AddCharacterView()
         {

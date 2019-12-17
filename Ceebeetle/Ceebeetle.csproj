@@ -66,6 +66,7 @@
     <Compile Include="NamePicker.xaml.cs">
       <DependentUpon>NamePicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Names\BigramBuilder.cs" />
     <Compile Include="Names\CharacterNames.cs" />
     <Compile Include="Names\femalenames.cs" />
     <Compile Include="Names\malenames.cs" />
