@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Ceebeetle
 {
@@ -44,5 +45,17 @@ namespace Ceebeetle
             WindowManager.OnWindowClosing(this);
         }
 
+        protected void SetTooltip(ContentControl ctl, string strTooltip)
+        {
+            if (ctl.ToolTip is string)
+                ctl.ToolTip = strTooltip;
+            else if (ctl.ToolTip is ToolTip)
+            {
+                ToolTip ttip = (ToolTip)ctl.ToolTip;
+
+                if (null != ttip)
+                    ttip.Content = strTooltip;
+            }
+        }
     }
 }

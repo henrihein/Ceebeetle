@@ -5,10 +5,10 @@
         Title="Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="483" Width="707">
     <Grid>
         <Grid Margin="12,0,12,12" Height="396" VerticalAlignment="Bottom">
-            <Button Content="Close" Height="32" HorizontalAlignment="Left" Margin="494,358,0,0" Name="btnClose" VerticalAlignment="Top" Width="167" Click="btnClose_Click" />
-            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Right" Margin="0,358,455,0" Name="btnDelete" VerticalAlignment="Top" Width="190" Click="btnDelete_Click" IsEnabled="False" />
-            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="406,365,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
             <TreeView Height="344" HorizontalAlignment="Left" Margin="16,6,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
+            <Button Content="Close" Height="32" HorizontalAlignment="Left" Margin="494,358,0,0" Name="btnClose" VerticalAlignment="Top" Width="167" Click="btnClose_Click" ToolTip="Exit app" />
+            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Left" Margin="16,358,455,0" Name="btnDelete" VerticalAlignment="Top" Width="190" Click="btnDelete_Click" IsEnabled="False" ToolTip="Delete selected item" />
+            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="406,365,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
             <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,358,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="123" IsEnabled="False" />
             <GroupBox Header="Edit" Height="331" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
                 <Grid Height="310">
@@ -27,9 +27,9 @@
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
                     <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />
                     <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Left" Margin="77,54,0,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
-                    <Button Content="Templates" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,202,0,0" Name="btnTemplates" VerticalAlignment="Top" Width="134" Click="OnGameTemplatesClicked" />
-                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,235,0,0" Name="btnNamePicker" VerticalAlignment="Top" Width="134" Click="btnNamePicker_Click" />
-                    <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,267,0,0" Name="btnBagPicker" VerticalAlignment="Top" Width="134" Click="OnBagPickerClicked" />
+                    <Button Content="Templates" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,202,0,0" Name="btnTemplates" VerticalAlignment="Top" Width="134" Click="OnGameTemplatesClicked" ToolTip="Create and use templates for different games" />
+                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,235,0,0" Name="btnNamePicker" VerticalAlignment="Top" Width="134" Click="btnNamePicker_Click" ToolTip="Pick and generate character names" />
+                    <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,267,0,0" Name="btnBagPicker" VerticalAlignment="Top" Width="134" Click="OnBagPickerClicked" ToolTip="Pick random items out of a bag" />
                 </Grid>
             </GroupBox>
         </Grid>

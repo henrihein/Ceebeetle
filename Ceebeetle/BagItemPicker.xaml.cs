@@ -70,6 +70,8 @@ namespace Ceebeetle
             PopulateItems();
             CheckBagItems();
             cbSelectionMode.SelectedIndex = 0;
+            string strDeleteButtonTooltip = btnDelete.ToolTip.ToString();
+            SetTooltip(btnDelete, string.Format(strDeleteButtonTooltip, m_bagInfo.Bag.Name));            
         }
 
         private void CheckBagItems()

@@ -238,8 +238,8 @@ namespace Ceebeetle
                 bagNode.StartBulkEdit();
                 foreach (string item in bagItems)
                 {
-                    bag.AddItem(item);
-                    bagNode.Items.Add(item);
+                    CCBBagItem bagItem = bag.AddItem(item);
+                    bagNode.Items.Add(new CCBTreeViewItem(bagItem));
                 }
                 bagNode.EndBulkEdit();
             }
@@ -728,7 +728,6 @@ namespace Ceebeetle
             btnDelete.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
             btnBagPicker.IsEnabled = false;
-            btnTemplates.IsEnabled = false;
             btnTest.Visibility = System.Windows.Visibility.Hidden;
         }
         private EEditMode AddCharacterView()

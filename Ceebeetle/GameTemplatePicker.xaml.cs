@@ -26,19 +26,21 @@ namespace Ceebeetle
         public GameTemplatePicker(CCBGame gameModel, DOnCreateNewGame newGameCallback, DOnCreateNewTemplate newTemplateCallback, CCBGameTemplateList userList)
         {
             InitializeComponent();
-            if (null != gameModel)
+            if (null == gameModel)
+            {
+                m_modelName = InitializeNewGameButtonText("Game");
+                btnAddTemplate.IsEnabled = false;
+            }
+            else
             {
                 m_modelName = InitializeNewGameButtonText(gameModel.Name);
                 m_model = gameModel;
                 tbName.Text = gameModel.Name;
             }
-            else
-                m_modelName = InitializeNewGameButtonText("Game");
             btnAddTemplate.Content = m_modelName;
             m_gameCreateCallback = newGameCallback;
             m_templateCreateCallback = newTemplateCallback;
             FillTemplateList(userList);
-            tbName.Text = gameModel.Name;
             ValidateSelection();
         }
 
