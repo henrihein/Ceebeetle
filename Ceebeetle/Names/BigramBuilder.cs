@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace Ceebeetle.Names
 {
@@ -116,9 +117,11 @@ namespace Ceebeetle.Names
 
         public int GetAWordLength(int rnd)
         {
-            //Favor lengths just below the median length
-            int favorLen = m_minWordLength + (m_maxWordLength - m_minWordLength - 1) / 2;
-            int candidateLen = rnd % (2 + m_maxWordLength);
+            //Favor lengths below the median length
+            int maxLen = m_maxWordLength - m_minWordLength;
+            int minLen = 4;
+            int favorLen = m_minWordLength + (maxLen - 1) / 2;
+            int candidateLen = rnd % (8 + maxLen);
 
             if (candidateLen < m_minWordLength)
             {
@@ -128,10 +131,17 @@ namespace Ceebeetle.Names
             }
             if (candidateLen > m_maxWordLength)
             {
-                candidateLen = favorLen + candidateLen;
-                if (candidateLen > m_maxWordLength) 
+                candidateLen = m_minWordLength + (candidateLen % maxLen);
+                if (candidateLen > m_maxWordLength)
+                {
+                    //Should not be possible
+                    System.Diagnostics.Debug.Assert(false);
                     return favorLen;
+                }
             }
+            //Really short generated names don't work well.
+            if (candidateLen < minLen)
+                return minLen;
             return candidateLen;
         }
         public char GetFirstLetter(int rnd)
@@ -141,13 +151,13 @@ namespace Ceebeetle.Names
 
             foreach (char ch in m_root.Keys)
             {
-                if (Char.MinValue == chDef)
-                    chDef = ch;
                 if ((m_root.GetCharacterFreq(ch) + ix) > rnd)
                     return ch;
                 ix += m_root.GetCharacterFreq(ch);
+                chDef = ch;
             }
             System.Diagnostics.Debug.Assert(false);
+            //Last known letter is still pseudo-random.
             return chDef;
         }
         public char GetSecondLetter(char chFrom, int rnd)
@@ -156,6 +166,7 @@ namespace Ceebeetle.Names
             int ix = 0;
             char chDef = Char.MinValue;
 
+            //Caller doesn't know total frequency, so adjust randomizer.
             rnd = rnd % cc.TotalFreq;
             foreach (char ch in cc.Keys)
             {
@@ -190,17 +201,15 @@ namespace Ceebeetle.Names
         {
             int wordLength = m_bigramData.GetAWordLength(rnd.Next());
             StringBuilder newWord = new StringBuilder();
-            string word = new string(' ', wordLength);
             char chFirst = m_bigramData.GetFirstLetter(rnd.Next(m_bigramData.FirstLetterTotalFreq));
-            char chNext = Char.MinValue;
+            char chNext = chFirst;
 
-            chNext = chFirst;
             while (newWord.Length < wordLength)
             {
                 newWord.Append(chNext);
                 chNext = m_bigramData.GetSecondLetter(chNext, rnd.Next());
             }
-            return newWord.ToString();
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(newWord.ToString());
         }
     }
 }

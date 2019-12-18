@@ -26,8 +26,6 @@ namespace Ceebeetle
             m_random = new Random();
             m_nameGenerators = new Names.CharacterNameGenerators();
             InitializeComponent();
-            rbJapaneseFemale.IsEnabled = false;
-            rbJapaneseMale.IsEnabled = false;
             rbElvenFemale.IsEnabled = false;
             rbElvenMale.IsEnabled = false;
             rbWesternFemale.IsChecked = true;
@@ -45,6 +43,10 @@ namespace Ceebeetle
                 return m_nameGenerators.GetWesternFemaleNameGenerator();
             if (true == rbWesternMale.IsChecked)
                 return m_nameGenerators.GetWesternMaleNameGenerator();
+            if (true == rbJapaneseFemale.IsChecked)
+                return m_nameGenerators.GetJapaneseFemaleNameGenerator();
+            if (true == rbJapaneseMale.IsChecked)
+                return m_nameGenerators.GetJapaneseMaleNameGenerator();
             return null;
         }
 
@@ -60,7 +62,13 @@ namespace Ceebeetle
             if (null != nameGenerator)
                 lbPicked.Items.Add(nameGenerator.GetRandomName(m_random));
         }
+        private void btnGenerate_Click(object sender, RoutedEventArgs e)
+        {
+            Names.CharacterNames nameGenerator = GetCharacterNameGenerator();
 
+            if (null != nameGenerator)
+                lbPicked.Items.Add(nameGenerator.GenerateRandomName(m_random));
+       }
         private void lbPicked_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Validate();
@@ -70,5 +78,6 @@ namespace Ceebeetle
         {
             lbPicked.Items.Clear();
         }
+
     }
 }

@@ -69,6 +69,8 @@
     <Compile Include="Names\BigramBuilder.cs" />
     <Compile Include="Names\CharacterNames.cs" />
     <Compile Include="Names\femalenames.cs" />
+    <Compile Include="Names\JapaneseFemaleNames.cs" />
+    <Compile Include="Names\JapaneseMaleNames.cs" />
     <Compile Include="Names\malenames.cs" />
     <Compile Include="StockTemplates.cs" />
     <Compile Include="WindowManager.cs" />

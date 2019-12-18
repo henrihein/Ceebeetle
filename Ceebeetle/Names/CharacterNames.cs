@@ -116,14 +116,14 @@ namespace Ceebeetle.Names
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetJapaneseFemaleNames();
         }
     }
     class JapaneseMaleNames : CharacterNames
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetJapaneseMaleNames();
         }
     }
     class ElvenFemaleNames : CharacterNames

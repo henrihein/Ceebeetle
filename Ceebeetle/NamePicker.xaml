@@ -15,7 +15,7 @@
             </Grid>
         </GroupBox>
         <Button Content="_Pick" Height="24" HorizontalAlignment="Left" Margin="203,17,0,0" Name="btnPick" VerticalAlignment="Top" Width="101" Click="btnPick_Click" />
-        <Button Content="_Generate" Height="24" HorizontalAlignment="Left" Margin="203,47,0,0" Name="btnGenerate" VerticalAlignment="Top" Width="101" />
+        <Button Content="_Generate" Height="24" HorizontalAlignment="Left" Margin="203,47,0,0" Name="btnGenerate" VerticalAlignment="Top" Width="101" Click="btnGenerate_Click" />
         <ListBox Height="224" HorizontalAlignment="Left" Margin="315,17,0,0" Name="lbPicked" VerticalAlignment="Top" Width="208" SelectionChanged="lbPicked_SelectionChanged" />
         <Button Content="_Copy Name" Height="24" HorizontalAlignment="Left" Margin="209,217,0,0" Name="btnCopy" VerticalAlignment="Top" Width="95" />
         <Button Content="_Delete" Height="24" HorizontalAlignment="Left" Margin="317,253,0,0" Name="btnDelete" VerticalAlignment="Top" Width="95" />
