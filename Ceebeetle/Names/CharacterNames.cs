@@ -13,8 +13,8 @@ namespace Ceebeetle.Names
         JapaneseMaleNames m_japaneseMaleNameGenerator;
         ElvenFemaleNames m_elvenFemaleNameGenerator;
         ElvenMaleNames m_elvenMaleNameGenerator;
-        DwarvenFemaleNames m_dwarvenFemaleNameGenerator;
-        DwarvenMaleNames m_dwarvenMaleNameGenerator;
+        NordicDwarvenNames m_nordicDwarvenNameGenerator;
+        TolkienDwarvenNames m_tolkienDwarvenNameGenerator;
 
         public CharacterNameGenerators()
         {
@@ -24,8 +24,8 @@ namespace Ceebeetle.Names
            m_japaneseMaleNameGenerator = null;
            m_elvenFemaleNameGenerator = null;
            m_elvenMaleNameGenerator = null;
-           m_dwarvenFemaleNameGenerator = null;
-           m_dwarvenMaleNameGenerator = null;
+           m_nordicDwarvenNameGenerator = null;
+           m_tolkienDwarvenNameGenerator = null;
         }
 
         public CharacterNames GetWesternFemaleNameGenerator()
@@ -64,17 +64,17 @@ namespace Ceebeetle.Names
                 m_elvenMaleNameGenerator = new ElvenMaleNames();
             return m_elvenMaleNameGenerator;
         }
-        public CharacterNames GetDwarvenFemaleNameGenerator()
+        public CharacterNames GetNordicDwarvenNameGenerator()
         {
-            if (null == m_dwarvenFemaleNameGenerator)
-                m_dwarvenFemaleNameGenerator = new DwarvenFemaleNames();
-            return m_dwarvenFemaleNameGenerator;
+            if (null == m_nordicDwarvenNameGenerator)
+                m_nordicDwarvenNameGenerator = new NordicDwarvenNames();
+            return m_nordicDwarvenNameGenerator;
         }
-        public CharacterNames GetDwarvenMaleNameGenerator()
+        public CharacterNames GetTolkienDwarvenNameGenerator()
         {
-            if (null == m_dwarvenMaleNameGenerator)
-                m_dwarvenMaleNameGenerator = new DwarvenMaleNames();
-            return m_dwarvenMaleNameGenerator;
+            if (null == m_tolkienDwarvenNameGenerator)
+                m_tolkienDwarvenNameGenerator = new TolkienDwarvenNames();
+            return m_tolkienDwarvenNameGenerator;
         }
     }
 
@@ -130,28 +130,28 @@ namespace Ceebeetle.Names
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetElvenFemaleNames();
         }
     }
     class ElvenMaleNames : CharacterNames
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetElvenMaleNames();
         }
     }
-    class DwarvenFemaleNames : CharacterNames
+    class NordicDwarvenNames : CharacterNames
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetNordicDwarvenNames();
         }
     }
-    class DwarvenMaleNames : CharacterNames
+    class TolkienDwarvenNames : CharacterNames
     {
         protected override string[] GetNames()
         {
-            return null;
+            return GetTolkienDwarvenNames();
         }
     }
 }

@@ -68,6 +68,10 @@ namespace Ceebeetle.Names
         { 
             m_knownCharacters = new Dictionary<char, CharacterCount>();
         }
+        public bool Has(char ch)
+        {
+            return m_knownCharacters.ContainsKey(ch);
+        }
         public void AddCharacterPair(char ch1, char ch2)
         {
             m_totalFreq++;
@@ -115,34 +119,39 @@ namespace Ceebeetle.Names
                 m_root.AddCharacterPair(word[ixch], word[ixch + 1]);
         }
 
+        //Shorter and median names are more frequent than the longest, 
+        //so the below logic favors word lengths between shortest and median.
         public int GetAWordLength(int rnd)
         {
             //Favor lengths below the median length
-            int maxLen = m_maxWordLength - m_minWordLength;
+            int maxLenDiff = m_maxWordLength - m_minWordLength;
+            int favorLen = m_minWordLength + (maxLenDiff - 1) / 2;
+            int candidateLenDiff = rnd % (7 + maxLenDiff);
             int minLen = 4;
-            int favorLen = m_minWordLength + (maxLen - 1) / 2;
-            int candidateLen = rnd % (8 + maxLen);
 
-            if (candidateLen < m_minWordLength)
+            //If in some name list the names are really short, bypass the logic.
+            if (3 >= m_maxWordLength)
+                return m_maxWordLength;
+            //Also if variability is small, bypass the logic.
+            if (3 >= maxLenDiff)
+                return m_maxWordLength;
+            if (candidateLenDiff < m_minWordLength)
             {
-                candidateLen = favorLen - candidateLen;
-                if (candidateLen < m_minWordLength) 
-                    return favorLen;
+                candidateLenDiff = favorLen - candidateLenDiff;
+                if (candidateLenDiff < m_minWordLength) 
+                    candidateLenDiff = m_minWordLength;
             }
-            if (candidateLen > m_maxWordLength)
+            //The intent is the hits that go over length translates into shorter lengths.
+            if (candidateLenDiff > m_maxWordLength)
             {
-                candidateLen = m_minWordLength + (candidateLen % maxLen);
-                if (candidateLen > m_maxWordLength)
-                {
-                    //Should not be possible
-                    System.Diagnostics.Debug.Assert(false);
-                    return favorLen;
-                }
+                candidateLenDiff = favorLen - candidateLenDiff - m_maxWordLength;
+                if (candidateLenDiff < m_minWordLength)
+                    candidateLenDiff = m_minWordLength + (rnd % 3);
             }
             //Really short generated names don't work well.
-            if (candidateLen < minLen)
+            if (candidateLenDiff < minLen)
                 return minLen;
-            return candidateLen;
+            return candidateLenDiff;
         }
         public char GetFirstLetter(int rnd)
         {
@@ -162,21 +171,25 @@ namespace Ceebeetle.Names
         }
         public char GetSecondLetter(char chFrom, int rnd)
         {
-            CharacterCount cc = m_root[chFrom];
-            int ix = 0;
-            char chDef = Char.MinValue;
-
-            //Caller doesn't know total frequency, so adjust randomizer.
-            rnd = rnd % cc.TotalFreq;
-            foreach (char ch in cc.Keys)
+            if (m_root.Has(chFrom))
             {
-                if ((cc[ch] + ix) >= rnd)
-                    return ch;
-                ix += cc[ch];
-                chDef = ch;
+                CharacterCount cc = m_root[chFrom];
+                int ix = 0;
+                char chDef = Char.MinValue;
+
+                //Caller doesn't know total frequency, so adjust randomizer.
+                rnd = rnd % cc.TotalFreq;
+                foreach (char ch in cc.Keys)
+                {
+                    if ((cc[ch] + ix) >= rnd)
+                        return ch;
+                    ix += cc[ch];
+                    chDef = ch;
+                }
+                System.Diagnostics.Debug.Assert(false);
+                return chDef;
             }
-            System.Diagnostics.Debug.Assert(false);
-            return chDef;
+            return Char.MaxValue;
         }
     }
 
@@ -208,6 +221,10 @@ namespace Ceebeetle.Names
             {
                 newWord.Append(chNext);
                 chNext = m_bigramData.GetSecondLetter(chNext, rnd.Next());
+                //MaxValue indicates we reached a letter that only appears at the end of names.
+                //So end the name there.
+                if (Char.MaxValue == chNext)
+                    break;
             }
             return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(newWord.ToString());
         }

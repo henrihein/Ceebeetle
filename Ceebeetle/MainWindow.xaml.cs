@@ -102,6 +102,8 @@ namespace Ceebeetle
             tvGames.Items.Remove(m_gameAdderEntry);
             tvGames.Items.Add(m_gameAdderEntry);
         }
+
+        #region Callbacks
         public void LoadCharacterList()
         {
             tvGames.Items.Clear();
@@ -262,6 +264,11 @@ namespace Ceebeetle
             }
             return false;
         }
+        public void OnCopyName(string name)
+        {
+            tbItem.Text = name;
+        }
+        #endregion //Callbacks
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -943,8 +950,9 @@ namespace Ceebeetle
 
         private void btnNamePicker_Click(object sender, RoutedEventArgs e)
         {
-            Window namePickerWnd = new NamePicker();
+            NamePicker namePickerWnd = new NamePicker();
 
+            namePickerWnd.CopyNameCallback = new DOnCopyName(OnCopyName);
             namePickerWnd.Show();
         }
     }

@@ -24,4 +24,5 @@ namespace Ceebeetle
     public delegate void DOnGameUpdate(CCBGame game);
     public delegate void DOnCopyBagItems(CCBBag targetBag, string[] bagItems);
     public delegate bool DOnDeleteBagItems(CCBBag targetBag, string[] bagItems);
+    public delegate void DOnCopyName(string name);
 }
