@@ -399,8 +399,10 @@ namespace Ceebeetle
         {
             try
             {
-                SaveGames(evtArgs.Argument.ToString());
-                evtArgs.Result = TStatusUpdate.tsuFileSaved;
+                if (SaveGames(evtArgs.Argument))
+                    evtArgs.Result = TStatusUpdate.tsuFileSaved;
+                else
+                    evtArgs.Result = TStatusUpdate.tsuError;
             }
             catch (IOException iox)
             {
@@ -408,17 +410,59 @@ namespace Ceebeetle
                 evtArgs.Cancel = true;
             }
         }
-        public void SaveGames(string path)
+        public bool SaveGames(object oConfig)
         {
+            CCBConfig conf = (CCBConfig)oConfig;
+
+            if (null != conf)
+            {
+                if (SaveGames(conf.TmpPath))
+                {
+                    try
+                    {
+                        System.IO.File.Copy(conf.TmpPath, conf.DocPath, true);
+                        return true;
+                    }
+                    catch (System.IO.IOException ioex)
+                    {
+                        System.Diagnostics.Debug.Write("Error copying file: " + ioex.ToString());
+                    }
+                }
+            }
+            return false;
+        }
+        public bool SaveGames(string path)
+        {
+            XmlWriter xmlWriter = null;
+
             lock (this)
             {
-                DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGameData));
-                XmlWriter xmlWriter = XmlWriter.Create(path);
-
-                dsWriter.WriteObject(xmlWriter, this);
-                xmlWriter.Flush();
-                xmlWriter.Close();
+                try
+                {
+                    DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBGameData));
+                    
+                    xmlWriter = XmlWriter.Create(path);
+                    dsWriter.WriteObject(xmlWriter, this);
+                    xmlWriter.Flush();
+                    xmlWriter.Close();
+                    return true;
+                }
+                catch (IOException ioex)
+                {
+                    System.Diagnostics.Debug.Write("IO Exception saving: " + ioex.ToString());
+                }
+                catch (XmlException xmlex)
+                {
+                    System.Diagnostics.Debug.Write("XML Exception saving: " + xmlex.ToString());
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write("Exception saving: " + ex.ToString());
+                }
             }
+            if (null != xmlWriter)
+                xmlWriter.Close();
+            return false;
         }
     }
 }

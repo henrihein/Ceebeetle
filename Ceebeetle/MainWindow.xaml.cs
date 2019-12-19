@@ -82,7 +82,13 @@ namespace Ceebeetle
             try
             {
                 //Save here always, in case there was some problem with the dirty logic.
-                m_games.SaveGames(m_config.DocPath);
+                if (!m_games.SaveGames(m_config))
+                {
+                    MessageBoxResult mbr = System.Windows.MessageBox.Show("There was an error saving games. Do you still want to exit?", "Confirm Ceebeetle Exit", MessageBoxButton.YesNo);
+
+                    if (mbr == MessageBoxResult.No)
+                        evtArgs.Cancel = true;
+                }
             }
             catch (IOException iox)
             {
@@ -198,7 +204,7 @@ namespace Ceebeetle
             {
                 m_worker.DoWork += new DoWorkEventHandler(m_games.SaveGames);
                 if (!m_worker.IsBusy)
-                    m_worker.RunWorkerAsync(m_config.DocPath);
+                    m_worker.RunWorkerAsync(m_config);
             }
         }
         private void OnAddingNewEntityMode()
