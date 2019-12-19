@@ -722,6 +722,22 @@ namespace Ceebeetle
             }
         }
 
+        private void OpenTemplates()
+        {
+            CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
+            CCBGame gameModel = null;
+
+            if (null != selItem)
+            {
+                CCBTreeViewGame gameNode = FindGameFromNode(selItem);
+
+                gameModel = gameNode.Game;
+            }
+            Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
+
+            templatePickerWnd.Show();
+        }
+
         private void SetDefaultView()
         {
             gbItemView.Header = "Modify";
@@ -939,18 +955,7 @@ namespace Ceebeetle
 
         private void OnGameTemplatesClicked(object sender, RoutedEventArgs e)
         {
-            CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
-            CCBGame gameModel = null;
-
-            if (null != selItem)
-            {
-                CCBTreeViewGame gameNode = FindGameFromNode(selItem);
-
-                gameModel = gameNode.Game;
-            }
-            Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
-
-            templatePickerWnd.Show();
+            OpenTemplates();
         }
 
         private void btnNamePicker_Click(object sender, RoutedEventArgs e)
@@ -959,6 +964,15 @@ namespace Ceebeetle
 
             namePickerWnd.CopyNameCallback = new DOnCopyName(OnCopyName);
             namePickerWnd.Show();
+        }
+
+        private void btnExport_Click(object sender, RoutedEventArgs e)
+        {
+            tbLastError.Text = "Export now";
+        }
+        private void btnTemplates_Click(object sender, RoutedEventArgs e)
+        {
+            OpenTemplates();
         }
     }
 }
