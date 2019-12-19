@@ -62,6 +62,11 @@ namespace Ceebeetle
             Rebase(gameFrom);
         }
 
+        public override string ToString()
+        {
+            return m_name;
+        }
+
         public void Rebase(CCBGame gameFrom)
         {
             m_propertyList.Clear();
@@ -157,6 +162,12 @@ namespace Ceebeetle
             foreach (CCBBag bag in templateFrom.Bags)
                 m_groupBags.Add(new CCBBag(bag));
         }
+
+        public override string ToString()
+        {
+            return m_name;
+        }
+
         public void AddCharacter(CCBCharacter newCharacter)
         {
             CCBDirty.kDirty = true;
@@ -316,6 +327,15 @@ namespace Ceebeetle
             }
             return sww.ToString();
         }
+        public CCBGame[] GetGames()
+        {
+            return m_games.ToArray();
+        }
+        public CCBGameTemplate[] GetGameTemplates()
+        {
+            return m_templates.ToArray();
+        }
+
         public void LoadGames(object sender, DoWorkEventArgs evtArgs)
         {
             BackgroundWorker wSender = (BackgroundWorker)sender;

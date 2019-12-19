@@ -968,7 +968,11 @@ namespace Ceebeetle
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
-            tbLastError.Text = "Export now";
+            ExportGames exportGamesWnd = new ExportGames();
+
+            exportGamesWnd.GameList = m_games.GetGames();
+            exportGamesWnd.GameTemplateList = m_games.GetGameTemplates();
+            exportGamesWnd.Show();
         }
         private void btnTemplates_Click(object sender, RoutedEventArgs e)
         {

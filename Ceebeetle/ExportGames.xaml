@@ -1,0 +1,16 @@
+﻿<src:CCBChildWindow x:Class="Ceebeetle.ExportGames"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:src="clr-namespace:Ceebeetle"
+        Title="Export Game or Template" Height="340" Width="362" Loaded="CCBChildWindow_Loaded">
+    <Grid>
+        <Label Content="Games and Templates" Height="24" HorizontalAlignment="Left" Margin="12,8,0,0" Name="label1" VerticalAlignment="Top" Width="150" />
+        <ListBox HorizontalAlignment="Left" Margin="12,38,0,80" Name="lbEntities" Width="204" ToolTip="Games and templates you can choose to export" SelectionMode="Multiple" />
+        <Button Content="_Export" Height="20" HorizontalAlignment="Left" Margin="233,38,0,0" Name="btnExportNow" VerticalAlignment="Top" Width="92" ToolTip="Export to target now" Click="btnExportNow_Click" />
+        <Label Content="To: " Height="24" HorizontalAlignment="Left" Margin="13,235,0,0" Name="label2" VerticalAlignment="Top" Width="36" />
+        <TextBox Height="24" HorizontalAlignment="Left" Margin="52,235,0,0" Name="tbTarget" VerticalAlignment="Top" Width="172" TextChanged="tbTarget_TextChanged" ToolTip="Target to save file to. File will be saved in XML format." />
+        <Button Content="_Browse" Height="24" HorizontalAlignment="Left" Margin="233,235,0,0" Name="btnBrowse" VerticalAlignment="Top" Width="92" ToolTip="Browse for target" Click="btnBrowse_Click" />
+        <Button Content="Close" Height="24" HorizontalAlignment="Left" Margin="233,271,0,0" Name="btnClose" VerticalAlignment="Top" Width="92" Click="btnClose_Click" />
+        <Label Height="24" HorizontalAlignment="Left" Margin="13,271,0,0" Name="tStatus" VerticalAlignment="Top" Width="211" />
+    </Grid>
+</src:CCBChildWindow>
