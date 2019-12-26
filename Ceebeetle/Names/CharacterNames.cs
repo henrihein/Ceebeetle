@@ -89,10 +89,29 @@ namespace Ceebeetle.Names
 
             return names[ixr];
         }
+        public string GetRandomName(Random r, string prefix)
+        {
+            string[] allNames = GetNames();
+            List<string> matchingNames = new List<string>();
+
+            foreach (string strName in allNames)
+            {
+                if (strName.StartsWith(prefix, StringComparison.CurrentCultureIgnoreCase))
+                    matchingNames.Add(strName);
+            }
+            if (0 < matchingNames.Count)
+                return matchingNames[r.Next(matchingNames.Count)];
+            return null;
+        }
         public string GenerateRandomName(Random rnd)
         {
             BuildBigramModel();
             return GenerateNameFromModel(rnd);
+        }
+        public string GenerateRandomPostfix(Random rnd, string namePrefix)
+        {
+            BuildBigramModel();
+            return GeneratePostfixFromModel(rnd, namePrefix);
         }
     }
 

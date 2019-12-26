@@ -40,6 +40,7 @@ namespace Ceebeetle
         {
             btnDelete.IsEnabled = (-1 != lbPicked.SelectedIndex);
             btnCopy.IsEnabled = (-1 != lbPicked.SelectedIndex);
+            tbPrefix.IsEnabled = (true == cbUsePrefix.IsChecked);
         }
 
         private Names.CharacterNames GetCharacterNameGenerator()
@@ -73,14 +74,35 @@ namespace Ceebeetle
             Names.CharacterNames nameGenerator = GetCharacterNameGenerator();
 
             if (null != nameGenerator)
-                lbPicked.Items.Add(nameGenerator.GetRandomName(m_random));
+            {
+                if ((true == cbUsePrefix.IsChecked) && (0 < tbPrefix.Text.Length))
+                {
+                    string findName = nameGenerator.GetRandomName(m_random, tbPrefix.Text);
+
+                    if (null == findName)
+                        lasterror.Text = string.Format("I could not find a name matching '{0}'", tbPrefix.Text);
+                    else
+                        lbPicked.Items.Add(findName);
+                }
+                else
+                    lbPicked.Items.Add(nameGenerator.GetRandomName(m_random));
+            }
         }
         private void btnGenerate_Click(object sender, RoutedEventArgs e)
         {
             Names.CharacterNames nameGenerator = GetCharacterNameGenerator();
 
             if (null != nameGenerator)
-                lbPicked.Items.Add(nameGenerator.GenerateRandomName(m_random));
+            {
+                if ((true == cbUsePrefix.IsChecked) && (0 < tbPrefix.Text.Length))
+                {
+                    string genName = nameGenerator.GenerateRandomPostfix(m_random, tbPrefix.Text);
+
+                    lbPicked.Items.Add(genName);
+                }
+                else
+                    lbPicked.Items.Add(nameGenerator.GenerateRandomName(m_random));
+            }
        }
         private void lbPicked_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -100,6 +122,10 @@ namespace Ceebeetle
         {
             if (-1 != lbPicked.SelectedIndex)
                 Clipboard.SetText(lbPicked.SelectedItem.ToString());
+        }
+        private void cbUsePrefix_Checked(object sender, RoutedEventArgs e)
+        {
+            Validate();
         }
 
     }

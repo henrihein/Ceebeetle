@@ -119,13 +119,18 @@ namespace Ceebeetle.Names
                 m_root.AddCharacterPair(word[ixch], word[ixch + 1]);
         }
 
+        private int GetShortLen(int rnd, int minLength)
+        {
+            return minLength + rnd % 3;
+        }
         //Shorter and median names are more frequent than the longest, 
         //so the below logic favors word lengths between shortest and median.
-        public int GetAWordLength(int rnd)
+        public int GetAWordLength(int rnd, int prefixLen)
         {
             //Favor lengths below the median length
-            int maxLenDiff = m_maxWordLength - m_minWordLength;
-            int favorLen = m_minWordLength + (maxLenDiff - 1) / 2;
+            int minWordLength = System.Math.Min(prefixLen, m_minWordLength);
+            int maxLenDiff = m_maxWordLength - minWordLength;
+            int favorLen = minWordLength + (maxLenDiff - 1) / 2;
             int candidateLenDiff = rnd % (7 + maxLenDiff);
             int minLen = 4;
 
@@ -135,23 +140,27 @@ namespace Ceebeetle.Names
             //Also if variability is small, bypass the logic.
             if (3 >= maxLenDiff)
                 return m_maxWordLength;
-            if (candidateLenDiff < m_minWordLength)
+            if (candidateLenDiff < minWordLength)
             {
                 candidateLenDiff = favorLen - candidateLenDiff;
-                if (candidateLenDiff < m_minWordLength) 
-                    candidateLenDiff = m_minWordLength;
+                if (candidateLenDiff < minWordLength)
+                    candidateLenDiff = GetShortLen(rnd, minWordLength);
             }
             //The intent is the hits that go over length translates into shorter lengths.
             if (candidateLenDiff > m_maxWordLength)
             {
                 candidateLenDiff = favorLen - candidateLenDiff - m_maxWordLength;
-                if (candidateLenDiff < m_minWordLength)
-                    candidateLenDiff = m_minWordLength + (rnd % 3);
+                if (candidateLenDiff < favorLen)
+                    candidateLenDiff = GetShortLen(rnd, minWordLength);
             }
             //Really short generated names don't work well.
             if (candidateLenDiff < minLen)
                 return minLen;
             return candidateLenDiff;
+        }
+        public int GetAWordLength(int rnd)
+        {
+            return GetAWordLength(rnd, 0);
         }
         public char GetFirstLetter(int rnd)
         {
@@ -227,6 +236,27 @@ namespace Ceebeetle.Names
                     break;
             }
             return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(newWord.ToString());
+        }
+        protected string GeneratePostfixFromModel(Random rnd, string prefix)
+        {
+            if ((null != prefix) && (0 < prefix.Length))
+            {
+                int wordLength = m_bigramData.GetAWordLength(rnd.Next(), prefix.Length);
+                StringBuilder newWord = new StringBuilder();
+                char chNext = prefix[prefix.Length - 1];
+
+                while (newWord.Length < wordLength)
+                {
+                    newWord.Append(chNext);
+                    chNext = m_bigramData.GetSecondLetter(chNext, rnd.Next());
+                    //MaxValue indicates we reached a letter that only appears at the end of names.
+                    //So end the name there.
+                    if (Char.MaxValue == chNext)
+                        break;
+                }
+                return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(newWord.ToString());
+            }
+            return GenerateNameFromModel(rnd);
         }
     }
 }
