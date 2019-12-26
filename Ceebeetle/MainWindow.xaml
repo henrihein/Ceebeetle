@@ -4,13 +4,16 @@
         Icon="./app.ico"
         Title="Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="513" Width="707">
     <Grid>
-        <ToolBarTray Height="38" HorizontalAlignment="Left" Margin="2,3,0,0" Name="toolBarTrayMain" VerticalAlignment="Top" Width="678">
-            <ToolBar Height="32" HorizontalAlignment="Left" Margin="14,4,0,0" Name="toolBarMain" VerticalAlignment="Top" Width="656">
+        <ToolBarTray Height="38" HorizontalAlignment="Left" Margin="2,3,0,0" Name="toolBarTrayMain" VerticalAlignment="Top" Width="678" Background="#FFBFBFBE">
+            <ToolBar Height="32" HorizontalAlignment="Left" Margin="14,4,0,0" Name="toolBarMain" VerticalAlignment="Top" Width="656" Background="#FFA5A6A4">
                 <Button Name="btnTemplate" Click="btnTemplates_Click">
                     <Image Source="/Ceebeetle;component/Resources/templates.bmp" ToolTip="Templates: Create templates based on your games, or add a game based on a template" />
                 </Button>
                 <Button Name="btnExport" Click="btnExport_Click">
                     <Image Source="/Ceebeetle;component/Resources/export.bmp" ToolTip="Export: Save games or templates" />
+                </Button>
+                <Button Name="btnImport" Click="btnImport_Click">
+                    <Image Source="/Ceebeetle;component/Resources/import.bmp" ToolTip="Import: Load games or templates from previous saves" />
                 </Button>
             </ToolBar>
         </ToolBarTray>
@@ -43,7 +46,7 @@
                 </Grid>
             </GroupBox>
         </Grid>
-        <TextBlock Height="19" HorizontalAlignment="Left" Margin="11,455,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Top" Width="371" DataContext="{Binding}" />
-        <TextBlock Height="22" HorizontalAlignment="Left" Margin="403,455,0,0" Name="tbLastError" Text="" VerticalAlignment="Top" Width="270" />
+        <TextBlock Height="19" HorizontalAlignment="Left" Margin="11,455,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Top" Width="429" DataContext="{Binding}" />
+        <TextBlock Height="22" HorizontalAlignment="Left" Margin="459,455,0,0" Name="tbLastError" Text="" VerticalAlignment="Top" Width="214" />
     </Grid>
 </Window>

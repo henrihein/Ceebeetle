@@ -974,6 +974,9 @@ namespace Ceebeetle
             exportGamesWnd.GameTemplateList = m_games.GetGameTemplates();
             exportGamesWnd.Show();
         }
+        private void btnImport_Click(object sender, RoutedEventArgs e)
+        {
+        }
         private void btnTemplates_Click(object sender, RoutedEventArgs e)
         {
             OpenTemplates();

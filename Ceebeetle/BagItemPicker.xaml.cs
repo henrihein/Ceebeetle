@@ -77,6 +77,7 @@ namespace Ceebeetle
         private void CheckBagItems()
         {
             btnPickNow.IsEnabled = !lbBagItems.Items.IsEmpty;
+            btnPickAllSelected.IsEnabled = 0 < lbBagItems.SelectedItems.Count;
             btnUndo.IsEnabled = (-1 != m_lastItem);
             btnCopy.IsEnabled = (!lbPickedItems.Items.IsEmpty && (-1 != lbTargetBag.SelectedIndex) && (null != m_copyBagItemsCallback));
             btnDelete.IsEnabled = !lbPickedItems.Items.IsEmpty && (null != m_deleteBagItemsCallback);
@@ -184,6 +185,21 @@ namespace Ceebeetle
             }
             CheckBagItems();
         }
+        private void btnPickAllSelected_Click(object sender, RoutedEventArgs e)
+        {
+            if ((null != lbBagItems.SelectedItems) && (0 < lbBagItems.SelectedItems.Count))
+            {
+                object[] selItems = new object[lbBagItems.SelectedItems.Count];
+
+                for (int ix = 0; ix < lbBagItems.SelectedItems.Count; ix++)
+                    selItems[ix] = lbBagItems.SelectedItems[ix];
+                foreach (object oItem in selItems)
+                {
+                    lbBagItems.Items.Remove(oItem);
+                    m_lastItem = lbPickedItems.Items.Add(oItem.ToString());
+                }
+            }
+        }
 
         private void OnUndoPick(object sender, RoutedEventArgs e)
         {
@@ -231,6 +247,10 @@ namespace Ceebeetle
                     m_copyBagItemsCallback(targetBag, itemsToCopy);
                 }
             }
+        }
+        private void lbBagItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CheckBagItems();
         }
         private void lbTargetBag_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
