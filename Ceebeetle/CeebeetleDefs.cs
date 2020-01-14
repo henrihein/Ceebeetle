@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ceebeetle
 {
-    enum TStatusUpdate
+    public enum TStatusUpdate
     {
         tsuNone = 0,
         tsuFileWork = 0x1000,
@@ -25,4 +25,6 @@ namespace Ceebeetle
     public delegate void DOnCopyBagItems(CCBBag targetBag, string[] bagItems);
     public delegate bool DOnDeleteBagItems(CCBBag targetBag, string[] bagItems);
     public delegate void DOnCopyName(string name);
+    public delegate TStatusUpdate DMergeGame(CCBGame game);
+    public delegate TStatusUpdate DMergeTemplate(CCBGameTemplate template);
 }

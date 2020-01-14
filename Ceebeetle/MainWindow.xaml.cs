@@ -110,7 +110,7 @@ namespace Ceebeetle
         }
 
         #region Callbacks
-        public void LoadCharacterList()
+        public void PopulateCharacterList()
         {
             tvGames.Items.Clear();
             foreach (CCBGame game in m_games)
@@ -134,6 +134,39 @@ namespace Ceebeetle
             }
             AddOrMoveAdder();
         }
+        bool ConfirmGameMerge(string gameName)
+        {
+            string msgText = string.Format("You already have a game called '{0}'. Do you wish to merge that game with new characters from this game?", gameName);
+
+            return MessageBoxResult.Yes == MessageBox.Show(msgText, "Confirm Game Merge", MessageBoxButton.YesNo);
+        }
+        private TStatusUpdate MergeGameCallback(CCBGame game)
+        {
+            int cAdded;
+            TStatusUpdate tsu = TStatusUpdate.tsuCancelled;
+
+            if (m_games.HasGame(game.Name))
+                if (!ConfirmGameMerge(game.Name))
+                    tsu = TStatusUpdate.tsuFileNothingLoaded;
+            if (0 < (cAdded = m_games.MergeGame(game)))
+            {
+                tbLastError.Text = string.Format("Added {0} characters", cAdded);
+                tsu = TStatusUpdate.tsuFileLoaded;
+            }
+            if (TStatusUpdate.tsuFileLoaded == tsu)
+                this.PopulateCharacterList();
+            return tsu;
+        }
+        private TStatusUpdate MergeTemplateCallback(CCBGameTemplate template)
+        {
+            if (m_games.MergeTemplate(template))
+            {
+                tbLastError.Text = string.Format("Loaded template '{0}'", template.Name);
+                return TStatusUpdate.tsuFileLoaded;
+            }
+            tbLastError.Text = "Did not load template.";
+            return TStatusUpdate.tsuFileNothingLoaded;
+        }
         private void OnCharacterListUpdate(TStatusUpdate[] args)
         {
             if (0 != args.Rank)
@@ -152,7 +185,7 @@ namespace Ceebeetle
                         break;
                     case TStatusUpdate.tsuFileLoaded:
                         tbLastError.Text = "File loaded";
-                        LoadCharacterList();
+                        PopulateCharacterList();
                         btnDelete.IsEnabled = true;
                         tvGames.IsEnabled = true;
                         btnAddGame.IsEnabled = true;
@@ -891,10 +924,7 @@ namespace Ceebeetle
             CCBTreeViewItem selItem = GetSelectedNode();
 
             if (null == selItem)
-            {
-                tbLastError.Text = "Wrong item in treeview:";
                 btnSave.IsEnabled = false;
-            }
             else
             {
                 CEditMode em = new CEditMode(selItem);
@@ -976,6 +1006,9 @@ namespace Ceebeetle
         }
         private void btnImport_Click(object sender, RoutedEventArgs e)
         {
+            ImportGames importGamesWnd = new ImportGames(new DMergeGame(MergeGameCallback), new DMergeTemplate(MergeTemplateCallback));
+
+            importGamesWnd.Show();
         }
         private void btnTemplates_Click(object sender, RoutedEventArgs e)
         {

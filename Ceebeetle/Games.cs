@@ -168,6 +168,19 @@ namespace Ceebeetle
             return m_name;
         }
 
+        public bool IsThisGame(string name)
+        {
+            return 0 == string.Compare(m_name, name, true);
+        }
+        public bool HasCharacter(string characterName)
+        {
+            foreach (CCBCharacter character in m_characters)
+            {
+                if (0 == string.Compare(characterName, character.Name, true))
+                    return true;
+            }
+            return false;
+        }
         public void AddCharacter(CCBCharacter newCharacter)
         {
             CCBDirty.kDirty = true;
@@ -189,6 +202,20 @@ namespace Ceebeetle
         {
             CCBDirty.kDirty = true;
             return m_groupItems.RemoveItem(item);
+        }
+        public int MergeGame(CCBGame game)
+        {
+            int cAdded = 0;
+
+            foreach (CCBCharacter character in game.Characters)
+            {
+                if (!HasCharacter(character.Name))
+                {
+                    cAdded++;
+                    AddCharacter(character);
+                }
+            }
+            return cAdded;
         }
 
         //Template guff
@@ -231,11 +258,33 @@ namespace Ceebeetle
     [CollectionDataContract(Name = "GameTemplateList")]
     public class CCBGameTemplateList : List<CCBGameTemplate>
     {
+        public CCBGameTemplate FindTemplate(string templateName)
+        {
+            foreach (CCBGameTemplate gameTemplate in this)
+            {
+                if (0 == string.Compare(gameTemplate.Name, templateName))
+                    return gameTemplate;
+            }
+            return null;
+        }
     }
 
     [CollectionDataContract(Name = "Games")]
     public class CCBGames : List<CCBGame>
     {
+        public bool HasGame(string gameName)
+        {
+            return (null != FindGame(gameName));
+        }
+        public CCBGame FindGame(string gameName)
+        {
+            foreach (CCBGame game in this)
+            {
+                if (game.IsThisGame(gameName))
+                    return game;
+            }
+            return null;
+        }
     }
 
     [DataContract(Name="GameData")]
@@ -266,6 +315,10 @@ namespace Ceebeetle
             get { return m_templates; }
         }
 
+        public bool HasGame(string game)
+        {
+            return m_games.HasGame(game);
+        }
         public CCBGame AddGame(string name)
         {
             return AddGame(name, null);
@@ -278,6 +331,17 @@ namespace Ceebeetle
             AddSafe(newGame);
             return newGame;
         }
+        public int MergeGame(CCBGame game)
+        {
+            CCBGame curGame = m_games.FindGame(game.Name);
+
+            if (null == curGame)
+            {
+                m_games.Add(game);
+                return game.Characters.Count;
+            }
+            return curGame.MergeGame(game);
+        }
         public CCBGameTemplate AddTemplate(string name, CCBGame gameFrom)
         {
             CCBGameTemplate newTemplate = (null == gameFrom) ? new CCBGameTemplate(name) : new CCBGameTemplate(name, gameFrom);
@@ -285,6 +349,17 @@ namespace Ceebeetle
             CCBDirty.kDirty = true;
             AddSafe(newTemplate);
             return newTemplate;
+        }
+        public bool MergeTemplate(CCBGameTemplate template)
+        {
+            CCBGameTemplate curTemplate = m_templates.FindTemplate(template.Name);
+
+            if (null == curTemplate)
+            {
+                AddSafe(template);
+                return true;
+            }
+            return false;
         }
         public void DeleteGame(CCBGame game)
         {
@@ -309,6 +384,7 @@ namespace Ceebeetle
         }
         public void AddSafe(CCBGameTemplate template)
         {
+            CCBDirty.kDirty = true;
             lock (this)
             {
                 if (null == m_templates)
@@ -374,6 +450,10 @@ namespace Ceebeetle
                 }
             }
             System.Diagnostics.Debug.Write("Loading:" + docPath);
+            evtArgs.Result = LoadGamesSafe(docPath);
+        }
+        public TStatusUpdate LoadGamesSafe(string docPath)
+        {
             lock (this)
             {
                 XmlReader xsReader = null;
@@ -390,28 +470,28 @@ namespace Ceebeetle
                     }
                     foreach (CCBGameTemplate template in loadedGames.m_templates)
                         AddSafe(template);
-                    evtArgs.Result = TStatusUpdate.tsuFileLoaded;
+                    return TStatusUpdate.tsuFileLoaded;
                 }
                 catch (System.IO.FileNotFoundException nothere)
                 {
                     System.Diagnostics.Debug.Write(String.Format("No data file, not loading games [{0}]", nothere.FileName));
-                    evtArgs.Result = TStatusUpdate.tsuFileNothingLoaded;
                     if (null != xsReader)
                         xsReader.Close();
+                    return TStatusUpdate.tsuFileNothingLoaded;
                 }
                 catch (System.Runtime.Serialization.SerializationException serex)
                 {
                     System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading games [{0}]", serex.ToString()));
-                    evtArgs.Result = TStatusUpdate.tsuParseError;
                     if (null != xsReader)
                         xsReader.Close();
+                    return TStatusUpdate.tsuParseError;
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.Write("Exception reading: " + ex.ToString());
-                    evtArgs.Result = TStatusUpdate.tsuError;
                     if (null != xsReader)
                         xsReader.Close();
+                    return TStatusUpdate.tsuError;
                 }
             }
         }

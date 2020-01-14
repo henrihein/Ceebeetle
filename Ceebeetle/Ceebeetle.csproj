@@ -66,6 +66,9 @@
     <Compile Include="GameTemplatePicker.xaml.cs">
       <DependentUpon>GameTemplatePicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImportGames.xaml.cs">
+      <DependentUpon>ImportGames.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NamePicker.xaml.cs">
       <DependentUpon>NamePicker.xaml</DependentUpon>
     </Compile>
@@ -90,6 +93,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="GameTemplatePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImportGames.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
