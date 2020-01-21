@@ -40,6 +40,7 @@ namespace Ceebeetle
         {
             btnDelete.IsEnabled = (-1 != lbPicked.SelectedIndex);
             btnCopy.IsEnabled = (-1 != lbPicked.SelectedIndex);
+            btnCopyToClipboard.IsEnabled = (-1 != lbPicked.SelectedIndex);
             tbPrefix.IsEnabled = (true == cbUsePrefix.IsChecked);
         }
 

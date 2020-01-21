@@ -988,12 +988,16 @@ namespace Ceebeetle
             OpenTemplates();
         }
 
-        private void btnNamePicker_Click(object sender, RoutedEventArgs e)
+        private void ShowNamePicker()
         {
             NamePicker namePickerWnd = new NamePicker();
 
             namePickerWnd.CopyNameCallback = new DOnCopyName(OnCopyName);
             namePickerWnd.Show();
+        }
+        private void btnNamePicker_Click(object sender, RoutedEventArgs e)
+        {
+            ShowNamePicker();
         }
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
@@ -1013,6 +1017,13 @@ namespace Ceebeetle
         private void btnTemplates_Click(object sender, RoutedEventArgs e)
         {
             OpenTemplates();
+        }
+        private void btnPickNames_Click(object sender, RoutedEventArgs e)
+        {
+            ShowNamePicker();
+        }
+        private void btnStore_Click(object sender, RoutedEventArgs e)
+        {
         }
     }
 }

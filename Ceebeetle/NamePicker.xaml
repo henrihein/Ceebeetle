@@ -20,7 +20,7 @@
         <Button Content="_Generate" Height="24" HorizontalAlignment="Left" Margin="20,350,0,0" Name="btnGenerate" VerticalAlignment="Top" Width="168" Click="btnGenerate_Click" ToolTip="Generates a random name of the selected type" />
         <Label Content="Names" Height="29" HorizontalAlignment="Left" Margin="211,12,0,0" Name="label1" VerticalAlignment="Top" Width="312" />
         <ListBox Height="234" HorizontalAlignment="Left" Margin="211,38,0,0" Name="lbPicked" VerticalAlignment="Top" Width="209" SelectionChanged="lbPicked_SelectionChanged" ToolTip="Picked and generated names" />
-        <Button Content="_Copy Name to current game item" Height="24" HorizontalAlignment="Left" Margin="211,322,0,0" Name="btnCopy" VerticalAlignment="Top" Width="209" Click="btnCopy_Click" ToolTip="Copies selected name to the currently selected item in the main window" />
+        <Button Content="_Copy Name to current game item" HorizontalAlignment="Left" Margin="211,322,0,42" Name="btnCopy" Width="209" Click="btnCopy_Click" ToolTip="Copies selected name to the currently selected item in the main window" />
         <Button Content="Copy name to Clip_board" Height="24" HorizontalAlignment="Left" Margin="211,0,0,14" Name="btnCopyToClipboard" VerticalAlignment="Bottom" Width="209" ToolTip="Copies selected name to the clipboard" Click="btnCopyToClipboard_Click" />
         <Button Content="_Delete Name" Height="28" HorizontalAlignment="Right" Margin="0,38,12,0" Name="btnDelete" VerticalAlignment="Top" Width="95" ToolTip="Delete selected name from list" />
         <Button Content="_Reset List" Height="28" HorizontalAlignment="Right" Margin="0,72,12,0" Name="btnReset" VerticalAlignment="Top" Width="95" Click="btnReset_Click" ToolTip="Reset the list of names" />

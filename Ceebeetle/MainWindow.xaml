@@ -15,6 +15,12 @@
                 <Button Name="btnImport" Click="btnImport_Click">
                     <Image Source="/Ceebeetle;component/Resources/import.bmp" ToolTip="Import: Load games or templates from previous saves" />
                 </Button>
+                <Button Name="btnNames" Click="btnPickNames_Click">
+                    <Image Source="/Ceebeetle;component/Resources/picknames.bmp" ToolTip="Pick or Generate Character Names" />
+                </Button>
+                <Button Name="btnStore" Click="btnStore_Click">
+                    <Image Source="/Ceebeetle;component/Resources/store.bmp" ToolTip="Create a store for characters to shop" />
+                </Button>
             </ToolBar>
         </ToolBarTray>
         <Grid Margin="12,0,12,26" Height="396" VerticalAlignment="Bottom">
