@@ -23,7 +23,7 @@ namespace Ceebeetle
     /// </summary>
     public partial class MainWindow : Window
     {
-        private bool m_deleteEnabled;
+        private bool m_deleteEnabled, m_deleteUsed;
         CCBConfig m_config;
         CCBGameData m_games;
         List<CCBGameTemplate> m_templates;
@@ -44,6 +44,7 @@ namespace Ceebeetle
             m_games = new CCBGameData();
             m_templates = new List<CCBGameTemplate>();
             m_deleteEnabled = false;
+            m_deleteUsed = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
             m_onAddingNewEntityModeD = new DOnAddingNewEntityMode(OnAddingNewEntityMode);
             m_onCreateNewGameD = new DOnCreateNewGame(OnCreateNewGame);
@@ -231,6 +232,11 @@ namespace Ceebeetle
                 Application.Current.Dispatcher.Invoke(m_onCharacterListUpdateD, args);
             }
         }
+        private void ResetDeleteButton()
+        {
+            btnDelete.Content = "Enable Delete";
+            m_deleteEnabled = false;
+        }
         private void OnTimer(object source, ElapsedEventArgs evtArgs)
         {
             if (m_games.IsDirty)
@@ -239,6 +245,9 @@ namespace Ceebeetle
                 if (!m_worker.IsBusy)
                     m_worker.RunWorkerAsync(m_config);
             }
+            if (m_deleteEnabled && !m_deleteUsed)
+                Application.Current.Dispatcher.Invoke(new DOnKnownUIUpdate(ResetDeleteButton), new object[0]{});
+            m_deleteUsed = false;
         }
         private void OnAddingNewEntityMode()
         {
@@ -311,6 +320,7 @@ namespace Ceebeetle
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
+            m_deleteUsed = true;
             if (m_deleteEnabled)
             {
                 CCBTreeViewItem selItem = (CCBTreeViewItem)tvGames.SelectedItem;
@@ -1024,6 +1034,9 @@ namespace Ceebeetle
         }
         private void btnStore_Click(object sender, RoutedEventArgs e)
         {
+            StoreManager storeWnd = new StoreManager();
+
+            storeWnd.Show();
         }
     }
 }
