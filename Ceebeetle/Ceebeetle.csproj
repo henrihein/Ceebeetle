@@ -83,6 +83,10 @@
     <Compile Include="Names\NordicDwarvenNames.cs" />
     <Compile Include="Names\TolkienDwarvenNames.cs" />
     <Compile Include="StockTemplates.cs" />
+    <Compile Include="Store.cs" />
+    <Compile Include="StoreManager.xaml.cs">
+      <DependentUpon>StoreManager.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
       <SubType>Designer</SubType>
@@ -123,6 +127,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NamePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StoreManager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -168,6 +176,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\store.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\storemgr.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

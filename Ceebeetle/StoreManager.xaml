@@ -1,0 +1,34 @@
+﻿<src:CCBChildWindow x:Class="Ceebeetle.StoreManager"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:src="clr-namespace:Ceebeetle"
+        Title="Ceebeetle Store Manager" Height="463" Width="612" x:Name="wndStoreManager">
+    <Grid Height="415" Width="605">
+        <Label Content="Place or type of place:" Height="35" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" Width="140" />
+        <ListBox HorizontalAlignment="Left" Margin="14,45,0,72" Name="lbPlaces" Width="138" SelectionMode="Single" SelectionChanged="lbPlaces_SelectionChanged" />
+        <TextBox Height="20" HorizontalAlignment="Left" Margin="14,0,0,41" Name="tbPlace" VerticalAlignment="Bottom" Width="138" TextChanged="tbPlace_OnChanged" />
+        <Button Content="Add _Place..." HorizontalAlignment="Left" Margin="12,0,0,16" Name="btnAddPlace" Width="140" VerticalAlignment="Bottom" Click="btnAddPlace_OnClick" />
+        <Label Content="Items:" Height="27" HorizontalAlignment="Left" Margin="181,12,0,0" Name="label2" VerticalAlignment="Top" Width="142" />
+        <Button Content="Add Items from _Bag..." HorizontalAlignment="Left" Margin="176,0,0,12" Name="btnAddItemsFromBag" Width="147" VerticalAlignment="Bottom" />
+        <ListBox HorizontalAlignment="Right" Margin="0,45,282,102" Name="lbItems" Width="147" SelectionMode="Multiple" SelectionChanged="lbItems_SelectionChanged" />
+        <TextBox HorizontalAlignment="Left" Margin="176,0,0,65" Name="tbAddItem" Width="146" Height="24" VerticalAlignment="Bottom" Text="" TextChanged="OnItemText_Changed" />
+        <Button Content="Add _Item" Margin="176,0,0,37" Name="btnAddItem" Click="btnAddItem_Click" Height="21" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="146" />
+        <CheckBox Content="_Available" Height="20" HorizontalAlignment="Right" Margin="0,38,147,0" Name="cbItemAvailable" VerticalAlignment="Top" Width="102" Checked="cbItemAvailable_Checked" />
+        <GroupBox Height="245" HorizontalAlignment="Left" Margin="350,60,0,0" Name="groupBox1" VerticalAlignment="Top" Width="231"></GroupBox>
+        <Grid Margin="0,64,24,110" HorizontalAlignment="Right" Width="225">
+            <Label Content="Chance:" Height="24" HorizontalAlignment="Left" Margin="8,27,0,0" Name="label3" VerticalAlignment="Top" Width="95" />
+            <Label Content="%" Height="23" HorizontalAlignment="Right" Margin="0,33,22,0" Name="label6" VerticalAlignment="Top" Width="25" />
+            <Label Content="Minimum cost:" Height="24" HorizontalAlignment="Left" Margin="12,68,0,0" Name="label4" VerticalAlignment="Top" Width="94" />
+            <Label Content="Maximum cost:" Height="24" HorizontalAlignment="Left" Margin="13,106,0,0" Name="label5" VerticalAlignment="Top" Width="90" />
+            <Label Content="Limit:" Height="24" HorizontalAlignment="Left" Margin="13,140,0,0" Name="label7" VerticalAlignment="Top" Width="90" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,33,0,0" Name="tbChance" VerticalAlignment="Top" Width="58" />
+            <TextBox Height="24" Margin="114,68,25,0" Name="tbMinCost" VerticalAlignment="Top" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,106,0,0" Name="tbMaxCost" VerticalAlignment="Top" Width="86" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,140,0,0" Name="tbLimit" VerticalAlignment="Top" Width="86" />
+            <Button Content="_Save" Height="25" HorizontalAlignment="Left" Margin="114,197,0,0" Name="btnSaveItem" VerticalAlignment="Top" Width="89" Click="btnSaveItem_Click" />
+            <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,167,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" />
+        </Grid>
+        <Button Content="_Close" Height="28" HorizontalAlignment="Right" Margin="0,0,24,16" Name="btnClose" VerticalAlignment="Bottom" Width="161" Click="btnClose_Click" />
+        <Label Content="" Height="21" HorizontalAlignment="Left" Margin="350,344,0,0" Name="txStatus" VerticalAlignment="Top" Width="225" FontSize="8" />
+    </Grid>
+</src:CCBChildWindow>

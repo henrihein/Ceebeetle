@@ -17,6 +17,7 @@ namespace Ceebeetle
         tsuParseError = 0x801
     }
 
+    public delegate void DOnKnownUIUpdate();
     public delegate void DOnNewCharacter(CCBCharacter newCharacter);
     public delegate void DOnCreateNewGame(CCBGameTemplate template, string name);
     public delegate CCBGameTemplate DOnCreateNewTemplate(CCBGame game, string name);

@@ -57,5 +57,18 @@ namespace Ceebeetle
                     ttip.Content = strTooltip;
             }
         }
+        protected int IntFromTextbox(TextBox ctl, System.Windows.Controls.Label txStatus)
+        {
+            int result = 0;
+            string strNumber = ctl.Text;
+
+            if (!System.Int32.TryParse(strNumber, out result))
+                txStatus.Content = string.Format("Could not convert '{0}' to number", strNumber);
+            return result;
+        }
+        protected void SetTextboxInt(TextBox ctl, int num)
+        {
+            ctl.Text = string.Format("{0}", num);
+        }
     }
 }
