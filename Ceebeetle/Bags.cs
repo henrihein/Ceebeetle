@@ -98,7 +98,7 @@ namespace Ceebeetle
     [KnownType(typeof(CCBStoreItem))]
     public class CCBCountedBagItem : CCBBagItem
     {
-        [DataMember]
+        [DataMember(Name="Count")]
         private int m_count;
 
         public override int Count

@@ -16,17 +16,20 @@ namespace Ceebeetle
     /// <summary>
     /// Interaction logic for StoreManager.xaml
     /// </summary>
-    public partial class StoreManager : CCBChildWindow
+    public partial class StoreManagerWnd : CCBChildWindow
     {
-        private CCBStoreItemPlaceTypeList m_placeList;
+        private CCBStoreManager m_manager;
         private bool m_initialized;
 
-        public StoreManager()
+        private StoreManagerWnd()
+        {
+        }
+        public StoreManagerWnd(CCBStoreManager manager)
         {
             m_initialized = false;
-            m_placeList = new CCBStoreItemPlaceTypeList();
+            m_manager = manager;
             InitializeComponent();
-            lbPlaces.Items.Add(new CCBStoreItemPlaceType("All"));
+            lbPlaces.Items.Add(new CCBStorePlaceType("All"));
             tbChance.Text = "100";
             Validate();
             m_initialized = true;
@@ -38,7 +41,7 @@ namespace Ceebeetle
 
             btnAddPlace.IsEnabled = 0 < tbPlace.Text.Length;
             btnAddItem.IsEnabled = 0 < tbAddItem.Text.Length;
-            btnSaveItem.IsEnabled = true; // (0 < lbItems.SelectedItems.Count) && (0 < tbMaxCost.Text.Length) && (0 < tbMinCost.Text.Length) && (0 < tbChance.Text.Length);
+            btnSaveItem.IsEnabled = true;
             tbMinCost.IsEnabled = itemAvailable;
             tbMaxCost.IsEnabled = itemAvailable;
             tbChance.IsEnabled = itemAvailable;
@@ -56,7 +59,11 @@ namespace Ceebeetle
         {
             System.Diagnostics.Debug.Assert(0 < tbPlace.Text.Length);
             if (0 < tbPlace.Text.Length)
-                lbPlaces.Items.Add(new CCBStoreItemPlaceType(tbPlace.Text));
+            {
+                CCBStorePlaceType newPlaceType = m_manager.AddPlaceType(tbPlace.Text);
+
+                lbPlaces.Items.Add(newPlaceType);
+            }
         }
 
         private void OnItemText_Changed(object sender, TextChangedEventArgs e)
@@ -66,6 +73,8 @@ namespace Ceebeetle
         private void btnAddItem_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.Assert(0 < tbAddItem.Text.Length);
+            lbItems.Items.Add(tbAddItem.Text);
+#if false
             if (0 < tbAddItem.Text.Length)
             {
                 CCBStoreItemPlaceType place = GetCurrentPlaceType();
@@ -78,45 +87,59 @@ namespace Ceebeetle
                 }
                 lbItems.Items.Add(newStoreItem.Item);
             }
+#endif
         }
-        private CCBStoreItemPlaceType GetCurrentPlaceType()
+        private CCBStorePlaceType GetPlace(int ixPlace)
         {
-            System.Diagnostics.Debug.Assert(-1 == lbPlaces.SelectedIndex);
-            if (-1 == lbPlaces.SelectedIndex)
+            CCBStorePlaceType place = null;
+
+            place = (CCBStorePlaceType)lbPlaces.Items[ixPlace];
+            if (null != place)
+                return place;
+            System.Diagnostics.Debug.Assert(false);
+            System.Diagnostics.Debug.Write(string.Format("Unknown item in place list at {0}", ixPlace));
+            throw new CEStoreManagerNoPlaceFound("Unknown item in place list at {0}", ixPlace);
+        }
+        private CCBStorePlaceType GetCurrentPlace()
+        {
+            int ixPlace = lbPlaces.SelectedIndex;
+
+            System.Diagnostics.Debug.Assert(-1 != lbPlaces.SelectedIndex);
+            if (-1 == ixPlace) ixPlace = 0;
+            return GetPlace(ixPlace);
+        }
+        private string GetCurrentItem()
+        {
+            System.Diagnostics.Debug.Assert(-1 != lbItems.SelectedIndex);
+            if (-1 != lbItems.SelectedIndex)
             {
-                if (0 == lbPlaces.Items.Count)
-                {
-                    System.Diagnostics.Debug.Assert(false);
-                    lbPlaces.Items.Add(new CCBStoreItemPlaceType("All"));
-                }
-                return (CCBStoreItemPlaceType)lbPlaces.Items[0];
+                object oItem = lbItems.Items[lbItems.SelectedIndex];
+
+                return oItem.ToString();
             }
-            return (CCBStoreItemPlaceType)lbPlaces.Items[lbPlaces.SelectedIndex];
+            return "none";
         }
         private void btnSaveItem_Click(object sender, RoutedEventArgs e)
         {
             bool bAvailable = true == cbItemAvailable.IsChecked;
-            CCBStoreItemPlaceType place = GetCurrentPlaceType();
+            CCBStorePlaceType place = GetCurrentPlace();
+            string itemTag = GetCurrentItem();
+            CCBPotentialStoreItem potentialStoreItem = place.FindItem(itemTag);
 
-            foreach (object oItem in lbItems.SelectedItems)
-            {
-                CCBPotentialStoreItem potentialStoreItem = place.FindItem(oItem.ToString());
-
-                if (null == potentialStoreItem)
-                    potentialStoreItem = new CCBPotentialStoreItem(oItem.ToString());
-                potentialStoreItem.Chance = IntFromTextbox(tbChance, txStatus);
-                potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
-                potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
-                if (0 == tbLimit.Text.Length)
-                    potentialStoreItem.Limit = -1;
-                else
-                    potentialStoreItem.Limit = IntFromTextbox(tbLimit, txStatus);
-                potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);
-                if (bAvailable)
-                    place.AddPotentialStoreItem(potentialStoreItem);
-                else
-                    place.RemovePotentialStoreItem(potentialStoreItem);
-            }
+            if (null == potentialStoreItem)
+                potentialStoreItem = new CCBPotentialStoreItem(itemTag);
+            potentialStoreItem.Chance = IntFromTextbox(tbChance, txStatus);
+            potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
+            potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
+            if (0 == tbLimit.Text.Length)
+                potentialStoreItem.Limit = -1;
+            else
+                potentialStoreItem.Limit = IntFromTextbox(tbLimit, txStatus);
+            potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);
+            if (bAvailable)
+                place.AddPotentialStoreItem(potentialStoreItem);
+            else
+                place.RemovePotentialStoreItem(potentialStoreItem);
         }
         private void cbItemAvailable_Checked(object sender, RoutedEventArgs e)
         {
@@ -137,30 +160,24 @@ namespace Ceebeetle
         }
         private void UpdateProperties()
         {
-            CCBStoreItemPlaceType place = GetCurrentPlaceType();
-            CCBPotentialStoreItem prevItem = null;
+            string itemTag = GetCurrentItem();
+            CCBStorePlaceType place = GetCurrentPlace();
 
-            foreach (object oItem in lbItems.SelectedItems)
+            System.Diagnostics.Debug.Assert(null != place);
+            if (null != place)
             {
-                CCBPotentialStoreItem potentialStoreItem = place.FindItem(oItem.ToString());
+                CCBPotentialStoreItem potentialStoreItem = place.FindItem(itemTag);
 
                 if (null != potentialStoreItem)
                 {
-                    if (null == prevItem)
-                    {
-                        prevItem = potentialStoreItem;
-                        SetTextboxInt(tbChance, potentialStoreItem.Chance);
-                        SetTextboxInt(tbMinCost, potentialStoreItem.MinCost);
-                        SetTextboxInt(tbMaxCost, potentialStoreItem.MaxCost);
-                        SetTextboxInt(tbLimit, potentialStoreItem.Limit);
-                        cbRandomizeLimit.IsChecked = potentialStoreItem.RandomizeLimit;
-                    }
-                    else if (!prevItem.CompareStats(potentialStoreItem))
-                    {
-                        Reset();
-                        return;
-                    }
+                    SetTextboxInt(tbChance, potentialStoreItem.Chance);
+                    SetTextboxInt(tbMinCost, potentialStoreItem.MinCost);
+                    SetTextboxInt(tbMaxCost, potentialStoreItem.MaxCost);
+                    SetTextboxInt(tbLimit, potentialStoreItem.Limit);
+                    cbRandomizeLimit.IsChecked = potentialStoreItem.RandomizeLimit;
                 }
+                else
+                    Reset();
             }
         }
         private void lbPlaces_SelectionChanged(object sender, SelectionChangedEventArgs e)

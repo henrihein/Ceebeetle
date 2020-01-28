@@ -11,6 +11,7 @@ namespace Ceebeetle
         private static readonly uint m_version = 11;
         private static readonly uint m_minVersion = 10;
         private static readonly string m_filenameTemplate = @"ceebeetle{0:D2}.{1}";
+        private static readonly string m_storenameTemplate = @"ceebeetleStore{0:D2}.{1}";
 
         private string m_filename;
         private string m_tmpFilename;
@@ -77,6 +78,14 @@ namespace Ceebeetle
                 return fileToCheck;
             //No file found, return default path.
             return DocPath;
+        }
+        public string GetStoreTmpFilePath()
+        {
+            return MakeDocPath(String.Format(m_storenameTemplate, m_version, "tmp"));
+        }
+        public string GetStoreFilePath()
+        {
+            return MakeDocPath(String.Format(m_storenameTemplate, m_version, "xml"));
         }
     }
 }

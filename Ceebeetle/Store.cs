@@ -3,13 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
+using System.Xml.Schema;
+using System.Threading;
+using System.IO;
 
 namespace Ceebeetle
 {
     [DataContract(Name = "StoreItem")]
+    [KnownType(typeof(CCBPotentialStoreItem))]
     public class CCBStoreItem : CCBCountedBagItem
     {
+        [DataMember(Name = "Cost")]
         private int m_cost;
+        [DataMember(Name = "Limit")]
         private int m_limit;
         public int Cost
         {
@@ -34,8 +42,11 @@ namespace Ceebeetle
     [DataContract(Name = "PotentialStoreItem")]
     public class CCBPotentialStoreItem : CCBStoreItem
     {
+        [DataMember(Name = "Costs")]
         private int[] m_costRange;
+        [DataMember(Name = "Chance")]
         private int m_chance;
+        [DataMember(Name = "RandomizeLimit")]
         private bool m_randomizeLimit;
         public int MinCost
         {
@@ -83,9 +94,11 @@ namespace Ceebeetle
     }
 
     [DataContract(Name = "StoreItemPlaceType")]
-    public class CCBStoreItemPlaceType
+    public class CCBStorePlaceType
     {
+        [DataMember(Name = "PlaceTypeName")]
         private string m_placeName;
+        [DataMember(Name = "Items")]
         private CCBBag m_items;
 
         public string Name
@@ -94,10 +107,10 @@ namespace Ceebeetle
             set { m_placeName = value; }
         }
 
-        private CCBStoreItemPlaceType()
+        private CCBStorePlaceType()
         {
         }
-        public CCBStoreItemPlaceType(string name)
+        public CCBStorePlaceType(string name)
         {
             m_placeName = name;
             m_items = new CCBBag();
@@ -136,8 +149,84 @@ namespace Ceebeetle
     }
 
     [CollectionDataContract(Name = "StoreItemPlaceTypes")]
-    public class CCBStoreItemPlaceTypeList : List<CCBStoreItemPlaceType>
+    public class CCBStoreItemPlaceTypeList : List<CCBStorePlaceType>
     {
+    }
+
+    [DataContract(Name = "StoreManager")]
+    public class CCBStoreManager
+    {
+        [DataMember(Name = "PlaceList")]
+        private CCBStoreItemPlaceTypeList m_places;
+        static private bool m_dirty = false;
+
+        public CCBStoreItemPlaceTypeList Places
+        {
+            get 
+            { 
+                m_dirty = true;  
+                return m_places; 
+            }
+        }
+        public bool Dirty
+        {
+            get { return m_dirty; }
+        }
+
+        public CCBStoreManager()
+        {
+            m_places = new CCBStoreItemPlaceTypeList();
+        }
+
+        public CCBStorePlaceType AddPlaceType(string placeTypeName)
+        {
+            CCBStorePlaceType newPlaceType = new CCBStorePlaceType(placeTypeName);
+
+            m_places.Add(newPlaceType);
+            return newPlaceType;
+        }
+        public bool SaveStores(string savePath, string tmpPath)
+        {
+            XmlWriter xmlWriter = null;
+
+            lock (this)
+            {
+                try
+                {
+                    DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBStoreManager));
+                    
+                    xmlWriter = XmlWriter.Create(tmpPath);
+                    dsWriter.WriteObject(xmlWriter, this);
+                    xmlWriter.Flush();
+                    xmlWriter.Close();
+                    m_dirty = false;
+                    try
+                    {
+                        System.IO.File.Copy(tmpPath, savePath, true);
+                    }
+                    catch (System.IO.IOException ioex)
+                    {
+                        System.Diagnostics.Debug.Write("Error copying file: " + ioex.ToString());
+                    }
+                    return true;
+                }
+                catch (IOException ioex)
+                {
+                    System.Diagnostics.Debug.Write("IO Exception saving store definitions: " + ioex.ToString());
+                }
+                catch (XmlException xmlex)
+                {
+                    System.Diagnostics.Debug.Write("XML Exception saving store definitions: " + xmlex.ToString());
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write("Exception saving store definitions: " + ex.ToString());
+                }
+            }
+            if (null != xmlWriter)
+                xmlWriter.Close();
+            return false;
+        }
     }
 
     [DataContract(Name = "Store")]

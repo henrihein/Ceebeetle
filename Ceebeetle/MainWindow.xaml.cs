@@ -27,6 +27,7 @@ namespace Ceebeetle
         CCBConfig m_config;
         CCBGameData m_games;
         List<CCBGameTemplate> m_templates;
+        CCBStoreManager m_storeManager;
         BackgroundWorker m_worker;
         DoWorkEventHandler m_loaderD;
         Timer m_timer;
@@ -43,6 +44,7 @@ namespace Ceebeetle
             m_config = new CCBConfig();
             m_games = new CCBGameData();
             m_templates = new List<CCBGameTemplate>();
+            m_storeManager = new CCBStoreManager();
             m_deleteEnabled = false;
             m_deleteUsed = false;
             m_onCharacterListUpdateD = new DOnCharacterListUpdate(OnCharacterListUpdate);
@@ -90,6 +92,8 @@ namespace Ceebeetle
                     if (mbr == MessageBoxResult.No)
                         evtArgs.Cancel = true;
                 }
+                if (!m_storeManager.SaveStores(m_config.GetStoreFilePath(), m_config.GetStoreTmpFilePath()))
+                    System.Diagnostics.Debug.Write("Failed to write store file. Ignoring for now.");
             }
             catch (IOException iox)
             {
@@ -455,7 +459,10 @@ namespace Ceebeetle
                     if (null != game)
                         return game;
                 }
-                node = (TreeViewItem)node.Parent;
+                if (node.Parent is TreeViewItem)
+                    node = (TreeViewItem)node.Parent;
+                else
+                    break;
             }
             return null;
         }
@@ -774,7 +781,8 @@ namespace Ceebeetle
             {
                 CCBTreeViewGame gameNode = FindGameFromNode(selItem);
 
-                gameModel = gameNode.Game;
+                if (null != gameNode)
+                    gameModel = gameNode.Game;
             }
             Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
 
@@ -1034,7 +1042,7 @@ namespace Ceebeetle
         }
         private void btnStore_Click(object sender, RoutedEventArgs e)
         {
-            StoreManager storeWnd = new StoreManager();
+            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager);
 
             storeWnd.Show();
         }
