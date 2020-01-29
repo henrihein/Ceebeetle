@@ -24,17 +24,35 @@ namespace Ceebeetle
         private StoreManagerWnd()
         {
         }
-        public StoreManagerWnd(CCBStoreManager manager)
+        public StoreManagerWnd(CCBStoreManager manager, string storeFilePath)
         {
             m_initialized = false;
             m_manager = manager;
             InitializeComponent();
             lbPlaces.Items.Add(new CCBStorePlaceType("All"));
             tbChance.Text = "100";
+            //TODO: Should really load on a background worker.
+            if (m_manager.LoadStores(storeFilePath))
+                Populate();
             Validate();
             m_initialized = true;
         }
 
+        private void Populate()
+        {
+            HashSet<string> itemSet = new HashSet<string>();
+
+            foreach (CCBStorePlaceType place in m_manager.Places)
+            {
+                lbPlaces.Items.Add(place);
+                foreach (CCBBagItem item in place.StoreItems.Items)
+                {
+                    itemSet.Add(item.Item);
+                }
+            }
+            foreach (string item in itemSet)
+                lbItems.Items.Add(item);
+        }
         private void Validate()
         {
             bool itemAvailable = true == cbItemAvailable.IsChecked;

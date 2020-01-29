@@ -106,6 +106,10 @@ namespace Ceebeetle
             get { return m_placeName; }
             set { m_placeName = value; }
         }
+        public CCBBag StoreItems
+        {
+            get { return m_items; }
+        }
 
         private CCBStorePlaceType()
         {
@@ -225,6 +229,46 @@ namespace Ceebeetle
             }
             if (null != xmlWriter)
                 xmlWriter.Close();
+            return false;
+        }
+        public bool LoadStores(string docPath)
+        {
+            lock (this)
+            {
+                XmlReader xsReader = null;
+                try
+                {
+                    xsReader = XmlReader.Create(docPath);
+                    DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBStoreManager));
+                    CCBStoreManager stores = (CCBStoreManager)dsReader.ReadObject(xsReader);
+
+                    m_places = stores.m_places;
+                    m_dirty = false;
+                    xsReader.Close();
+                    return true;
+                }
+                catch (System.IO.FileNotFoundException nothere)
+                {
+                    System.Diagnostics.Debug.Write(String.Format("No data file, not loading stores [{0}]", nothere.FileName));
+                    if (null != xsReader)
+                        xsReader.Close();
+                    return false;
+                }
+                catch (System.Runtime.Serialization.SerializationException serex)
+                {
+                    System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading stores [{0}]", serex.ToString()));
+                    if (null != xsReader)
+                        xsReader.Close();
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write("Exception reading store document: " + ex.ToString());
+                    if (null != xsReader)
+                        xsReader.Close();
+                    return false;
+                }
+            }
             return false;
         }
     }

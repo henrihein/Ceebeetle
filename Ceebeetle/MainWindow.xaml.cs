@@ -1042,7 +1042,7 @@ namespace Ceebeetle
         }
         private void btnStore_Click(object sender, RoutedEventArgs e)
         {
-            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager);
+            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, m_config.GetStoreFilePath());
 
             storeWnd.Show();
         }
