@@ -17,17 +17,10 @@ namespace Ceebeetle
     {
         [DataMember(Name = "Cost")]
         private int m_cost;
-        [DataMember(Name = "Limit")]
-        private int m_limit;
         public int Cost
         {
             get { return m_cost; }
             set { m_cost = value; }
-        }
-        public int Limit
-        {
-            get { return m_limit; }
-            set { m_limit = value; }
         }
 
         private CCBStoreItem()
@@ -35,8 +28,29 @@ namespace Ceebeetle
         }
         public CCBStoreItem(string name) : base(name, 0)
         {
-            m_limit = -1;
         }
+    }
+
+    public class CCBStoreItemOmitted : CCBBagItem
+    {
+        private string m_reason;
+        public string Reason
+        {
+            get { return m_reason; }
+        }
+        private CCBStoreItemOmitted()
+        {
+        }
+        public CCBStoreItemOmitted(string item, string reason)
+            : base(item)
+        {
+            m_reason = reason;
+        }
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", Item, m_reason);
+        }
+
     }
 
     [DataContract(Name = "PotentialStoreItem")]
@@ -88,8 +102,27 @@ namespace Ceebeetle
             if (m_costRange[0] != rhs.m_costRange[0]) return false;
             if (m_costRange[1] != rhs.m_costRange[1]) return false;
             if (m_randomizeLimit != rhs.m_randomizeLimit) return false;
-            if (Limit != rhs.Limit) return false;
+            if (Count != rhs.Count) return false;
             return true;
+        }
+        public bool IncludeInStore(Random rnd)
+        {
+            if (100 <= m_chance) return true;
+            int r = rnd.Next(0, 100);
+            return (r < m_chance);
+        }
+        public int GetCost(Random rnd)
+        {
+            if ((m_costRange[0] == m_costRange[1]) || (0 == m_costRange[1]))
+                return m_costRange[0];
+            return rnd.Next(m_costRange[0], m_costRange[1] + 1);
+        }
+        public int GetLimit(Random rnd)
+        {
+            if (0 == Count) return 0;
+            if (m_randomizeLimit)
+                return rnd.Next(0, Count + 1);
+            return Count;
         }
     }
 
@@ -126,6 +159,11 @@ namespace Ceebeetle
 
         public void AddPotentialStoreItem(CCBPotentialStoreItem item)
         {
+            //Avoid duplicate items by removing it first if there.
+            CCBPotentialStoreItem oldItem = FindItem(item.Item);
+
+            if (null != oldItem)
+                m_items.RemoveItem(oldItem);
             m_items.Add(item);
         }
         public bool RemovePotentialStoreItem(CCBPotentialStoreItem item)
@@ -162,6 +200,7 @@ namespace Ceebeetle
     {
         [DataMember(Name = "PlaceList")]
         private CCBStoreItemPlaceTypeList m_places;
+        private List<CCBStore> m_stores;
         static private bool m_dirty = false;
 
         public CCBStoreItemPlaceTypeList Places
@@ -180,6 +219,7 @@ namespace Ceebeetle
         public CCBStoreManager()
         {
             m_places = new CCBStoreItemPlaceTypeList();
+            m_stores = new List<CCBStore>();
         }
 
         public CCBStorePlaceType AddPlaceType(string placeTypeName)
@@ -252,21 +292,58 @@ namespace Ceebeetle
                     System.Diagnostics.Debug.Write(String.Format("No data file, not loading stores [{0}]", nothere.FileName));
                     if (null != xsReader)
                         xsReader.Close();
-                    return false;
                 }
                 catch (System.Runtime.Serialization.SerializationException serex)
                 {
                     System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading stores [{0}]", serex.ToString()));
                     if (null != xsReader)
                         xsReader.Close();
-                    return false;
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.Write("Exception reading store document: " + ex.ToString());
                     if (null != xsReader)
                         xsReader.Close();
-                    return false;
+                }
+            }
+            return false;
+        }
+
+        public CCBStore AddStore(CCBStorePlaceType place)
+        {
+            CCBStore newStore = new CCBStore();
+            System.Random rnd = new Random();
+
+            foreach (CCBPotentialStoreItem maybeItem in place.StoreItems.Items)
+            {
+                if (maybeItem.IncludeInStore(rnd))
+                {
+                    CCBStoreItem newItem = new CCBStoreItem(maybeItem.Item);
+
+                    newItem.Cost = maybeItem.GetCost(rnd);
+                    newItem.Count = maybeItem.GetLimit(rnd);
+                    if (0 == newItem.Count)
+                        newStore.Add(new CCBStoreItemOmitted(maybeItem.Item, "Limited"));
+                    else
+                        newStore.Add(newItem);
+                }
+                else
+                    newStore.Add(new CCBStoreItemOmitted(maybeItem.Item, "Chance"));
+            }
+            lock (this)
+            {
+                m_stores.Add(newStore);
+            }
+            return newStore;
+        }
+        public bool DeleteStore(CCBStore store)
+        {
+            lock (this)
+            {
+                if (m_stores.Contains(store))
+                {
+                    m_stores.Remove(store);
+                    return true;
                 }
             }
             return false;
@@ -276,7 +353,10 @@ namespace Ceebeetle
     [DataContract(Name = "Store")]
     public class CCBStore : CCBBag
     {
-        public CCBStore() : base()
+        public CCBStore() : base("Unnamed store")
+        {
+        }
+        public CCBStore(string name) : base(name)
         {
         }
     }

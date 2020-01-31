@@ -60,6 +60,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CeebeetleExceptions.cs" />
+    <Compile Include="CreateStoreWnd.xaml.cs">
+      <DependentUpon>CreateStoreWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExportGames.xaml.cs">
       <DependentUpon>ExportGames.xaml</DependentUpon>
     </Compile>
@@ -88,8 +91,15 @@
     <Compile Include="StoreManager.xaml.cs">
       <DependentUpon>StoreManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StoreViewerWnd.xaml.cs">
+      <DependentUpon>StoreViewerWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CreateStoreWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -132,6 +142,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="StoreManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StoreViewerWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

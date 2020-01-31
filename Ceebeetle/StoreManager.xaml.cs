@@ -150,9 +150,9 @@ namespace Ceebeetle
             potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
             potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
             if (0 == tbLimit.Text.Length)
-                potentialStoreItem.Limit = -1;
+                potentialStoreItem.Count = -1;
             else
-                potentialStoreItem.Limit = IntFromTextbox(tbLimit, txStatus);
+                potentialStoreItem.Count = IntFromTextbox(tbLimit, txStatus);
             potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);
             if (bAvailable)
                 place.AddPotentialStoreItem(potentialStoreItem);
@@ -188,10 +188,11 @@ namespace Ceebeetle
 
                 if (null != potentialStoreItem)
                 {
+                    cbItemAvailable.IsChecked = true;
                     SetTextboxInt(tbChance, potentialStoreItem.Chance);
                     SetTextboxInt(tbMinCost, potentialStoreItem.MinCost);
                     SetTextboxInt(tbMaxCost, potentialStoreItem.MaxCost);
-                    SetTextboxInt(tbLimit, potentialStoreItem.Limit);
+                    SetTextboxInt(tbLimit, potentialStoreItem.Count);
                     cbRandomizeLimit.IsChecked = potentialStoreItem.RandomizeLimit;
                 }
                 else
@@ -205,6 +206,18 @@ namespace Ceebeetle
         private void lbItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (m_initialized) UpdateProperties();
+        }
+
+        private void btnRollStore_Click(object sender, RoutedEventArgs e)
+        {
+            CCBStore store = m_manager.AddStore(GetCurrentPlace());
+            CreateStoreWnd createStoreWnd = new CreateStoreWnd(store);
+
+            createStoreWnd.ShowDialog();
+            if (!createStoreWnd.Keep)
+            {
+                m_manager.DeleteStore(store);
+            }
         }
     }
 }

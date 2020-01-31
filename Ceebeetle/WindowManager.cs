@@ -70,5 +70,15 @@ namespace Ceebeetle
         {
             ctl.Text = string.Format("{0}", num);
         }
+        protected void SelectListboxItem(ListBox ctl, int ixSel)
+        {
+            if (0 < ctl.Items.Count)
+            {
+                if (ixSel < ctl.Items.Count)
+                    ctl.SelectedIndex = ixSel;
+                else
+                    ctl.SelectedIndex = (ctl.Items.Count - 1);
+            }
+        }
     }
 }

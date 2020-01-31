@@ -16,7 +16,7 @@
         <CheckBox Content="_Available" Height="20" HorizontalAlignment="Right" Margin="0,38,147,0" Name="cbItemAvailable" VerticalAlignment="Top" Width="102" Checked="cbItemAvailable_Checked" />
         <GroupBox Height="245" HorizontalAlignment="Left" Margin="350,60,0,0" Name="groupBox1" VerticalAlignment="Top" Width="231"></GroupBox>
         <Grid Margin="0,64,24,110" HorizontalAlignment="Right" Width="225">
-            <Label Content="Chance:" Height="24" HorizontalAlignment="Left" Margin="8,27,0,0" Name="label3" VerticalAlignment="Top" Width="95" />
+            <Label Content="Chance:" Height="24" HorizontalAlignment="Left" Margin="13,27,0,0" Name="label3" VerticalAlignment="Top" Width="90" />
             <Label Content="%" Height="23" HorizontalAlignment="Right" Margin="0,33,22,0" Name="label6" VerticalAlignment="Top" Width="25" />
             <Label Content="Minimum cost:" Height="24" HorizontalAlignment="Left" Margin="12,68,0,0" Name="label4" VerticalAlignment="Top" Width="94" />
             <Label Content="Maximum cost:" Height="24" HorizontalAlignment="Left" Margin="13,106,0,0" Name="label5" VerticalAlignment="Top" Width="90" />
@@ -28,7 +28,8 @@
             <Button Content="_Save" Height="25" HorizontalAlignment="Left" Margin="114,197,0,0" Name="btnSaveItem" VerticalAlignment="Top" Width="89" Click="btnSaveItem_Click" />
             <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,167,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" />
         </Grid>
-        <Button Content="_Close" Height="28" HorizontalAlignment="Right" Margin="0,0,24,16" Name="btnClose" VerticalAlignment="Bottom" Width="161" Click="btnClose_Click" />
-        <Label Content="" Height="21" HorizontalAlignment="Left" Margin="350,344,0,0" Name="txStatus" VerticalAlignment="Top" Width="225" FontSize="8" />
+        <Button Content="_Roll Store..." Height="24" HorizontalAlignment="Right" Margin="0,0,22,77" Name="btnRollStore" VerticalAlignment="Bottom" Width="160" Click="btnRollStore_Click" />
+        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,24,16" Name="btnClose" VerticalAlignment="Bottom" Width="160" Click="btnClose_Click" />
+        <Label Content="" Height="21" HorizontalAlignment="Right" Margin="0,344,22,0" Name="txStatus" VerticalAlignment="Top" Width="233" FontSize="8" />
     </Grid>
 </src:CCBChildWindow>
