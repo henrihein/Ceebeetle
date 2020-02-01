@@ -211,6 +211,10 @@ namespace Ceebeetle
                 return m_places; 
             }
         }
+        public List<CCBStore> Stores
+        {
+            get { return m_stores; }
+        }
         public bool Dirty
         {
             get { return m_dirty; }

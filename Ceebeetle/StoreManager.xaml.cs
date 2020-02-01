@@ -139,6 +139,10 @@ namespace Ceebeetle
         }
         private void btnSaveItem_Click(object sender, RoutedEventArgs e)
         {
+            SaveItem();
+        }
+        private void SaveItem()
+        {
             bool bAvailable = true == cbItemAvailable.IsChecked;
             CCBStorePlaceType place = GetCurrentPlace();
             string itemTag = GetCurrentItem();
@@ -165,6 +169,7 @@ namespace Ceebeetle
         }
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            SaveItem();
             this.Close();
         }
 
@@ -213,11 +218,46 @@ namespace Ceebeetle
             CCBStore store = m_manager.AddStore(GetCurrentPlace());
             CreateStoreWnd createStoreWnd = new CreateStoreWnd(store);
 
+            SaveItem();
             createStoreWnd.ShowDialog();
             if (!createStoreWnd.Keep)
             {
                 m_manager.DeleteStore(store);
             }
+        }
+
+        private void tbChance_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+        private void tbMinCost_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+        private void tbMaxCost_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+        private void tbLimit_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+
+        private void cbRandomizeLimit_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+        private void cbItemAvailable_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+
+        private void btnViewStores_Click(object sender, RoutedEventArgs e)
+        {
+            StoreViewerWnd viewerWnd = new StoreViewerWnd(m_manager);
+
+            SaveItem();
+            viewerWnd.ShowDialog();
         }
     }
 }

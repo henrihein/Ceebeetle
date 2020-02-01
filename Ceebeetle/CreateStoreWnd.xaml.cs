@@ -132,6 +132,7 @@ namespace Ceebeetle
         private void btnCreate_Click(object sender, RoutedEventArgs e)
         {
             m_keepStore = true;
+            m_store.Name = tbStoreName.Text;
             Close();
         }
     }
