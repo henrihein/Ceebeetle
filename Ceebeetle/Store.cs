@@ -26,7 +26,8 @@ namespace Ceebeetle
         private CCBStoreItem()
         {
         }
-        public CCBStoreItem(string name) : base(name, 0)
+        public CCBStoreItem(string name)
+            : base(name, 0)
         {
         }
     }
@@ -62,6 +63,8 @@ namespace Ceebeetle
         private int m_chance;
         [DataMember(Name = "RandomizeLimit")]
         private bool m_randomizeLimit;
+        [DataMember(Name = "Available")]
+        private bool m_available;
         public int MinCost
         {
             get { return m_costRange[0]; }
@@ -82,14 +85,21 @@ namespace Ceebeetle
             get { return m_randomizeLimit; }
             set { m_randomizeLimit = value; }
         }
+        public bool Available
+        {
+            get { return m_available; }
+            set { m_available = value; }
+        }
 
-        private CCBPotentialStoreItem() : base("n/a")
+        private CCBPotentialStoreItem()
+            : base("n/a")
         {
             m_costRange = new int[2] { 0, 1 };
             m_chance = 100;
             m_randomizeLimit = false;
         }
-        public CCBPotentialStoreItem(string name) : base(name)
+        public CCBPotentialStoreItem(string name)
+            : base(name)
         {
             m_costRange = new int[2] { 0, 1 };
             m_chance = 100;
@@ -188,22 +198,53 @@ namespace Ceebeetle
             }
             return null;
         }
+        public void MergeItems(CCBStorePlaceType placeFrom)
+        {
+            foreach (CCBPotentialStoreItem item in placeFrom.m_items.Items)
+                AddPotentialStoreItem(item);
+        }
     }
 
     [CollectionDataContract(Name = "StoreItemPlaceTypes")]
-    public class CCBStoreItemPlaceTypeList : List<CCBStorePlaceType>
+    public class CCBStorePlaceTypeList : List<CCBStorePlaceType>
     {
+        private static string m_allPlaceName = "All";
+        private CCBStorePlaceType m_allPlaces;
+        public CCBStorePlaceType AllPlaces
+        {
+            get { return m_allPlaces; }
+        }
+
+        public CCBStorePlaceTypeList() : base()
+        {
+            m_allPlaces = new CCBStorePlaceType(m_allPlaceName);
+            Add(m_allPlaces);
+        }
+        public void MergePlaces(CCBStorePlaceTypeList places)
+        {
+            foreach (CCBStorePlaceType place in places)
+            {
+                if (places.IsAllPlaceType(place))
+                    m_allPlaces.MergeItems(places.AllPlaces);
+                else
+                    Add(place);
+            }
+        }
+        private bool IsAllPlaceType(CCBStorePlaceType place)
+        {
+            return 0 == string.Compare(place.Name, m_allPlaceName);
+        }
     }
 
     [DataContract(Name = "StoreManager")]
     public class CCBStoreManager
     {
         [DataMember(Name = "PlaceList")]
-        private CCBStoreItemPlaceTypeList m_places;
+        private CCBStorePlaceTypeList m_places;
         private List<CCBStore> m_stores;
         static private bool m_dirty = false;
 
-        public CCBStoreItemPlaceTypeList Places
+        public CCBStorePlaceTypeList Places
         {
             get 
             { 
@@ -222,7 +263,7 @@ namespace Ceebeetle
 
         public CCBStoreManager()
         {
-            m_places = new CCBStoreItemPlaceTypeList();
+            m_places = new CCBStorePlaceTypeList();
             m_stores = new List<CCBStore>();
         }
 
@@ -286,7 +327,7 @@ namespace Ceebeetle
                     DataContractSerializer dsReader = new DataContractSerializer(typeof(CCBStoreManager));
                     CCBStoreManager stores = (CCBStoreManager)dsReader.ReadObject(xsReader);
 
-                    m_places = stores.m_places;
+                    m_places.MergePlaces(stores.m_places);
                     m_dirty = false;
                     xsReader.Close();
                     return true;
@@ -313,11 +354,8 @@ namespace Ceebeetle
             return false;
         }
 
-        public CCBStore AddStore(CCBStorePlaceType place)
+        private void AddItemsToStore(CCBStore store, CCBStorePlaceType place, Random rnd)
         {
-            CCBStore newStore = new CCBStore();
-            System.Random rnd = new Random();
-
             foreach (CCBPotentialStoreItem maybeItem in place.StoreItems.Items)
             {
                 if (maybeItem.IncludeInStore(rnd))
@@ -327,18 +365,32 @@ namespace Ceebeetle
                     newItem.Cost = maybeItem.GetCost(rnd);
                     newItem.Count = maybeItem.GetLimit(rnd);
                     if (0 == newItem.Count)
-                        newStore.Add(new CCBStoreItemOmitted(maybeItem.Item, "Limited"));
+                        store.Add(new CCBStoreItemOmitted(maybeItem.Item, "Limited"));
                     else
-                        newStore.Add(newItem);
+                        store.Add(newItem);
                 }
                 else
-                    newStore.Add(new CCBStoreItemOmitted(maybeItem.Item, "Chance"));
+                    store.Add(new CCBStoreItemOmitted(maybeItem.Item, "Chance"));
             }
-            lock (this)
+        }
+        public CCBStore AddStore(CCBStorePlaceType place)
+        {
+            if (null != place)
             {
-                m_stores.Add(newStore);
+                CCBStore newStore = new CCBStore("New Store", place.Name);
+                System.Random rnd = new Random();
+
+                lock (this)
+                {
+                    //New items replace previous items, and we want the specific place to override 
+                    //the generic All place. So add items from All first.
+                    AddItemsToStore(newStore, m_places.AllPlaces, rnd);
+                    AddItemsToStore(newStore, place, rnd);
+                    m_stores.Add(newStore);
+                }
+                return newStore;
             }
-            return newStore;
+            return null;
         }
         public bool DeleteStore(CCBStore store)
         {
@@ -357,11 +409,35 @@ namespace Ceebeetle
     [DataContract(Name = "Store")]
     public class CCBStore : CCBBag
     {
+        [DataMember(Name = "StoreType")]
+        private string m_storeType;
+        public string StoreType
+        {
+            get { return m_storeType; }
+        }
+
         public CCBStore() : base("Unnamed store")
         {
+            m_storeType = "Unknown";
         }
         public CCBStore(string name) : base(name)
         {
+            m_storeType = "Unknown";
+        }
+        public CCBStore(string name, string storeType)
+            : base(name)
+        {
+            m_storeType = storeType;
+        }
+
+        public void Add(CCBBagItem item)
+        {
+            //For a store, we don't want duplicate items
+            CCBBagItem exists = Find(item.Item);
+
+            if (null != exists)
+                RemoveItem(exists);
+            base.Add(item);
         }
     }
 }

@@ -29,11 +29,10 @@ namespace Ceebeetle
             m_initialized = false;
             m_manager = manager;
             InitializeComponent();
-            lbPlaces.Items.Add(new CCBStorePlaceType("All"));
             tbChance.Text = "100";
             //TODO: Should really load on a background worker.
-            if (m_manager.LoadStores(storeFilePath))
-                Populate();
+            m_manager.LoadStores(storeFilePath);
+            Populate();
             Validate();
             m_initialized = true;
         }
@@ -81,6 +80,7 @@ namespace Ceebeetle
                 CCBStorePlaceType newPlaceType = m_manager.AddPlaceType(tbPlace.Text);
 
                 lbPlaces.Items.Add(newPlaceType);
+                tbPlace.Text = "";
             }
         }
 
@@ -92,20 +92,7 @@ namespace Ceebeetle
         {
             System.Diagnostics.Debug.Assert(0 < tbAddItem.Text.Length);
             lbItems.Items.Add(tbAddItem.Text);
-#if false
-            if (0 < tbAddItem.Text.Length)
-            {
-                CCBStoreItemPlaceType place = GetCurrentPlaceType();
-                CCBPotentialStoreItem newStoreItem = place.FindItem(tbAddItem.Text);
-
-                if (null == newStoreItem)
-                {
-                    newStoreItem = new CCBPotentialStoreItem(tbAddItem.Text);
-                    place.AddPotentialStoreItem(newStoreItem);
-                }
-                lbItems.Items.Add(newStoreItem.Item);
-            }
-#endif
+            tbAddItem.Text = "";
         }
         private CCBStorePlaceType GetPlace(int ixPlace)
         {
@@ -122,13 +109,16 @@ namespace Ceebeetle
         {
             int ixPlace = lbPlaces.SelectedIndex;
 
-            System.Diagnostics.Debug.Assert(-1 != lbPlaces.SelectedIndex);
-            if (-1 == ixPlace) ixPlace = 0;
+            if (-1 == ixPlace)
+            {
+                if (0 == lbPlaces.Items.Count)
+                    return null;
+                ixPlace = 0;
+            }
             return GetPlace(ixPlace);
         }
         private string GetCurrentItem()
         {
-            System.Diagnostics.Debug.Assert(-1 != lbItems.SelectedIndex);
             if (-1 != lbItems.SelectedIndex)
             {
                 object oItem = lbItems.Items[lbItems.SelectedIndex];
@@ -146,22 +136,24 @@ namespace Ceebeetle
             bool bAvailable = true == cbItemAvailable.IsChecked;
             CCBStorePlaceType place = GetCurrentPlace();
             string itemTag = GetCurrentItem();
-            CCBPotentialStoreItem potentialStoreItem = place.FindItem(itemTag);
 
-            if (null == potentialStoreItem)
-                potentialStoreItem = new CCBPotentialStoreItem(itemTag);
-            potentialStoreItem.Chance = IntFromTextbox(tbChance, txStatus);
-            potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
-            potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
-            if (0 == tbLimit.Text.Length)
-                potentialStoreItem.Count = -1;
-            else
-                potentialStoreItem.Count = IntFromTextbox(tbLimit, txStatus);
-            potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);
-            if (bAvailable)
+            if ((null != place) && (null != itemTag))
+            {
+                CCBPotentialStoreItem potentialStoreItem = place.FindItem(itemTag);
+
+                if (null == potentialStoreItem)
+                    potentialStoreItem = new CCBPotentialStoreItem(itemTag);
+                potentialStoreItem.Available = bAvailable;
+                potentialStoreItem.Chance = IntFromTextbox(tbChance, txStatus);
+                potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
+                potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
+                if (true == cbLimit.IsChecked)
+                    potentialStoreItem.Count = IntFromTextbox(tbLimit, txStatus);
+                else
+                    potentialStoreItem.Count = -1;
+                potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);
                 place.AddPotentialStoreItem(potentialStoreItem);
-            else
-                place.RemovePotentialStoreItem(potentialStoreItem);
+            }
         }
         private void cbItemAvailable_Checked(object sender, RoutedEventArgs e)
         {
@@ -193,11 +185,22 @@ namespace Ceebeetle
 
                 if (null != potentialStoreItem)
                 {
-                    cbItemAvailable.IsChecked = true;
+                    cbItemAvailable.IsChecked = potentialStoreItem.Available;
                     SetTextboxInt(tbChance, potentialStoreItem.Chance);
                     SetTextboxInt(tbMinCost, potentialStoreItem.MinCost);
                     SetTextboxInt(tbMaxCost, potentialStoreItem.MaxCost);
-                    SetTextboxInt(tbLimit, potentialStoreItem.Count);
+                    if (-1 == potentialStoreItem.Count)
+                    {
+                        cbLimit.IsChecked = false;
+                        tbLimit.Text = "";
+                        tbLimit.IsEnabled = false;
+                    }
+                    else
+                    {
+                        cbLimit.IsChecked = true;
+                        SetTextboxInt(tbLimit, potentialStoreItem.Count);
+                        tbLimit.IsEnabled = true;
+                    }
                     cbRandomizeLimit.IsChecked = potentialStoreItem.RandomizeLimit;
                 }
                 else
@@ -211,6 +214,10 @@ namespace Ceebeetle
         private void lbItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (m_initialized) UpdateProperties();
+        }
+        private void cbLimit_Checked(object sender, RoutedEventArgs e)
+        {
+            tbLimit.IsEnabled = true == cbLimit.IsChecked;
         }
 
         private void btnRollStore_Click(object sender, RoutedEventArgs e)
@@ -242,8 +249,11 @@ namespace Ceebeetle
         {
             SaveItem();
         }
-
         private void cbRandomizeLimit_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SaveItem();
+        }
+        private void cbLimit_LostFocus(object sender, RoutedEventArgs e)
         {
             SaveItem();
         }

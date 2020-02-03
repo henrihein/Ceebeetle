@@ -14,19 +14,20 @@
         <TextBox HorizontalAlignment="Left" Margin="176,0,0,52" Name="tbAddItem" Width="170" Height="20" VerticalAlignment="Bottom" Text="" TextChanged="OnItemText_Changed" />
         <Button Content="Add _Item" Margin="176,0,0,25" Name="btnAddItem" Click="btnAddItem_Click" Height="21" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="62" />
         <CheckBox Content="_Available" Height="20" HorizontalAlignment="Right" Margin="0,38,147,0" Name="cbItemAvailable" VerticalAlignment="Top" Width="102" Checked="cbItemAvailable_Checked" LostFocus="cbItemAvailable_LostFocus" />
-        <GroupBox Height="247" HorizontalAlignment="Left" Margin="379,60,0,0" Name="groupBox1" VerticalAlignment="Top" Width="225"></GroupBox>
+        <GroupBox Height="247" HorizontalAlignment="Left" Margin="379,60,0,0" Name="gbItemDetails" VerticalAlignment="Top" Width="225" Header="Item Details"></GroupBox>
         <Grid Margin="0,64,24,202" HorizontalAlignment="Right" Width="225">
             <Label Content="Chance:" Height="24" HorizontalAlignment="Left" Margin="13,27,0,0" Name="label3" VerticalAlignment="Top" Width="90" />
             <Label Content="%" Height="23" HorizontalAlignment="Right" Margin="0,33,22,0" Name="label6" VerticalAlignment="Top" Width="25" />
             <Label Content="Minimum cost:" Height="24" HorizontalAlignment="Left" Margin="12,68,0,0" Name="label4" VerticalAlignment="Top" Width="94" />
             <Label Content="Maximum cost:" Height="24" HorizontalAlignment="Left" Margin="13,106,0,0" Name="label5" VerticalAlignment="Top" Width="90" />
-            <Label Content="Limit:" Height="24" HorizontalAlignment="Left" Margin="13,140,0,0" Name="label7" VerticalAlignment="Top" Width="90" />
+            <Label Content="Limit:" Height="24" HorizontalAlignment="Left" Margin="13,165,0,0" Name="label7" VerticalAlignment="Top" Width="90" />
             <TextBox Height="24" HorizontalAlignment="Left" Margin="114,33,0,0" Name="tbChance" VerticalAlignment="Top" Width="58" LostFocus="tbChance_LostFocus" />
             <TextBox Height="24" Margin="114,68,25,0" Name="tbMinCost" VerticalAlignment="Top" LostFocus="tbMinCost_LostFocus" />
             <TextBox Height="24" HorizontalAlignment="Left" Margin="114,106,0,0" Name="tbMaxCost" VerticalAlignment="Top" Width="86" LostFocus="tbMaxCost_LostFocus" />
-            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,140,0,0" Name="tbLimit" VerticalAlignment="Top" Width="86" LostFocus="tbLimit_LostFocus" />
-            <Button Content="_Save" Height="25" HorizontalAlignment="Left" Margin="114,197,0,0" Name="btnSaveItem" VerticalAlignment="Top" Width="89" Click="btnSaveItem_Click" />
-            <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,167,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" LostFocus="cbRandomizeLimit_LostFocus" />
+            <CheckBox Content="_Limit Item Count" Height="21" HorizontalAlignment="Left" Margin="13,140,0,0" Name="cbLimit" VerticalAlignment="Top" Width="187" LostFocus="cbLimit_LostFocus" Checked="cbLimit_Checked" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,165,0,0" Name="tbLimit" VerticalAlignment="Top" Width="86" LostFocus="tbLimit_LostFocus" />
+            <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,192,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" LostFocus="cbRandomizeLimit_LostFocus" />
+            <Button Content="_Save" Height="25" HorizontalAlignment="Left" Margin="114,197,0,0" Name="btnSaveItem" VerticalAlignment="Top" Width="89" Click="btnSaveItem_Click" Visibility="Hidden" />
         </Grid>
         <Button Content="_Roll Store..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,108" Name="btnRollStore" VerticalAlignment="Bottom" Width="150" Click="btnRollStore_Click" />
         <Button Content="_View Stores..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,73" Name="btnViewStores" VerticalAlignment="Bottom" Width="150" Click="btnViewStores_Click" />
