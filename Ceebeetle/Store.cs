@@ -8,6 +8,9 @@ using System.Xml.Serialization;
 using System.Xml.Schema;
 using System.Threading;
 using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using System.Globalization;
 
 namespace Ceebeetle
 {
@@ -431,6 +434,13 @@ namespace Ceebeetle
             m_storeType = storeType;
         }
 
+        public override string  ToString()
+        {
+            if (null == m_storeType)
+                return base.ToString();
+            return string.Format("{0} - store in {1}", Name, m_storeType);
+        }
+
         public void Add(CCBBagItem item)
         {
             //For a store, we don't want duplicate items
@@ -439,6 +449,63 @@ namespace Ceebeetle
             if (null != exists)
                 RemoveItem(exists);
             base.Add(item);
+        }
+
+        private string BuildItemsString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("Item\tCost\tItem count\r\n");
+            foreach (CCBStoreItem item in Items)
+            {
+                string itemCount;
+
+                if (-1 == item.Count)
+                    itemCount = "-";
+                else
+                    itemCount = string.Format("{0}", item.Count);
+                sb.Append(string.Format("{0}\t{1}\t{2}\r\n", item.Item, item.Cost, itemCount));
+            }
+            return sb.ToString();
+        }
+        public Visual Print()
+        {
+            int xPageWidth = 816; //8.5 * 96
+            int xLeft = 12, xRight = xPageWidth - xLeft;
+            int yTop = 12;
+            DrawingVisual printed = new DrawingVisual();
+            DrawingContext dc = printed.RenderOpen();
+            Brush fgBrush = new SolidColorBrush(Colors.Black);
+            string strLangSetting = CultureInfo.CurrentCulture.ToString();
+            FormattedText headerText = new FormattedText(Name, CultureInfo.GetCultureInfo(strLangSetting),
+                                                            FlowDirection.LeftToRight, new Typeface("Cambria"),
+                                                            32, Brushes.Black);
+            string strItems = BuildItemsString();
+            FormattedText bodyText = new FormattedText(strItems, CultureInfo.GetCultureInfo(strLangSetting),
+                                                            FlowDirection.LeftToRight, new Typeface("Cambria"),
+                                                            11, Brushes.Black);
+            headerText.MaxTextWidth = 300;
+            headerText.MaxTextHeight = 240;
+            headerText.SetFontSize(36 * (96.0 / 72.0));
+            headerText.SetFontWeight(FontWeights.Bold);
+            headerText.SetForegroundBrush(fgBrush);
+            dc.DrawText(headerText, new Point(xLeft, yTop));
+            dc.DrawLine(new Pen(fgBrush, 8), new Point(xLeft, 72), new Point(xRight, 72));
+            //bodyText.SetFontSize(11 * (96.0 / 72.0));
+            bodyText.SetFontWeight(FontWeights.Normal);
+            bodyText.SetTextDecorations(new TextDecorationCollection());
+            //Format table header, find the end first
+            int ixHeaderEnd = strItems.IndexOf("\r\n");
+            if (-1 == ixHeaderEnd)
+                ixHeaderEnd = 0;
+            else
+            {
+                bodyText.SetFontWeight(FontWeights.Bold, 0, ixHeaderEnd);
+                bodyText.SetTextDecorations(TextDecorations.Underline, 0, ixHeaderEnd);
+            }
+            dc.DrawText(bodyText, new Point(xLeft, yTop + 80));
+            dc.Close();
+            return printed;
         }
     }
 }

@@ -104,9 +104,19 @@ namespace Ceebeetle
         private void btnPrint_Click(object sender, RoutedEventArgs e)
         {
             PrintDialog printDlg = new PrintDialog();
+            CCBStore store = GetCurrentStore();
 
-            if (true != printDlg.ShowDialog())
-                return;
+            if (null != store)
+            {
+                if (true != printDlg.ShowDialog())
+                    return;
+                else
+                {
+                    Visual oPrint = store.Print();
+
+                    printDlg.PrintVisual(oPrint, store.ToString());
+                }
+            }
         }
     }
 }
