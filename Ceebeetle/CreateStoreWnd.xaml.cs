@@ -48,10 +48,10 @@ namespace Ceebeetle
             lStoreType.Content = "In: " + m_store.StoreType;
             foreach (CCBBagItem item in m_store.Items)
             {
-                if (item is CCBStoreItem)
-                    AddStoreItem((CCBStoreItem)item);
-                else if (item is CCBStoreItemOmitted)
+                if (item is CCBStoreItemOmitted)
                     AddOmittedItem((CCBStoreItemOmitted)item);
+                else if (item is CCBStoreItem)
+                    AddStoreItem((CCBStoreItem)item);
                 else
                 {
                     System.Diagnostics.Debug.Write(string.Format("Unexpected object in store list: {0}", item.GetType().ToString()));

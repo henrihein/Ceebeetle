@@ -26,7 +26,7 @@ namespace Ceebeetle
             set { m_cost = value; }
         }
 
-        private CCBStoreItem()
+        protected CCBStoreItem()
         {
         }
         public CCBStoreItem(string name)
@@ -35,7 +35,8 @@ namespace Ceebeetle
         }
     }
 
-    public class CCBStoreItemOmitted : CCBBagItem
+    //Base on StoreItem rather than BagItem, for type safety in the UI code.
+    public class CCBStoreItemOmitted : CCBStoreItem
     {
         private string m_reason;
         public string Reason

@@ -89,9 +89,9 @@ namespace Ceebeetle
             return MakeDocPath(String.Format(m_storenameTemplate, m_version, "xml"));
         }
 
-        private bool MaybeBackup(string dirPath, string fileName, uint ixBak)
+        private bool MaybeBackup(string dirPath, string fileName, string extension, uint ixBak)
         {
-            string fileNameSrc = string.Format("{0}-{1}.bak", fileName, ixBak);
+            string fileNameSrc = Path.Combine(dirPath, fileName) + extension;
             string fileNameDst = string.Format("{0}-{1}.bak", fileName, ixBak + 1);
             string fullPathSrc = Path.Combine(dirPath, fileNameSrc);
             string fullPathDst = Path.Combine(dirPath, fileNameDst);
@@ -106,7 +106,7 @@ namespace Ceebeetle
                     //Don't backup files less than 4 hours apart.
                     dtSrc.Subtract(new TimeSpan(4, 0, 0));
                     if (dtSrc > dtDst)
-                        MaybeBackup(dirPath, fileName, ixBak + 1);
+                        MaybeBackup(dirPath, fileName, ".bak", ixBak + 1);
                 }
                 File.Copy(fullPathSrc, fullPathDst);
                 return true;
@@ -119,8 +119,9 @@ namespace Ceebeetle
             {
                 string dirName = Path.GetDirectoryName(path);
                 string fileName = Path.GetFileNameWithoutExtension(path);
+                string extension = Path.GetExtension(path);
 
-                return MaybeBackup(dirName, fileName, 0);
+                return MaybeBackup(dirName, fileName, extension, 0);
             }
             return false;
         }
