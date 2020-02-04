@@ -92,7 +92,7 @@ namespace Ceebeetle
                     if (mbr == MessageBoxResult.No)
                         evtArgs.Cancel = true;
                 }
-                if (!m_storeManager.SaveStores(m_config.GetStoreFilePath(), m_config.GetStoreTmpFilePath()))
+                if (!m_storeManager.SaveStores(m_config))
                     System.Diagnostics.Debug.Write("Failed to write store file. Ignoring for now.");
             }
             catch (IOException iox)

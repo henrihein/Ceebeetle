@@ -278,7 +278,15 @@ namespace Ceebeetle
             m_places.Add(newPlaceType);
             return newPlaceType;
         }
-        public bool SaveStores(string savePath, string tmpPath)
+        private void MergeStores(List<CCBStore> stores)
+        {
+            foreach (CCBStore store in stores)
+            {
+                if (!m_stores.Contains(store))
+                    m_stores.Add(store);
+            }
+        }
+        public bool SaveStores(CCBConfig conf)
         {
             XmlWriter xmlWriter = null;
 
@@ -287,15 +295,16 @@ namespace Ceebeetle
                 try
                 {
                     DataContractSerializer dsWriter = new DataContractSerializer(typeof(CCBStoreManager));
-                    
-                    xmlWriter = XmlWriter.Create(tmpPath);
+
+                    conf.MaybeBackup(conf.GetStoreTmpFilePath());
+                    xmlWriter = XmlWriter.Create(conf.GetStoreTmpFilePath());
                     dsWriter.WriteObject(xmlWriter, this);
                     xmlWriter.Flush();
                     xmlWriter.Close();
                     m_dirty = false;
                     try
                     {
-                        System.IO.File.Copy(tmpPath, savePath, true);
+                        System.IO.File.Copy(conf.GetStoreTmpFilePath(), conf.GetStoreFilePath(), true);
                     }
                     catch (System.IO.IOException ioex)
                     {
@@ -332,6 +341,7 @@ namespace Ceebeetle
                     CCBStoreManager stores = (CCBStoreManager)dsReader.ReadObject(xsReader);
 
                     m_places.MergePlaces(stores.m_places);
+                    MergeStores(stores.m_stores);
                     m_dirty = false;
                     xsReader.Close();
                     return true;

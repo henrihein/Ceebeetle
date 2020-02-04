@@ -6,10 +6,11 @@ using System.IO;
 
 namespace Ceebeetle
 {
-    class CCBConfig
+    public class CCBConfig
     {
         private static readonly uint m_version = 11;
         private static readonly uint m_minVersion = 10;
+        private static readonly uint m_backupCount = 8;
         private static readonly string m_filenameTemplate = @"ceebeetle{0:D2}.{1}";
         private static readonly string m_storenameTemplate = @"ceebeetleStore{0:D2}.{1}";
 
@@ -86,6 +87,42 @@ namespace Ceebeetle
         public string GetStoreFilePath()
         {
             return MakeDocPath(String.Format(m_storenameTemplate, m_version, "xml"));
+        }
+
+        private bool MaybeBackup(string dirPath, string fileName, uint ixBak)
+        {
+            string fileNameSrc = string.Format("{0}-{1}.bak", fileName, ixBak);
+            string fileNameDst = string.Format("{0}-{1}.bak", fileName, ixBak + 1);
+            string fullPathSrc = Path.Combine(dirPath, fileNameSrc);
+            string fullPathDst = Path.Combine(dirPath, fileNameDst);
+
+            if (File.Exists(fullPathSrc))
+            {
+                if (File.Exists(fullPathDst) && (ixBak < m_backupCount))
+                {
+                    DateTime dtSrc = File.GetLastWriteTime(fullPathSrc);
+                    DateTime dtDst = File.GetLastWriteTime(fullPathDst);
+
+                    //Don't backup files less than 4 hours apart.
+                    dtSrc.Subtract(new TimeSpan(4, 0, 0));
+                    if (dtSrc > dtDst)
+                        MaybeBackup(dirPath, fileName, ixBak + 1);
+                }
+                File.Copy(fullPathSrc, fullPathDst);
+                return true;
+            }
+            return false;
+        }
+        public bool MaybeBackup(string path)
+        {
+            if (File.Exists(path))
+            {
+                string dirName = Path.GetDirectoryName(path);
+                string fileName = Path.GetFileNameWithoutExtension(path);
+
+                return MaybeBackup(dirName, fileName, 0);
+            }
+            return false;
         }
     }
 }

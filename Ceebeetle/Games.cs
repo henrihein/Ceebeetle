@@ -516,6 +516,7 @@ namespace Ceebeetle
 
             if (null != conf)
             {
+                conf.MaybeBackup(conf.TmpPath);
                 if (SaveGames(conf.TmpPath))
                 {
                     try
