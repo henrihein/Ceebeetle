@@ -25,6 +25,7 @@ namespace Ceebeetle
             m_storeMgr = storeMgr;
             InitializeComponent();
             Populate();
+            Validate();
         }
 
         private void Populate()
@@ -34,11 +35,30 @@ namespace Ceebeetle
                 lbStores.Items.Add(store);
             }
         }
+        private void PopulateItems()
+        {
+            CCBStore store = GetCurrentStore();
+
+            lbItems.Items.Clear();
+            if (null != store)
+            {
+                foreach (CCBBagItem item in store.Items)
+                {
+                    if (item is CCBStoreItem)
+                        lbItems.Items.Add(new StoreItemViewer(item));
+                }
+            }
+        }
         private CCBStore GetCurrentStore()
         {
-            if (-1 != lbStores.SelectedIndex)
-                return (CCBStore)lbStores.Items[lbStores.SelectedIndex];
-            return null;
+            if (-1 == lbStores.SelectedIndex)
+                return null;
+            return (CCBStore)lbStores.Items[lbStores.SelectedIndex];
+        }
+        private void Validate()
+        {
+            btnDeleteItem.IsEnabled = (-1 != lbItems.SelectedIndex);
+            btnDeleteStore.IsEnabled = (-1 != lbStores.SelectedIndex);
         }
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
@@ -56,6 +76,37 @@ namespace Ceebeetle
                 lbStores.Items.RemoveAt(ixCur);
                 SelectListboxItem(lbStores, ixCur);
             }
+        }
+
+        private void lbItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Validate();
+        }
+        private void lbStores_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            PopulateItems();
+            Validate();
+        }
+
+        private void btnDeleteStore_Click(object sender, RoutedEventArgs e)
+        {
+            CCBStore curStore = GetCurrentStore();
+
+            if (null != curStore)
+            {
+                int ixCur = lbStores.SelectedIndex;
+
+                lbStores.Items.RemoveAt(ixCur);
+                SelectListboxItem(lbStores, ixCur);
+            }
+        }
+
+        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDialog printDlg = new PrintDialog();
+
+            if (true != printDlg.ShowDialog())
+                return;
         }
     }
 }

@@ -94,6 +94,7 @@
     <Compile Include="StoreViewerWnd.xaml.cs">
       <DependentUpon>StoreViewerWnd.xaml</DependentUpon>
     </Compile>
+    <Compile Include="WindowHelpers.cs" />
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
       <SubType>Designer</SubType>

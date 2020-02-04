@@ -241,6 +241,7 @@ namespace Ceebeetle
     {
         [DataMember(Name = "PlaceList")]
         private CCBStorePlaceTypeList m_places;
+        [DataMember(Name = "Stores")]
         private List<CCBStore> m_stores;
         static private bool m_dirty = false;
 

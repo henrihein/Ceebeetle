@@ -125,7 +125,7 @@ namespace Ceebeetle
 
                 return oItem.ToString();
             }
-            return "none";
+            return null;
         }
         private void btnSaveItem_Click(object sender, RoutedEventArgs e)
         {

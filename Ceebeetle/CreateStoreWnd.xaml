@@ -14,14 +14,14 @@
         <Label Height="25" HorizontalAlignment="Right" Margin="0,0,212,12" Name="lbStatus" VerticalAlignment="Bottom" Width="169" />
         <GroupBox Header="Item Details" Height="201" HorizontalAlignment="Right" Margin="0,44,197,0" Name="gbItemDetails" VerticalAlignment="Top" Width="190">
             <Grid Height="185" Width="184">
-                <Label Content="Cost:" Height="24" HorizontalAlignment="Right" Margin="0,13,76,0" Name="label4" VerticalAlignment="Top" Width="81" />
-                <TextBox Height="24" HorizontalAlignment="Right" Margin="0,43,30,0" Name="tbCost" VerticalAlignment="Top" Width="127" LostFocus="tbCost_LostFocus" />
-                <Label Content="Limit:" Height="24" HorizontalAlignment="Right" Margin="0,74,30,0" Name="labelLimit" VerticalAlignment="Top" Width="127" />
-                <TextBox Height="24" HorizontalAlignment="Right" Margin="0,101,30,0" Name="tbLimit" VerticalAlignment="Top" Width="127" />
+                <Label Content="Cost:" Height="24" HorizontalAlignment="Right" Margin="0,10,76,0" Name="label4" VerticalAlignment="Top" Width="81" />
+                <TextBox Height="24" HorizontalAlignment="Right" Margin="0,38,30,0" Name="tbCost" VerticalAlignment="Top" Width="127" LostFocus="tbCost_LostFocus" />
+                <Label Content="Limit:" Height="24" HorizontalAlignment="Right" Margin="0,67,30,0" Name="labelLimit" VerticalAlignment="Top" Width="127" />
+                <TextBox Height="24" HorizontalAlignment="Right" Margin="0,94,30,0" Name="tbLimit" VerticalAlignment="Top" Width="127" />
                 <Button Content="_Delete Item" Height="25" HorizontalAlignment="Right" Margin="0,140,30,0" Name="btnDeleteItem" VerticalAlignment="Top" Width="127" Click="btnDeleteItem_Click" />
             </Grid>
         </GroupBox>
         <Button Content="_Create Store" Height="24" HorizontalAlignment="Right" Margin="0,0,11,44" Name="btnCreate" VerticalAlignment="Bottom" Width="170" Click="btnCreate_Click" />
-        <Button Content="_Delete Store" Height="24" HorizontalAlignment="Right" Margin="0,0,10,10" Name="btnDelete" VerticalAlignment="Bottom" Width="171" Click="btnDelete_Click" />
+        <Button Content="_Discard Store" Height="24" HorizontalAlignment="Right" Margin="0,0,10,10" Name="btnDelete" VerticalAlignment="Bottom" Width="171" Click="btnDelete_Click" />
     </Grid>
 </src:CCBChildWindow>

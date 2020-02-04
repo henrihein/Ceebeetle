@@ -45,7 +45,7 @@ namespace Ceebeetle
         }
         private void Populate()
         {
-            lStoreType.Content = m_store.StoreType;
+            lStoreType.Content = "In: " + m_store.StoreType;
             foreach (CCBBagItem item in m_store.Items)
             {
                 if (item is CCBStoreItem)
