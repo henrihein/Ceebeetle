@@ -108,20 +108,31 @@ namespace Ceebeetle
                     if (dtSrc > dtDst)
                         MaybeBackup(dirPath, fileName, ".bak", ixBak + 1);
                 }
-                File.Copy(fullPathSrc, fullPathDst);
+                File.Copy(fullPathSrc, fullPathDst, true);
                 return true;
             }
             return false;
         }
         public bool MaybeBackup(string path)
         {
-            if (File.Exists(path))
+            try
             {
-                string dirName = Path.GetDirectoryName(path);
-                string fileName = Path.GetFileNameWithoutExtension(path);
-                string extension = Path.GetExtension(path);
+                if (File.Exists(path))
+                {
+                    string dirName = Path.GetDirectoryName(path);
+                    string fileName = Path.GetFileNameWithoutExtension(path);
+                    string extension = Path.GetExtension(path);
 
-                return MaybeBackup(dirName, fileName, extension, 0);
+                    return MaybeBackup(dirName, fileName, extension, 0);
+                }
+            }
+            catch (System.IO.IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("IO exception backing up {0} [{1}]", path, ioex.Message));
+            }
+            catch (System.Exception eex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception backing up {0} [{1}]", path, eex.Message));
             }
             return false;
         }

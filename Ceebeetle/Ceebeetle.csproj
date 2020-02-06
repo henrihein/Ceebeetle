@@ -59,6 +59,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BagSelector.xaml.cs">
+      <DependentUpon>BagSelector.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CeebeetleExceptions.cs" />
     <Compile Include="CreateStoreWnd.xaml.cs">
       <DependentUpon>CreateStoreWnd.xaml</DependentUpon>
@@ -97,6 +100,10 @@
     <Compile Include="WindowHelpers.cs" />
     <Compile Include="WindowManager.cs" />
     <Page Include="BagItemPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BagSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

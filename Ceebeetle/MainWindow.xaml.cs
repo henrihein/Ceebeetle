@@ -444,9 +444,25 @@ namespace Ceebeetle
         {
             return (CCBTreeViewItem)tvGames.SelectedItem;
         }
-        private CCBTreeViewGame FindCurrentGame()
+        private CCBTreeViewGame FindCurrentGameNode()
         {
             return FindGameFromNode((TreeViewItem)tvGames.SelectedItem);
+        }
+        private CCBTreeViewGame FindTopGameNode()
+        {
+            if (tvGames.HasItems)
+                return FindGameFromNode((TreeViewItem)tvGames.Items[0]);
+            return null;
+        }
+        private CCBGame FindCurrentGame(bool defaultToTop = false)
+        {
+            CCBTreeViewGame gameNode = FindCurrentGameNode();
+
+            if (defaultToTop && (null == gameNode))
+                gameNode = FindTopGameNode();
+            if (null != gameNode)
+                return gameNode.Game;
+            return null;
         }
         private CCBTreeViewGame FindGameFromNode(TreeViewItem node)
         {
@@ -1042,7 +1058,8 @@ namespace Ceebeetle
         }
         private void btnStore_Click(object sender, RoutedEventArgs e)
         {
-            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, m_config.GetStoreFilePath());
+            CCBGame game = FindCurrentGame(true);
+            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game, m_config.GetStoreFilePath());
 
             storeWnd.Show();
         }

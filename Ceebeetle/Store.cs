@@ -231,12 +231,24 @@ namespace Ceebeetle
                 if (places.IsAllPlaceType(place))
                     m_allPlaces.MergeItems(places.AllPlaces);
                 else
-                    Add(place);
+                    MergePlace(place);
             }
         }
         private bool IsAllPlaceType(CCBStorePlaceType place)
         {
             return 0 == string.Compare(place.Name, m_allPlaceName);
+        }
+        private void MergePlace(CCBStorePlaceType newPlace)
+        {
+            foreach (CCBStorePlaceType oldPlace in this)
+            {
+                if (0 == string.Compare(newPlace.Name, oldPlace.Name))
+                {
+                    oldPlace.MergeItems(newPlace);
+                    return;
+                }
+            }
+            Add(newPlace);
         }
     }
 

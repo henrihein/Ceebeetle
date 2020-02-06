@@ -9,7 +9,7 @@
         <TextBox Height="20" HorizontalAlignment="Left" Margin="14,0,0,52" Name="tbPlace" VerticalAlignment="Bottom" Width="138" TextChanged="tbPlace_OnChanged" />
         <Button Content="Add _Place..." HorizontalAlignment="Left" Margin="12,0,0,26" Name="btnAddPlace" Width="140" VerticalAlignment="Bottom" Click="btnAddPlace_OnClick" />
         <Label Content="Items:" Height="27" HorizontalAlignment="Left" Margin="181,12,0,0" Name="label2" VerticalAlignment="Top" Width="142" />
-        <Button Content="Add from _Bag..." HorizontalAlignment="Right" Margin="0,0,282,26" Name="btnAddItemsFromBag" Width="102" VerticalAlignment="Bottom" />
+        <Button Content="Add from _Bag..." HorizontalAlignment="Right" Margin="0,0,282,26" Name="btnAddItemsFromBag" Width="102" VerticalAlignment="Bottom" Click="btnAddItemsFromBag_Click" />
         <ListBox HorizontalAlignment="Right" Margin="0,45,282,78" Name="lbItems" Width="165" SelectionMode="Single" SelectionChanged="lbItems_SelectionChanged" />
         <TextBox HorizontalAlignment="Left" Margin="176,0,0,52" Name="tbAddItem" Width="170" Height="20" VerticalAlignment="Bottom" Text="" TextChanged="OnItemText_Changed" />
         <Button Content="Add _Item" Margin="176,0,0,25" Name="btnAddItem" Click="btnAddItem_Click" Height="21" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="62" />

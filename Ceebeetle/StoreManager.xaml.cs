@@ -19,15 +19,19 @@ namespace Ceebeetle
     public partial class StoreManagerWnd : CCBChildWindow
     {
         private CCBStoreManager m_manager;
+        private CCBGame m_game;
         private bool m_initialized;
 
         private StoreManagerWnd()
         {
+            m_manager = null;
+            m_game = null;
         }
-        public StoreManagerWnd(CCBStoreManager manager, string storeFilePath)
+        public StoreManagerWnd(CCBStoreManager manager, CCBGame game, string storeFilePath)
         {
             m_initialized = false;
             m_manager = manager;
+            m_game = game;
             InitializeComponent();
             tbChance.Text = "100";
             //TODO: Should really load on a background worker.
@@ -58,6 +62,7 @@ namespace Ceebeetle
 
             btnAddPlace.IsEnabled = 0 < tbPlace.Text.Length;
             btnAddItem.IsEnabled = 0 < tbAddItem.Text.Length;
+            btnAddItemsFromBag.IsEnabled = (null != m_game);
             btnSaveItem.IsEnabled = true;
             tbMinCost.IsEnabled = itemAvailable;
             tbMaxCost.IsEnabled = itemAvailable;
@@ -83,7 +88,6 @@ namespace Ceebeetle
                 tbPlace.Text = "";
             }
         }
-
         private void OnItemText_Changed(object sender, TextChangedEventArgs e)
         {
             Validate();
@@ -93,6 +97,19 @@ namespace Ceebeetle
             System.Diagnostics.Debug.Assert(0 < tbAddItem.Text.Length);
             lbItems.Items.Add(tbAddItem.Text);
             tbAddItem.Text = "";
+        }
+        private void btnAddItemsFromBag_Click(object sender, RoutedEventArgs e)
+        {
+            BagSelector bagSelector = new BagSelector(m_game);
+
+            if (true == bagSelector.ShowDialog())
+            {
+                if (null != bagSelector.SelectedBag)
+                {
+                    foreach (CCBBagItem item in bagSelector.SelectedBag.Items)
+                        lbItems.Items.Add(item.Item);
+                }
+            }
         }
         private CCBStorePlaceType GetPlace(int ixPlace)
         {
