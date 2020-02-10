@@ -11,7 +11,7 @@
                 <FlowDocument />
             </FlowDocumentScrollViewer.Document>
         </FlowDocumentScrollViewer>
-        <Button Content="_Send" Height="26" HorizontalAlignment="Right" Margin="0,0,213,18" Name="btnSend" VerticalAlignment="Bottom" Width="90" />
+        <Button Content="_Send" Height="26" HorizontalAlignment="Right" Margin="0,0,213,18" Name="btnSend" VerticalAlignment="Bottom" Width="90" Click="btnSend_Click" />
         <TextBox Height="26" Margin="24,0,318,18" Name="tbChatText" VerticalAlignment="Bottom" />
         <Label Height="25" HorizontalAlignment="Left" Margin="24,0,0,0" Name="lStatus" VerticalAlignment="Top" Width="503" />
         <Label Content="User or host name:" Height="25" HorizontalAlignment="Right" Margin="0,26,12,0" Name="label1" VerticalAlignment="Top" Width="157" />

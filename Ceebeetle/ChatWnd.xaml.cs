@@ -42,11 +42,16 @@ namespace Ceebeetle
         {
             try
             {
-                tb.Text = Dns.GetHostName();
+                string uName = Environment.UserName;
+
+                if ((null != uName) && (0 < uName.Length))
+                    tb.Text = uName;
+                else
+                    tb.Text = Dns.GetHostName();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write("Exception getting host name: " + ex.Message);
+                System.Diagnostics.Debug.Write("Exception getting user or host name: " + ex.Message);
             }
         }
         private void Validate()
@@ -57,13 +62,26 @@ namespace Ceebeetle
         #region INetworkListener
         void INetworkListener.OnMessage(string uid, string message)
         {
+            try
+            {
+                string[] args = new string[2] { uid, message };
+
+                Application.Current.Dispatcher.Invoke(m_showMessageCallback, args);
+            }
+            catch (NullReferenceException nex)
+            {
+                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                System.Diagnostics.Debug.Write("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
+            }
         }
         void INetworkListener.OnConnected()
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(m_showConnectedCallback);
-                System.Diagnostics.Debug.Write("Showed connected message");
             }
             catch (NullReferenceException nex)
             {
@@ -78,13 +96,13 @@ namespace Ceebeetle
         {
         }
         #endregion
-        private void ShowOnConnected()
+        private void AddChatText(string text)
         {
             try
             {
                 Paragraph pAdd = new Paragraph();
 
-                pAdd.Inlines.Add(new Run("Connected"));
+                pAdd.Inlines.Add(new Run(text));
                 chatContent.Document.Blocks.Add(pAdd);
             }
             catch (NullReferenceException nex)
@@ -96,8 +114,31 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write("Exception in ChatWnd, adding chat text. " + fex.Message);
             }
         }
+        private void AddChatLink(string link)
+        {
+            try
+            {
+                Paragraph pAdd = new Paragraph();
+
+                //pAdd.Inlines.Add(new Hyperlink((text));
+                chatContent.Document.Blocks.Add(pAdd);
+            }
+            catch (NullReferenceException nex)
+            {
+                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                System.Diagnostics.Debug.Write("Exception in ChatWnd, adding chat text. " + fex.Message);
+            }
+        }
+        private void ShowOnConnected()
+        {
+            AddChatText("Connected as " + m_p2p.UserId);
+        }
         private void ShowMessage(string uid, string message)
         {
+            AddChatText(string.Format("{0}:{1}", uid, message));
         }
 
         public void Exit()
@@ -118,6 +159,7 @@ namespace Ceebeetle
         }
         private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
+            btnConnect.IsEnabled = false;
             m_p2p.Start(tbUserId.Text);
         }
 
@@ -129,6 +171,11 @@ namespace Ceebeetle
         private void btnConnect_TextInput(object sender, TextCompositionEventArgs e)
         {
             Validate();
+        }
+
+        private void btnSend_Click(object sender, RoutedEventArgs e)
+        {
+            m_p2p.PostMessage(tbChatText.Text);
         }
 
     }

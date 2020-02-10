@@ -138,6 +138,11 @@ namespace Ceebeetle
         private InstanceContext m_site;
         #endregion
 
+        public string UserId
+        {
+            get { return m_uid; }
+        }
+
         public CCBP2PNetworker()
         {
             m_commandList = new Queue<CCBNetworkerCommandData>();
@@ -156,6 +161,32 @@ namespace Ceebeetle
         public void RemoveListener(INetworkListener listener)
         {
         }
+        public void Start(string uid)
+        {
+            m_uid = uid;
+            m_closeSignal.Reset();
+            m_cmdSignal.Reset();
+            m_worker.Start();
+            PostConnectCommand();
+        }
+        public void Stop()
+        {
+            if (m_worker.IsAlive)
+            {
+                m_closeSignal.Set();
+                m_worker.Join();
+            }
+            if (null != m_host)
+            {
+                m_host.Close();
+                m_host = null;
+            }
+        }
+        public void PostMessage(string message)
+        {
+            QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_post, message));
+        }
+
         private void QueueCommand(CCBNetworkerCommandData cmd)
         {
             lock (m_commandList)
@@ -184,15 +215,6 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write(string.Format("Error getting command: {0}", ex.Message));
             }
             return new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_none);
-        }
-
-        public void Start(string uid)
-        {
-            m_uid = uid;
-            m_closeSignal.Reset();
-            m_cmdSignal.Reset();
-            m_worker.Start();
-            PostConnectCommand();
         }
 
         private bool Connect()
@@ -226,19 +248,6 @@ namespace Ceebeetle
             return false;
         }
 
-        public void Stop()
-        {
-            if (m_worker.IsAlive)
-            {
-                m_closeSignal.Set();
-                m_worker.Join();
-            }
-            if (null != m_host)
-            {
-                m_host.Close();
-                m_host = null;
-            }
-        }
         private void PostConnectCommand()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_connect));
