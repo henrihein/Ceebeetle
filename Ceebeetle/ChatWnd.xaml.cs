@@ -35,6 +35,8 @@ namespace Ceebeetle
             m_p2p.AddListener(this);
             InitializeComponent();
             SetHostNameTo(tbUserId);
+            InitMinSize();
+            InitChatWindow();
             Validate();
         }
 
@@ -96,31 +98,29 @@ namespace Ceebeetle
         {
         }
         #endregion
-        private void AddChatText(string text)
+        private void InitChatWindow()
         {
-            try
-            {
-                Paragraph pAdd = new Paragraph();
+            FlowDocument doc = chatContent.Document;
 
-                pAdd.Inlines.Add(new Run(text));
-                chatContent.Document.Blocks.Add(pAdd);
-            }
-            catch (NullReferenceException nex)
-            {
-                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd. " + nex.Message);
-            }
-            catch (Exception fex)
-            {
-                System.Diagnostics.Debug.Write("Exception in ChatWnd, adding chat text. " + fex.Message);
-            }
+            doc.FontFamily = new FontFamily("Lucida Console");
+            doc.FontSize = 9;
+            doc.PagePadding = new Thickness(0);
         }
-        private void AddChatLink(string link)
+        private void AddChatText(string text, bool bold = false)
         {
             try
             {
                 Paragraph pAdd = new Paragraph();
 
-                //pAdd.Inlines.Add(new Hyperlink((text));
+                if (bold)
+                    pAdd.Inlines.Add(new Bold(new Run(text)));
+                else
+                    pAdd.Inlines.Add(new Run(text));
+                pAdd.Padding = new Thickness(1);
+                if (bold)
+                    pAdd.Margin = new Thickness(1);
+                else
+                    pAdd.Margin = new Thickness(0);
                 chatContent.Document.Blocks.Add(pAdd);
             }
             catch (NullReferenceException nex)
@@ -134,7 +134,7 @@ namespace Ceebeetle
         }
         private void ShowOnConnected()
         {
-            AddChatText("Connected as " + m_p2p.UserId);
+            AddChatText("Connected as " + m_p2p.UserId, true);
         }
         private void ShowMessage(string uid, string message)
         {

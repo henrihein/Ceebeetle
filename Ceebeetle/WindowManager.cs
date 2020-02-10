@@ -45,6 +45,12 @@ namespace Ceebeetle
             WindowManager.OnWindowClosing(this);
         }
 
+        public void InitMinSize()
+        {
+            MinWidth = Width;
+            MinHeight = Height;
+
+        }
         protected void SetTooltip(ContentControl ctl, string strTooltip)
         {
             if (ctl.ToolTip is string)
@@ -80,5 +86,22 @@ namespace Ceebeetle
                     ctl.SelectedIndex = (ctl.Items.Count - 1);
             }
         }
+        #region WndLogging
+        protected void Log(string text)
+        {
+            string wndTitle = this.Title;
+            System.Diagnostics.Debug.Write(wndTitle + ":" + text);
+        }
+        protected void Log(string text, int iPar)
+        {
+            Log(string.Format(text, iPar));
+        }
+        protected void Log(string text, string textPar)
+        {
+            Log(text, textPar);
+        }
+        #endregion
     }
+
+
 }
