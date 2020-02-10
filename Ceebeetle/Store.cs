@@ -464,14 +464,14 @@ namespace Ceebeetle
             return string.Format("{0} - store in {1}", Name, m_storeType);
         }
 
-        public void Add(CCBBagItem item)
+        public override CCBBagItem Add(CCBBagItem item)
         {
             //For a store, we don't want duplicate items
             CCBBagItem exists = Find(item.Item);
 
             if (null != exists)
                 RemoveItem(exists);
-            base.Add(item);
+            return base.Add(item);
         }
 
         private string BuildItemsString()

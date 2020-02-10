@@ -38,6 +38,7 @@ namespace Ceebeetle
         DOnCreateNewGame m_onCreateNewGameD;
         DOnCreateNewTemplate m_onCreateNewTemplateD;
         CCBTreeViewGameAdder m_gameAdderEntry;
+        ChatWnd m_chatWnd;
 
         public MainWindow()
         {
@@ -57,6 +58,7 @@ namespace Ceebeetle
             m_timer = new Timer(133337);
             m_timer.Elapsed += new ElapsedEventHandler(OnTimer);
             m_timer.Start();
+            m_chatWnd = null;
             InitializeComponent();
             try
             {
@@ -82,6 +84,8 @@ namespace Ceebeetle
         {
             m_timer.Stop();
             m_timer.Close();
+            if (null != m_chatWnd)
+                m_chatWnd.Exit();
             try
             {
                 //Save here always, in case there was some problem with the dirty logic.
@@ -1062,6 +1066,12 @@ namespace Ceebeetle
             StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game, m_config.GetStoreFilePath());
 
             storeWnd.Show();
+        }
+        private void btnChat_Click(object sender, RoutedEventArgs e)
+        {
+            if (null == m_chatWnd)
+                m_chatWnd = new ChatWnd();
+            m_chatWnd.Show();
         }
     }
 }
