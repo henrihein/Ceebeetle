@@ -93,7 +93,15 @@
     <Compile Include="Names\malenames.cs" />
     <Compile Include="Names\NordicDwarvenNames.cs" />
     <Compile Include="Names\TolkienDwarvenNames.cs" />
+    <Compile Include="P2PFileTransfer.cs" />
     <Compile Include="P2PNetworker.cs" />
+    <Compile Include="P2PPeer.cs" />
+    <Compile Include="P2PReceiveFileWnd.xaml.cs">
+      <DependentUpon>P2PReceiveFileWnd.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="P2PStartSendFile.xaml.cs">
+      <DependentUpon>P2PStartSendFile.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StockTemplates.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="StoreManager.xaml.cs">
@@ -155,6 +163,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NamePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="P2PReceiveFileWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="P2PStartSendFile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

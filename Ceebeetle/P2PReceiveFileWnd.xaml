@@ -1,0 +1,15 @@
+﻿<src:CCBChildWindow x:Class="Ceebeetle.P2PReceiveFileWnd"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:src="clr-namespace:Ceebeetle"
+        Title="P2PReceiveFileWnd" Height="300" Width="407">
+    <Grid>
+        <Label Content="Receiving a file from {0}" Height="27" HorizontalAlignment="Left" Margin="12,2,0,0" Name="lSender" VerticalAlignment="Top" Width="372" />
+        <Label Content="" Height="29" HorizontalAlignment="Left" Margin="12,38,0,0" Name="lFilename" VerticalAlignment="Top" Width="363" />
+        <Label Content="Save to:" Height="25" HorizontalAlignment="Left" Margin="12,90,0,0" Name="label3" VerticalAlignment="Top" Width="68" />
+        <TextBox Height="25" Margin="77,92,81,0" Name="tbFilename" VerticalAlignment="Top" TextChanged="tbFilename_TextChanged" />
+        <Button Content="_Browse" Height="24" HorizontalAlignment="Left" Margin="315,94,0,0" Name="btnBrowse" VerticalAlignment="Top" Width="60" Click="btnBrowse_Click" />
+        <Button Content="_Receive" Height="24" HorizontalAlignment="Right" Margin="0,0,15,55" Name="btnReceive" VerticalAlignment="Bottom" Width="193" />
+        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,15,11" Name="btnClose" VerticalAlignment="Bottom" Width="194" />
+    </Grid>
+</src:CCBChildWindow>

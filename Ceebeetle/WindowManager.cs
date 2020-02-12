@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace Ceebeetle
 {
@@ -63,6 +64,21 @@ namespace Ceebeetle
                     ttip.Content = strTooltip;
             }
         }
+        protected bool BrowseForFile(TextBox tb)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            if (0 < tb.Text.Length)
+            {
+                ofd.FileName = tb.Text;
+            }
+            if (true == ofd.ShowDialog())
+            {
+                tb.Text = ofd.FileName;
+                return true;
+            }
+            return false;
+        }
         protected int IntFromTextbox(TextBox ctl, System.Windows.Controls.Label txStatus)
         {
             int result = 0;
@@ -87,6 +103,10 @@ namespace Ceebeetle
             }
         }
         #region WndLogging
+        protected void Assert(bool exp)
+        {
+            System.Diagnostics.Debug.Assert(exp);
+        }
         protected void Log(string text)
         {
             string wndTitle = this.Title;

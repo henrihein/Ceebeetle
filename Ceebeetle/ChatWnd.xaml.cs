@@ -11,9 +11,37 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net;
+using System.Timers;
 
 namespace Ceebeetle
 {
+    public class CCBFileReceived
+    {
+        public delegate void FileRecivedPromptD(CCBFileReceived filedata);
+        private string m_sender;
+        private string m_uid;
+        private string m_filename;
+
+        public string Sender
+        {
+            get { return m_sender; }
+        }
+        public string Name
+        {
+            get { return m_filename; }
+        }
+
+        private CCBFileReceived()
+        {
+        }
+        public CCBFileReceived(string sender, string uid, string filename)
+        {
+            m_sender = sender;
+            m_filename = filename;
+            m_uid = uid;
+        }
+    }
+
     /// <summary>
     /// Interaction logic for ChatWnd.xaml
     /// </summary>
@@ -25,11 +53,13 @@ namespace Ceebeetle
         private delegate void ShowMessageD(string uid, string message);
         ShowOnConnectedD m_showConnectedCallback;
         ShowMessageD m_showMessageCallback;
+        private CCBFileReceived.FileRecivedPromptD m_fileReceivedCB;
 
         public ChatWnd()
         {
             m_exit = false;
             m_showConnectedCallback = new ShowOnConnectedD(ShowOnConnected);
+            m_fileReceivedCB = new CCBFileReceived.FileRecivedPromptD(PromptForFileReceived);
             m_showMessageCallback = new ShowMessageD(ShowMessage);
             m_p2p = new CCBP2PNetworker();
             m_p2p.AddListener(this);
@@ -38,6 +68,8 @@ namespace Ceebeetle
             InitMinSize();
             InitChatWindow();
             Validate();
+            btnSend.IsEnabled = false;
+            btnSendFile.IsEnabled = false;
         }
 
         private void SetHostNameTo(TextBox tb)
@@ -53,7 +85,7 @@ namespace Ceebeetle
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write("Exception getting user or host name: " + ex.Message);
+                Log("Exception getting user or host name: " + ex.Message);
             }
         }
         private void Validate()
@@ -72,11 +104,11 @@ namespace Ceebeetle
             }
             catch (NullReferenceException nex)
             {
-                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
+                Log("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
             }
             catch (Exception fex)
             {
-                System.Diagnostics.Debug.Write("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
+                Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
             }
         }
         void INetworkListener.OnConnected()
@@ -87,24 +119,43 @@ namespace Ceebeetle
             }
             catch (NullReferenceException nex)
             {
-                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
+                Log("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
             }
             catch (Exception fex)
             {
-                System.Diagnostics.Debug.Write("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
+                Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
             }
         }
         void INetworkListener.OnDisconnected()
         {
+        }
+        void PromptForFileReceived(CCBFileReceived filedata)
+        {
+            P2PReceiveFileWnd prompt = new P2PReceiveFileWnd(filedata);
+
+            if (true == prompt.ShowDialog())
+            {
+                Log("Ready to receive the file {0}.", filedata.Name);
+            }
+        }
+        void INetworkListener.OnReceivingFile(string sender, string filename)
+        {
+            CCBFileReceived filedata = new CCBFileReceived(sender, m_p2p.UserId, filename);
+
+            this.Dispatcher.BeginInvoke(m_fileReceivedCB, new object[1] { filedata });
         }
         #endregion
         private void InitChatWindow()
         {
             FlowDocument doc = chatContent.Document;
 
-            doc.FontFamily = new FontFamily("Lucida Console");
-            doc.FontSize = 9;
-            doc.PagePadding = new Thickness(0);
+            Assert(null != doc);
+            if (null != doc)
+            {
+                doc.FontFamily = new FontFamily("Lucida Console");
+                doc.FontSize = 9;
+                doc.PagePadding = new Thickness(0);
+            }
         }
         private void AddChatText(string text, bool bold = false)
         {
@@ -125,16 +176,18 @@ namespace Ceebeetle
             }
             catch (NullReferenceException nex)
             {
-                System.Diagnostics.Debug.Write("Null ref exception in ChatWnd. " + nex.Message);
+                Log("Null ref exception in ChatWnd. " + nex.Message);
             }
             catch (Exception fex)
             {
-                System.Diagnostics.Debug.Write("Exception in ChatWnd, adding chat text. " + fex.Message);
+                Log("Exception in ChatWnd, adding chat text. " + fex.Message);
             }
         }
         private void ShowOnConnected()
         {
             AddChatText("Connected as " + m_p2p.UserId, true);
+            btnSend.IsEnabled = true;
+            btnSendFile.IsEnabled = true;
         }
         private void ShowMessage(string uid, string message)
         {
@@ -146,7 +199,7 @@ namespace Ceebeetle
             m_exit = true;
             Close();
             m_p2p.Stop();
-            System.Diagnostics.Debug.Write("Closed and Exiting Chat Window object.");
+            Log("Closed and Exiting Chat Window object.");
         }
 
         private void CCBChildWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -176,6 +229,16 @@ namespace Ceebeetle
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
             m_p2p.PostMessage(tbChatText.Text);
+        }
+
+        private void btnSendFile_Click(object sender, RoutedEventArgs e)
+        {
+            P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers());
+
+            if (true == sendFileWnd.ShowDialog())
+            {
+                //Send it.
+            }
         }
 
     }
