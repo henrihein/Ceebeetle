@@ -12,7 +12,7 @@ namespace Ceebeetle
         public string m_filename;
         public int m_filesize;
         public readonly Guid m_fid;
-
+        
         public SCBP2PFileTransferEnvelope(string sender, string recipient, string filename)
         {
             m_fid = Guid.NewGuid();

@@ -22,6 +22,11 @@ namespace Ceebeetle
         private string m_filename;
         private string m_sender;
 
+        public string Path
+        {
+            get { return tbFilename.Text; }
+        }
+
         private P2PReceiveFileWnd()
         {
         }
@@ -29,6 +34,7 @@ namespace Ceebeetle
         {
             m_filedata = filedata;
             InitializeComponent();
+            Initialize();
             InitMinSize();
             Validat();
         }
@@ -51,7 +57,19 @@ namespace Ceebeetle
 
         private void btnBrowse_Click(object sender, RoutedEventArgs e)
         {
-            BrowseForFile(tbFilename);
+            BrowseForSave(tbFilename, true);
+        }
+
+        private void btnReceive_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+            Close();
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
     }
 }

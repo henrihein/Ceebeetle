@@ -33,17 +33,21 @@ namespace Ceebeetle
         }
     }
 
-    public partial class CCBChildWindow : Window
+    public partial class CCBChildWindow : CCBWindow
     {
-        public CCBChildWindow()
-            : base()
+        public CCBChildWindow() : base()
         {
             WindowManager.OnNewWindow(this);
         }
-
         void OnChildWindowClosing(object sender, EventArgs evt)
         {
             WindowManager.OnWindowClosing(this);
+        }
+    }
+    public partial class CCBWindow : Window
+    {
+        public CCBWindow() : base()
+        {
         }
 
         public void InitMinSize()
@@ -75,6 +79,18 @@ namespace Ceebeetle
             if (true == ofd.ShowDialog())
             {
                 tb.Text = ofd.FileName;
+                return true;
+            }
+            return false;
+        }
+        protected bool BrowseForSave(TextBox tb, bool promptOverwrite = false)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+
+            sfd.OverwritePrompt = promptOverwrite;
+            if (true == sfd.ShowDialog())
+            {
+                tb.Text = sfd.FileName;
                 return true;
             }
             return false;
@@ -118,7 +134,7 @@ namespace Ceebeetle
         }
         protected void Log(string text, string textPar)
         {
-            Log(text, textPar);
+            Log(string.Format(text, textPar));
         }
         #endregion
     }

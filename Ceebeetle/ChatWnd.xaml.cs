@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -136,7 +137,10 @@ namespace Ceebeetle
             if (true == prompt.ShowDialog())
             {
                 Log("Ready to receive the file {0}.", filedata.Name);
+                m_p2p.RequestFileTransfer(filedata.Sender, filedata.Name);
             }
+            else
+                m_p2p.CancelFileTransfer(filedata.Sender, filedata.Name);
         }
         void INetworkListener.OnReceivingFile(string sender, string filename)
         {
@@ -188,6 +192,9 @@ namespace Ceebeetle
             AddChatText("Connected as " + m_p2p.UserId, true);
             btnSend.IsEnabled = true;
             btnSendFile.IsEnabled = true;
+            //We need to know the other users. 
+            //Send out a ping to the other clients; they will report back with OnUserConnected.
+            m_p2p.PingMesh();
         }
         private void ShowMessage(string uid, string message)
         {
@@ -230,14 +237,17 @@ namespace Ceebeetle
         {
             m_p2p.PostMessage(tbChatText.Text);
         }
-
         private void btnSendFile_Click(object sender, RoutedEventArgs e)
         {
             P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers());
 
             if (true == sendFileWnd.ShowDialog())
             {
-                //Send it.
+                //Check it and Send it.
+                if (File.Exists(sendFileWnd.Filename))
+                    m_p2p.StartFileTransfer(sendFileWnd.Recipient, sendFileWnd.Filename);
+                else
+                    lStatus.Content = string.Format("{0} does not exist, canceling send.", sendFileWnd.Filename);
             }
         }
 

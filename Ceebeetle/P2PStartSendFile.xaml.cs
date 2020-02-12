@@ -19,6 +19,16 @@ namespace Ceebeetle
     /// </summary>
     public partial class P2PStartSendFile : CCBChildWindow
     {
+        private string m_recipient;
+        public string Recipient
+        {
+            get { return m_recipient; }
+        }
+        public string Filename
+        {
+            get { return tbFile.Text; }
+        }
+
         private P2PStartSendFile()
         {
         }
@@ -53,12 +63,26 @@ namespace Ceebeetle
         }
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = false;
             Close();
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
+            Assert(-1 != lbUsers.SelectedIndex);
+            Assert(0 < tbFile.Text.Length);
+            if ((-1 != lbUsers.SelectedIndex) && (0 < tbFile.Text.Length))
+            {
+                m_recipient = lbUsers.Items[lbUsers.SelectedIndex].ToString();
+                DialogResult = true;
+            }
+            else
+                DialogResult = false;
+        }
 
+        private void lbUsers_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Validat();
         }
     }
 }

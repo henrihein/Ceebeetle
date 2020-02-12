@@ -44,12 +44,16 @@ namespace Ceebeetle
         {
             set { m_pingCallback = value; }
         }
+        public string UserID
+        {
+            set { m_uid = value; }
+        }
 
-        public CeebeetlePeerImpl(string uid)
+        public CeebeetlePeerImpl()
         {
             m_listeners = new HashSet<INetworkListener>();
             m_users = new HashSet<string>();
-            m_uid = uid;
+            m_uid = "";
             m_pingCallback = null;
         }
 
@@ -148,9 +152,11 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.RequestFile(string sender, string recipient, string filename)
         {
+            System.Diagnostics.Debug.Write("Requesting file: " + filename);
         }
         void ICeebeetlePeer.CancelFile(string sender, string recipient, string filename)
         {
+            System.Diagnostics.Debug.Write("Canceling file: " + filename);
         }
         public void OnConnected()
         {
