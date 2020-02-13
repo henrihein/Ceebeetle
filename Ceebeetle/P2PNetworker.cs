@@ -55,6 +55,7 @@ namespace Ceebeetle
         private ICeebeetlePeer m_clientChannel;
         private Queue<CCBNetworkerCommandData> m_commandList;
         private CeebeetlePeerImpl m_peer;
+        private CCBP2PFileWorker m_fileWorker;
         #region WCFObjects
         private ServiceHost m_host;
         private DuplexChannelFactory<ICeebeetlePeer> m_factory;
@@ -74,6 +75,7 @@ namespace Ceebeetle
             m_worker = new Thread(new ThreadStart(Listener));
             m_factory = null;
             m_clientChannel = null;
+            m_fileWorker = null;
             m_peer = new CeebeetlePeerImpl();
             m_peer.PingCallback = new CeebeetlePeerImpl.OnPingedD(PingCallback);
         }
@@ -111,6 +113,8 @@ namespace Ceebeetle
                 m_host.Close();
                 m_host = null;
             }
+            if (null != m_fileWorker)
+                m_fileWorker.Stop();
         }
         public void PostMessage(string message)
         {
@@ -127,6 +131,37 @@ namespace Ceebeetle
         public void CancelFileTransfer(string sender, string filename)
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_cancelFileTransfer, sender, filename));
+        }
+        private CCBP2PFileWorker GetFileWorker()
+        {
+            CCBP2PFileWorker fileWorker = m_fileWorker;
+
+            //Accessing fileworker from multiple threads, so use singleton pattern.
+            if (null == fileWorker)
+            {
+                lock (this)
+                {
+                    if (null == m_fileWorker)
+                        m_fileWorker = new CCBP2PFileWorker();
+                    fileWorker = m_fileWorker;
+                }
+            }
+            return fileWorker;
+        }
+        private void OnFileTransferResponse(string recipient, string filename, bool accept)
+        {
+            if (accept)
+            {
+                CCBP2PFileWorker fileWorker = GetFileWorker();
+
+                fileWorker.FileRequested(recipient, filename);
+            }
+            else
+            {
+                //If transfer was canceled and we haven't started the fileworker, no need to do so now.
+                if (null != m_fileWorker)
+                    m_fileWorker.FileCanceled(recipient, filename);
+            }
         }
         private void QueueCommand(CCBNetworkerCommandData cmd)
         {

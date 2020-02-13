@@ -35,14 +35,20 @@ namespace Ceebeetle
     public class CeebeetlePeerImpl : ICeebeetlePeer
     {
         public delegate void OnPingedD();
+        public delegate void OnFileTransferResponseD(string recipient, string filename, bool accept);
         private HashSet<INetworkListener> m_listeners;
         private HashSet<string> m_users;
         private string m_uid;
         private OnPingedD m_pingCallback;
+        private OnFileTransferResponseD m_fileTransferResponseCallback;
 
         public OnPingedD PingCallback
         {
             set { m_pingCallback = value; }
+        }
+        public OnFileTransferResponseD FileTransferResponseCallback
+        {
+            set { m_fileTransferResponseCallback = value; }
         }
         public string UserID
         {
@@ -153,10 +159,14 @@ namespace Ceebeetle
         void ICeebeetlePeer.RequestFile(string sender, string recipient, string filename)
         {
             System.Diagnostics.Debug.Write("Requesting file: " + filename);
+            if (0 == string.Compare(sender, m_uid))
+                m_fileTransferResponseCallback(recipient, filename, true);
         }
         void ICeebeetlePeer.CancelFile(string sender, string recipient, string filename)
         {
             System.Diagnostics.Debug.Write("Canceling file: " + filename);
+            if (0 == string.Compare(sender, m_uid))
+                m_fileTransferResponseCallback(recipient, filename, false);
         }
         public void OnConnected()
         {

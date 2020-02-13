@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net;
 using System.Timers;
+using System.Threading;
 
 namespace Ceebeetle
 {
@@ -77,16 +78,17 @@ namespace Ceebeetle
         {
             try
             {
-                string uName = Environment.UserName;
+                string uName = Dns.GetHostName() + "." + Environment.UserName;
 
                 if ((null != uName) && (0 < uName.Length))
                     tb.Text = uName;
                 else
-                    tb.Text = Dns.GetHostName();
+                    tb.Text = string.Format("user{0}", Thread.CurrentThread.ManagedThreadId);
             }
             catch (Exception ex)
             {
                 Log("Exception getting user or host name: " + ex.Message);
+                tb.Text = "rockstar";
             }
         }
         private void Validate()
