@@ -16,7 +16,6 @@ namespace Ceebeetle
         public readonly long m_start;
         public readonly long m_datasize;
         public readonly long m_filesize;
-        public readonly bool m_isFinal;
         public byte[] m_bytes;
 
         public int Size
@@ -31,14 +30,13 @@ namespace Ceebeetle
             m_filesize = filesize;
             m_bytes = new byte[datasize];
         }
-        public CCBP2PFileDataEnvelope(long start, long datasize, long filesize, bool isFinal,
+        public CCBP2PFileDataEnvelope(long start, long datasize, long filesize,
                                         string recipient,
                                         string localFileName, string remoteFileName)
         {
             m_start = start;
             m_datasize = datasize;
             m_filesize = filesize;
-            m_isFinal = isFinal;
             m_recipient = recipient;
             m_localFileName = localFileName;
             m_remoteFileName = remoteFileName;
@@ -69,6 +67,20 @@ namespace Ceebeetle
         private long m_filesize;
         private long m_bytesSent;
         private MD5 m_hash;
+        private bool m_complete;
+
+        public byte[] Hash
+        {
+            get { return m_hash.Hash; }
+        }
+        public bool Complete
+        {
+            get { return m_complete; }
+        }
+        public string LocalName
+        {
+            get { return m_localFile; }
+        }
 
         public CCBP2PFile(string localFile, string remoteFile, string recipient)
         {
@@ -81,6 +93,7 @@ namespace Ceebeetle
             m_filesize = -1;
             m_bytesSent = 0;
             m_hash = MD5.Create();
+            m_complete = false;
         }
         private void InitFileSize()
         {
@@ -92,11 +105,11 @@ namespace Ceebeetle
             }
             catch (IOException ioex)
             {
-                System.Diagnostics.Debug.Write("IO Exception getting file size: " + ioex.Message);
+                System.Diagnostics.Debug.WriteLine("IO Exception getting file size: " + ioex.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write("Exception getting file size: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Exception getting file size: " + ex.Message);
             }
         }
         public bool HasWork()
@@ -136,8 +149,7 @@ namespace Ceebeetle
                     curBlobSize = BlobSize;
                 else
                     curBlobSize = (int)(m_filesize - m_offsetCur);
-                m_filePtr.Read(m_data, m_offsetCur, curBlobSize);
-                m_offsetCur += curBlobSize;
+                m_offsetCur += m_filePtr.Read(m_data, 0, curBlobSize);
                 if (m_offsetCur == m_filesize)
                     m_hash.TransformFinalBlock(m_data, 0, curBlobSize);
                 else
@@ -145,11 +157,11 @@ namespace Ceebeetle
             }
             catch (IOException ioex)
             {
-                System.Diagnostics.Debug.Write(string.Format("IO Exception reading file {0}: {1}", m_localFile, ioex.Message));
+                System.Diagnostics.Debug.WriteLine(string.Format("IO Exception reading file {0}: {1}", m_localFile, ioex.Message));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception reading file {0}: {1}", m_localFile, ex.Message));
+                System.Diagnostics.Debug.WriteLine(string.Format("Exception reading file {0}: {1}", m_localFile, ex.Message));
             }
             return curBlobSize;
         }
@@ -161,7 +173,7 @@ namespace Ceebeetle
                 {
                     int dataSize = (int)(m_offsetCur - m_bytesSent);
 
-                    data = new CCBP2PFileDataEnvelope(m_bytesSent, dataSize, m_filesize, m_offsetCur == m_filesize,
+                    data = new CCBP2PFileDataEnvelope(m_bytesSent, dataSize, m_filesize, 
                                                     m_recipient, m_localFile, m_remoteFile);
                     data.Put(m_data, dataSize);
                     return dataSize;
@@ -176,6 +188,29 @@ namespace Ceebeetle
         public void MarkDataSent(CCBP2PFileDataEnvelope data)
         {
             m_bytesSent += data.Size;
+        }
+        public void WriteData(long offset, byte[] bytes)
+        {
+            try
+            {
+                if (null == m_filePtr)
+                    m_filePtr = new FileStream(m_localFile, FileMode.Create);
+                m_filePtr.Seek(offset, SeekOrigin.Begin);
+                m_filePtr.Write(bytes, 0, bytes.Length);
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("IO Exception writing file {0}: {1}", m_localFile, ioex.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception writing file {0}: {1}", m_localFile, ex.Message));
+            }
+        }
+        public bool OnComplete(byte[] hash)
+        {
+            Close();
+            return true;
         }
         public void Close()
         {
@@ -196,6 +231,7 @@ namespace Ceebeetle
             }
             if (null != m_hash)
                 m_hash.Clear();
+            m_complete = true;
         }
     }
 
@@ -304,6 +340,26 @@ namespace Ceebeetle
                     fileToSend.MarkDataSent(data);
             }
         }
+        public bool IsSent(string filename, ref byte[] hash)
+        {
+            CCBP2PFile file = null;
+
+            lock (m_outbox)
+            {
+                if (m_outbox.ContainsKey(filename))
+                    file = m_outbox[filename];
+            }
+            if (null != file)
+            {
+                if (file.IsSent())
+                {
+                    hash = new byte[file.Hash.Length];
+                    file.Hash.CopyTo(hash, 0);
+                    return true;
+                }
+            }
+            return false;
+        }
         private CCBP2PFile GetNextFileToLoad()
         {
             lock (m_outbox)
@@ -313,6 +369,15 @@ namespace Ceebeetle
                     if (!file.IsLoaded())
                         return file;
                 }
+            }
+            return null;
+        }
+        private CCBP2PFile GetInFile(string filename)
+        {
+            lock (m_inbox)
+            {
+                if (m_inbox.ContainsKey(filename))
+                    return m_inbox[filename];
             }
             return null;
         }
@@ -338,6 +403,15 @@ namespace Ceebeetle
             }
             return 0;
         }
+        public void PrepareInFile(string recipient, string remoteFile, string localFile)
+        {
+            CCBP2PFile newFile = new CCBP2PFile(localFile, remoteFile, recipient);
+
+            lock (m_inbox)
+            {
+                m_inbox[remoteFile] = newFile;
+            }
+        }
         public void FileDataPump()
         {
             while (m_working)
@@ -348,6 +422,33 @@ namespace Ceebeetle
                     LoadNext();
                 }
             }
+        }
+
+        public bool ScanForWork()
+        {
+            bool hasWork = false;
+            List<CCBP2PFile> files = new List<CCBP2PFile>();
+
+            lock (m_outbox)
+            {
+                foreach (CCBP2PFile file in m_outbox.Values)
+                    files.Add(file);
+            }
+            foreach (CCBP2PFile scanFile in files)
+            {
+                if (scanFile.HasWork())
+                    hasWork = true;
+                else if (scanFile.Complete)
+                {
+                    lock (m_outbox)
+                    {
+                        m_outbox.Remove(scanFile.LocalName);
+                    }
+                }
+            }
+            if (hasWork)
+                m_signal.Set();
+            return hasWork;
         }
 
         #region INetworkListener
@@ -366,12 +467,47 @@ namespace Ceebeetle
         void INetworkListener.OnReceivingFile(string uidFrom, string filename)
         {
         }
-        void INetworkListener.OnFileData(string uidFrom, string recipient, string filename, byte[] data)
+        void INetworkListener.OnFileData(string filename, long offset, byte[] data)
         {
-            System.Diagnostics.Debug.Write(string.Format("Receiving {0} bytes of {1} from {2}\n", data.Length, filename, uidFrom));
+            System.Diagnostics.Debug.WriteLine(string.Format("Receiving {0} bytes of {1}\n", data.Length, filename));
+            try
+            {
+                CCBP2PFile infile = GetInFile(filename);
+
+                if (null == infile)
+                    System.Diagnostics.Debug.WriteLine(string.Format("No file data for {0}, ignoring file data.", filename));
+                else
+                    infile.WriteData(offset, data);
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("IO Exception OnFileData {0}: {1}", filename, ioex.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("Exception OnFileData {0}: {1}", filename, ex.Message));
+            }
         }
-        void INetworkListener.OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash)
+        void INetworkListener.OnFileComplete(string filename, byte[] hash)
         {
+            System.Diagnostics.Debug.WriteLine(string.Format("Completing file: {0}\n", filename));
+            try
+            {
+                CCBP2PFile infile = GetInFile(filename);
+
+                if (null == infile)
+                    System.Diagnostics.Debug.WriteLine(string.Format("No file data for {0}, ignoring file completion event.", filename));
+                else
+                    infile.OnComplete(hash);
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("IO Exception OnFileData {0}: {1}", filename, ioex.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("Exception OnFileData {0}: {1}", filename, ex.Message));
+            }
         }
         #endregion
     }

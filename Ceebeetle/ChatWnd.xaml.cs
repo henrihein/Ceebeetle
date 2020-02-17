@@ -170,10 +170,10 @@ namespace Ceebeetle
                 Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
             }
         }
-        void INetworkListener.OnFileData(string uidFrom, string recipient, string filename, byte[] data)
+        void INetworkListener.OnFileData(string filename, long offset, byte[] data)
         {
         }
-        void INetworkListener.OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash)
+        void INetworkListener.OnFileComplete(string filename, byte[] hash)
         {
         }
         void PromptForFileReceived(CCBFileReceived filedata)
@@ -182,8 +182,8 @@ namespace Ceebeetle
 
             if (true == prompt.ShowDialog())
             {
-                Log("Ready to receive the file {0}.", filedata.Name);
-                m_p2p.RequestFileTransfer(filedata.Sender, filedata.Name);
+                Log("Ready to receive the file {0} to {1}.", filedata.Name, prompt.Path);
+                m_p2p.RequestFileTransfer(filedata.Sender, filedata.Name, prompt.Path);
             }
             else
                 m_p2p.CancelFileTransfer(filedata.Sender, filedata.Name);

@@ -14,8 +14,8 @@ namespace Ceebeetle
         void OnConnected();
         void OnDisconnected();
         void OnReceivingFile(string uidFrom, string filename);
-        void OnFileData(string uidFrom, string recipient, string filename, byte[] data);
-        void OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash);
+        void OnFileData(string filename, long offset, byte[] data);
+        void OnFileComplete(string filename, byte[] hash);
     }
 
     [ServiceContract(CallbackContract = typeof(ICeebeetlePeer))]
@@ -34,10 +34,12 @@ namespace Ceebeetle
         [OperationContract(IsOneWay = true)]
         void CancelFile(string sender, string recipient, string filename);
         //Todo: actually sending the data should be done on a separate, 2-way channel.
-        //This way, all data is sent to all the peers in the mesh. With a low number of peers, 
+        //The current way, all data is sent to all the peers in the mesh. With a low number of peers, 
         //not a big problem.
         [OperationContract(IsOneWay = true)]
-        void SendFileData(string sender, string recipient, string filename, byte[] bytes);
+        void SendFileData(string sender, string recipient, string filename, long offset, byte[] bytes);
+        [OperationContract(IsOneWay = true)]
+        void OnFileComplete(string sender, string recipient, string filename, byte[] hash);
     }
 
     public class CeebeetlePeerImpl : ICeebeetlePeer
@@ -194,7 +196,8 @@ namespace Ceebeetle
                     m_fileTransferResponseCallback(recipient, filename, false);
             }
         }
-        void ICeebeetlePeer.SendFileData(string sender, string recipient, string filename, byte[] data)
+        //On the peer implementation, the sent data is actually received data...
+        void ICeebeetlePeer.SendFileData(string sender, string recipient, string filename, long offset, byte[] data)
         {
             if (0 == string.Compare(m_uid, recipient))
             {
@@ -203,7 +206,7 @@ namespace Ceebeetle
                     INetworkListener[] listeners = GetListeners();
 
                     foreach (INetworkListener listener in listeners)
-                        listener.OnFileData(sender, m_uid, filename, data);
+                        listener.OnFileData(filename, offset, data);
                 }
                 catch (System.IO.IOException ioex)
                 {
@@ -216,6 +219,31 @@ namespace Ceebeetle
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.Write(string.Format("Exception in SendFileData: {0}", ex.Message));
+                }
+            }
+        }
+        void ICeebeetlePeer.OnFileComplete(string sender, string recipient, string filename, byte[] hash)
+        {
+            if (0 == string.Compare(m_uid, recipient))
+            {
+                try
+                {
+                    INetworkListener[] listeners = GetListeners();
+
+                    foreach (INetworkListener listener in listeners)
+                        listener.OnFileComplete(filename, hash);
+                }
+                catch (System.IO.IOException ioex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("IO Exception in OnFileComplete: {0}", ioex.Message));
+                }
+                catch (System.ServiceModel.CommunicationException commEx)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnFileComplete: {0}", commEx.Message));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Exception in OnFileComplete: {0}", ex.Message));
                 }
             }
         }

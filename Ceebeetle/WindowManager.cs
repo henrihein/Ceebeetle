@@ -136,6 +136,10 @@ namespace Ceebeetle
         {
             Log(string.Format(text, textPar));
         }
+        protected void Log(string text, string textPar1, string textPar2)
+        {
+            Log(string.Format(text, textPar1, textPar2));
+        }
         #endregion
     }
 
