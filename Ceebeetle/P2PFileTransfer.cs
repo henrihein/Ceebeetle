@@ -2,104 +2,91 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
 namespace Ceebeetle
 {
-    public struct SCBP2PFileTransferEnvelope
+    public class CCBP2PFileDataEnvelope
     {
-        public string m_uidSender;
-        public string m_uidRecipient;
-        public string m_filename;
-        public int m_filesize;
-        public readonly Guid m_fid;
-        
-        public SCBP2PFileTransferEnvelope(string sender, string recipient, string filename)
-        {
-            m_fid = Guid.NewGuid();
-            m_uidSender = sender;
-            m_uidRecipient = recipient;
-            m_filename = filename;
-            m_filesize = 0;
-        }
-        public SCBP2PFileTransferEnvelope(Guid guid, string sender, string recipient, string filename)
-        {
-            m_fid = guid;
-            m_uidSender = sender;
-            m_uidRecipient = recipient;
-            m_filename = filename;
-            m_filesize = 0;
-        }
-    }
-
-    public struct SCBP2PFileBlob
-    {
-        static public uint BlobSize = 0x8000;
-
-        public long m_start;
+        public readonly string m_recipient;
+        public readonly string m_localFileName;
+        public readonly string m_remoteFileName;
+        public readonly long m_start;
+        public readonly long m_datasize;
+        public readonly long m_filesize;
+        public readonly bool m_isFinal;
         public byte[] m_bytes;
-        public long m_bytesSent, m_size;
 
-        public SCBP2PFileBlob(long start)
+        public int Size
+        {
+            get { return m_bytes.Length; }
+        }
+
+        public CCBP2PFileDataEnvelope(long start, long datasize, long filesize)
         {
             m_start = start;
+            m_datasize = datasize;
+            m_filesize = filesize;
+            m_bytes = new byte[datasize];
+        }
+        public CCBP2PFileDataEnvelope(long start, long datasize, long filesize, bool isFinal,
+                                        string recipient,
+                                        string localFileName, string remoteFileName)
+        {
+            m_start = start;
+            m_datasize = datasize;
+            m_filesize = filesize;
+            m_isFinal = isFinal;
+            m_recipient = recipient;
+            m_localFileName = localFileName;
+            m_remoteFileName = remoteFileName;
             m_bytes = null;
-            m_bytesSent = 0;
-            m_size = 0;
         }
-        public void SetDataSize(long size)
+        public bool Put(byte[] data, int dataSize)
         {
-            m_size = size;
-            m_bytes = new byte[size];
-        }
-        public bool HasWork()
-        {
-            if (null == m_bytes)
-                return false;
-            return m_bytesSent < m_size;
-        }
-        public bool IsLoaded()
-        {
-            if (null == m_bytes)
-                return false;
-            return 0 < m_bytes.Length;
-        }
-        public long Size()
-        {
-            return m_bytes.Length;
-        }
-        public void MarkSent(long sent)
-        {
-            m_bytesSent = sent;
-            if (m_bytesSent == m_size)
-                m_bytes = null;
+            m_bytes = new byte[dataSize];
+            if (null != m_bytes)
+            {
+                Array.Copy(data, m_bytes, dataSize);
+                return true;
+            }
+            return false;
         }
     }
 
     public class CCBP2PFile
     {
-        public string LocalFile;
-        public string RemoteFile;
-        private long m_offsetCur;
-        private List<SCBP2PFileBlob> Data;
-        FileStream m_filePtr;
-        public long m_filesize;
+        static public readonly int BlobSize = 0x8000;
 
-        public CCBP2PFile(string localFile, string remoteFile)
+        private string m_localFile;
+        private string m_remoteFile;
+        private string m_recipient;
+        private int m_offsetCur;
+        private byte[] m_data;
+        FileStream m_filePtr;
+        private long m_filesize;
+        private long m_bytesSent;
+        private MD5 m_hash;
+
+        public CCBP2PFile(string localFile, string remoteFile, string recipient)
         {
-            Data = null;
-            LocalFile = localFile;
-            RemoteFile = remoteFile;
+            m_data = new byte[BlobSize];
+            m_localFile = localFile;
+            m_remoteFile = remoteFile;
+            m_recipient = recipient;
             m_offsetCur = 0;
             m_filePtr = null;
             m_filesize = -1;
+            m_bytesSent = 0;
+            m_hash = MD5.Create();
         }
         private void InitFileSize()
         {
             try
             {
-                FileInfo fi = new FileInfo(LocalFile);
+                FileInfo fi = new FileInfo(m_localFile);
 
                 m_filesize = fi.Length;
             }
@@ -112,71 +99,83 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write("Exception getting file size: " + ex.Message);
             }
         }
-        private void InitBlobs()
-        {
-            long totalBlobSize = 0;
-
-            Data = new List<SCBP2PFileBlob>();
-            while (totalBlobSize < m_filesize)
-            {
-                SCBP2PFileBlob nextBlob = new SCBP2PFileBlob(totalBlobSize);
-
-                if ((SCBP2PFileBlob.BlobSize + totalBlobSize) < m_filesize)
-                    nextBlob.SetDataSize(SCBP2PFileBlob.BlobSize);
-                else
-                    nextBlob.SetDataSize(m_filesize - totalBlobSize);
-                Data.Add(nextBlob);
-                totalBlobSize += nextBlob.Size();
-            }
-        }
         public bool HasWork()
         {
-            foreach (SCBP2PFileBlob blob in Data)
-                if (blob.HasWork())
-                    return true;
+            //An uninitialized file has work.
+            if (-1 == m_filesize)
+                return true;
+            return m_offsetCur < m_filesize;
+        }
+        public bool GetWork(ref byte[] data)
+        {
             return false;
         }
         public bool IsLoaded()
         {
-            if (null == Data)
-                return false;
-            foreach (SCBP2PFileBlob blob in Data)
-                if (!blob.IsLoaded())
-                    return false;
-            return true;
+            return m_offsetCur == m_filesize;
         }
-        public long LoadNext()
+        public bool IsSent()
         {
-            long totalCbRed = 0;
+            return m_bytesSent == m_filesize;
+        }
+        public bool HasDataToSend()
+        {
+            return m_bytesSent < m_offsetCur;
+        }
+        public long LoadNextBlob()
+        {
+            int curBlobSize = 0;
 
-            if (-1 == m_filesize)
-                InitFileSize();
-            if ((null == Data) && (0 < m_filesize))
-                InitBlobs();
-            foreach (SCBP2PFileBlob blob in Data)
+            try
             {
-                try
+                if (-1 == m_filesize)
+                    InitFileSize();
+                if (null == m_filePtr)
+                    m_filePtr = new FileStream(m_localFile, FileMode.Open);
+                if ((m_offsetCur + BlobSize) < m_filesize)
+                    curBlobSize = BlobSize;
+                else
+                    curBlobSize = (int)(m_filesize - m_offsetCur);
+                m_filePtr.Read(m_data, m_offsetCur, curBlobSize);
+                m_offsetCur += curBlobSize;
+                if (m_offsetCur == m_filesize)
+                    m_hash.TransformFinalBlock(m_data, 0, curBlobSize);
+                else
+                    m_hash.TransformBlock(m_data, 0, curBlobSize, null, 0);
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("IO Exception reading file {0}: {1}", m_localFile, ioex.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception reading file {0}: {1}", m_localFile, ex.Message));
+            }
+            return curBlobSize;
+        }
+        public int RetrieveDataToSend(ref CCBP2PFileDataEnvelope data)
+        {
+            try
+            {
+                if (m_bytesSent < m_offsetCur)
                 {
-                    if (!blob.IsLoaded())
-                    {
-                        if (null == m_filePtr)
-                            m_filePtr = new FileStream(LocalFile, FileMode.Open);
-                        m_filePtr.Read(blob.m_bytes, (int)m_offsetCur, (int)blob.m_bytes.Length);
-                        m_offsetCur += blob.m_bytes.Length;
-                        totalCbRed += blob.m_bytes.Length;
-                        break;
-                    }
-                }
-                catch (IOException ioex)
-                {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception reading file {0}: {1}", LocalFile, ioex.Message));
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.Write(string.Format("Exception reading file {0}: {1}", LocalFile, ex.Message));
+                    int dataSize = (int)(m_offsetCur - m_bytesSent);
+
+                    data = new CCBP2PFileDataEnvelope(m_bytesSent, dataSize, m_filesize, m_offsetCur == m_filesize,
+                                                    m_recipient, m_localFile, m_remoteFile);
+                    data.Put(m_data, dataSize);
+                    return dataSize;
                 }
             }
-            return totalCbRed;
+            catch (Exception unex)
+            {
+                System.Diagnostics.Debug.WriteLine("Unexpected exception in RetrieveDataToSend: " + unex.Message);
+            }
+            return 0;
+        }
+        public void MarkDataSent(CCBP2PFileDataEnvelope data)
+        {
+            m_bytesSent += data.Size;
         }
         public void Close()
         {
@@ -188,17 +187,19 @@ namespace Ceebeetle
                 }
                 catch (IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception closing file {0}: {1}", LocalFile, ioex.Message));
+                    System.Diagnostics.Debug.Write(string.Format("IO Exception closing file {0}: {1}", m_localFile, ioex.Message));
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Exception closing file {0}: {1}", LocalFile, ex.Message));
+                    System.Diagnostics.Debug.Write(string.Format("Exception closing file {0}: {1}", m_localFile, ex.Message));
                 }
             }
+            if (null != m_hash)
+                m_hash.Clear();
         }
     }
 
-    public class CCBP2PFileWorker
+    public class CCBP2PFileWorker : INetworkListener
     {
         private Dictionary<string, CCBP2PFile> m_inbox;
         private Dictionary<string, CCBP2PFile> m_outbox;
@@ -228,7 +229,10 @@ namespace Ceebeetle
             lock(m_outbox)
             {
                 if (!m_outbox.ContainsKey(filename))
-                    m_outbox[filename] = new CCBP2PFile(filename, null);
+                {
+                    m_outbox[filename] = new CCBP2PFile(filename, null, recipient);
+                    m_signal.Set();
+                }
             }
             MaybeStart();
         }
@@ -243,7 +247,6 @@ namespace Ceebeetle
                 }
             }
         }
-
         public void Stop()
         {
             m_working = false;
@@ -254,6 +257,8 @@ namespace Ceebeetle
 
         public bool HasWork()
         {
+            if (!m_working)
+                return false;
             lock (m_outbox)
             {
                 foreach (string filename in m_outbox.Keys)
@@ -264,7 +269,41 @@ namespace Ceebeetle
             }
             return false;
         }
+        public string HasData()
+        {
+            if (!m_working)
+                return null;
+            lock (m_outbox)
+            {
+                foreach (string filename in m_outbox.Keys)
+                {
+                    if (m_outbox[filename].HasDataToSend())
+                        return filename;
+                }
+            }
+            return null;
+        }
+        public int RetrieveDataToSend(string filename, ref CCBP2PFileDataEnvelope data)
+        {
+            lock (m_outbox)
+            {
+                CCBP2PFile fileToSend = m_outbox[filename];
 
+                if (null != fileToSend)
+                    return fileToSend.RetrieveDataToSend(ref data);
+            }
+            return 0;
+        }
+        public void MarkDataSent(string filename, CCBP2PFileDataEnvelope data)
+        {
+            lock (m_outbox)
+            {
+                CCBP2PFile fileToSend = m_outbox[filename];
+
+                if (null != fileToSend)
+                    fileToSend.MarkDataSent(data);
+            }
+        }
         private CCBP2PFile GetNextFileToLoad()
         {
             lock (m_outbox)
@@ -282,10 +321,23 @@ namespace Ceebeetle
             CCBP2PFile nextFileToLoad = GetNextFileToLoad();
 
             if (null != nextFileToLoad)
-                return nextFileToLoad.LoadNext();
+            {
+                //Do not load while file has data yet to be sent.
+                if (nextFileToLoad.HasDataToSend())
+                    m_signal.Set();
+                else
+                {
+                    long cbLoaded = nextFileToLoad.LoadNextBlob();
+
+                    //If 0 bytes were loaded, the file is done, or has an error -- either case, close it out.
+                    if (0 == cbLoaded)
+                        nextFileToLoad.Close();
+                    else
+                        return cbLoaded;
+                }
+            }
             return 0;
         }
-
         public void FileDataPump()
         {
             while (m_working)
@@ -297,6 +349,31 @@ namespace Ceebeetle
                 }
             }
         }
+
+        #region INetworkListener
+        void INetworkListener.OnMessage(string uid, string message)
+        {
+        }
+        void INetworkListener.OnConnected()
+        {
+        }
+        void INetworkListener.OnDisconnected()
+        {
+        }
+        void INetworkListener.OnUser(string uid)
+        {
+        }
+        void INetworkListener.OnReceivingFile(string uidFrom, string filename)
+        {
+        }
+        void INetworkListener.OnFileData(string uidFrom, string recipient, string filename, byte[] data)
+        {
+            System.Diagnostics.Debug.Write(string.Format("Receiving {0} bytes of {1} from {2}\n", data.Length, filename, uidFrom));
+        }
+        void INetworkListener.OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash)
+        {
+        }
+        #endregion
     }
 
 }

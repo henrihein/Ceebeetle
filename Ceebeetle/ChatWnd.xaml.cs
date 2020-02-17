@@ -49,19 +49,29 @@ namespace Ceebeetle
     /// </summary>
     public partial class ChatWnd : CCBChildWindow, INetworkListener
     {
-        private bool m_exit;
+        private bool m_exit, m_connected, m_wasConnected;
         private CCBP2PNetworker m_p2p;
         private delegate void ShowOnConnectedD();
         private delegate void ShowMessageD(string uid, string message);
+        private delegate void ShowUserConnectD(string uid);
         ShowOnConnectedD m_showConnectedCallback;
         ShowMessageD m_showMessageCallback;
+        ShowUserConnectD m_showUserConnectCallback;
         private CCBFileReceived.FileRecivedPromptD m_fileReceivedCB;
+
+        public bool IsDefunct
+        {
+            get { return m_wasConnected && !m_connected; }
+        }
 
         public ChatWnd()
         {
             m_exit = false;
+            m_connected = false;
+            m_wasConnected = false;
             m_showConnectedCallback = new ShowOnConnectedD(ShowOnConnected);
             m_fileReceivedCB = new CCBFileReceived.FileRecivedPromptD(PromptForFileReceived);
+            m_showUserConnectCallback = new ShowUserConnectD(ShowUserConnect);
             m_showMessageCallback = new ShowMessageD(ShowMessage);
             m_p2p = new CCBP2PNetworker();
             m_p2p.AddListener(this);
@@ -70,8 +80,7 @@ namespace Ceebeetle
             InitMinSize();
             InitChatWindow();
             Validate();
-            btnSend.IsEnabled = false;
-            btnSendFile.IsEnabled = false;
+            EnableUI(false);
         }
 
         private void SetHostNameTo(TextBox tb)
@@ -93,7 +102,16 @@ namespace Ceebeetle
         }
         private void Validate()
         {
-            btnConnect.IsEnabled = (0 != tbUserId.Text.Length);
+            if (m_connected)
+            {
+                btnConnect.Content = "_Disconnect";
+                btnConnect.IsEnabled = true;
+            }
+            else
+            {
+                btnConnect.IsEnabled = true;
+                btnConnect.IsEnabled = (0 != tbUserId.Text.Length);
+            }
         }
 
         #region INetworkListener
@@ -103,7 +121,7 @@ namespace Ceebeetle
             {
                 string[] args = new string[2] { uid, message };
 
-                Application.Current.Dispatcher.Invoke(m_showMessageCallback, args);
+                Application.Current.Dispatcher.BeginInvoke(m_showMessageCallback, args);
             }
             catch (NullReferenceException nex)
             {
@@ -118,7 +136,8 @@ namespace Ceebeetle
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(m_showConnectedCallback);
+                m_connected = true;
+                Application.Current.Dispatcher.BeginInvoke(m_showConnectedCallback);
             }
             catch (NullReferenceException nex)
             {
@@ -129,7 +148,32 @@ namespace Ceebeetle
                 Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
             }
         }
+        void INetworkListener.OnUser(string uid)
+        {
+            Application.Current.Dispatcher.BeginInvoke(m_showUserConnectCallback, new object[1]{uid});
+        }
         void INetworkListener.OnDisconnected()
+        {
+            try
+            {
+                if (m_connected)
+                    m_wasConnected = true;
+                m_connected = false;
+                Application.Current.Dispatcher.BeginInvoke(m_showConnectedCallback);
+            }
+            catch (NullReferenceException nex)
+            {
+                Log("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
+            }
+        }
+        void INetworkListener.OnFileData(string uidFrom, string recipient, string filename, byte[] data)
+        {
+        }
+        void INetworkListener.OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash)
         {
         }
         void PromptForFileReceived(CCBFileReceived filedata)
@@ -189,14 +233,32 @@ namespace Ceebeetle
                 Log("Exception in ChatWnd, adding chat text. " + fex.Message);
             }
         }
+        private void EnableUI(bool enable = true)
+        {
+            btnSend.IsEnabled = enable;
+            btnSendFile.IsEnabled = enable;
+        }
         private void ShowOnConnected()
         {
-            AddChatText("Connected as " + m_p2p.UserId, true);
-            btnSend.IsEnabled = true;
-            btnSendFile.IsEnabled = true;
-            //We need to know the other users. 
-            //Send out a ping to the other clients; they will report back with OnUserConnected.
-            m_p2p.PingMesh();
+            if (m_connected)
+            {
+                AddChatText("Connected as " + m_p2p.UserId, true);
+                Validate();
+                EnableUI();
+                //We need to know the other users. 
+                //Send out a ping to the other clients; they will report back with OnUserConnected.
+                m_p2p.PingMesh();
+            }
+            else
+            {
+                Hide();
+                Exit();
+                Close();
+            }
+        }
+        private void ShowUserConnect(string uid)
+        {
+            AddChatText("User connected: " + uid);
         }
         private void ShowMessage(string uid, string message)
         {
@@ -206,8 +268,9 @@ namespace Ceebeetle
         public void Exit()
         {
             m_exit = true;
-            Close();
+            m_p2p.RemoveListener(this);
             m_p2p.Stop();
+            Close();
             Log("Closed and Exiting Chat Window object.");
         }
 
@@ -222,7 +285,13 @@ namespace Ceebeetle
         private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
             btnConnect.IsEnabled = false;
-            m_p2p.Start(tbUserId.Text);
+            EnableUI(false);
+            if (m_connected)
+            {
+                m_p2p.StartDisconnect();
+            }
+            else
+                m_p2p.Start(tbUserId.Text);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -241,7 +310,7 @@ namespace Ceebeetle
         }
         private void btnSendFile_Click(object sender, RoutedEventArgs e)
         {
-            P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers());
+            P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers(false));
 
             if (true == sendFileWnd.ShowDialog())
             {

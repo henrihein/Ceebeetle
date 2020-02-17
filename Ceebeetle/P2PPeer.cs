@@ -10,9 +10,12 @@ namespace Ceebeetle
     public interface INetworkListener
     {
         void OnMessage(string uid, string message);
+        void OnUser(string uid);
         void OnConnected();
         void OnDisconnected();
         void OnReceivingFile(string uidFrom, string filename);
+        void OnFileData(string uidFrom, string recipient, string filename, byte[] data);
+        void OnFileComplete(string uidFrom, string recipient, string filename, byte[] hash);
     }
 
     [ServiceContract(CallbackContract = typeof(ICeebeetlePeer))]
@@ -30,6 +33,11 @@ namespace Ceebeetle
         void RequestFile(string sender, string recipient, string filename);
         [OperationContract(IsOneWay = true)]
         void CancelFile(string sender, string recipient, string filename);
+        //Todo: actually sending the data should be done on a separate, 2-way channel.
+        //This way, all data is sent to all the peers in the mesh. With a low number of peers, 
+        //not a big problem.
+        [OperationContract(IsOneWay = true)]
+        void SendFileData(string sender, string recipient, string filename, byte[] bytes);
     }
 
     public class CeebeetlePeerImpl : ICeebeetlePeer
@@ -70,15 +78,18 @@ namespace Ceebeetle
                 m_users.Add(uid);
             }
         }
-        public string[] GetKnownUsers()
+        public string[] GetKnownUsers(bool inclSelf = true)
         {
-            string[] knownUsers;
+            HashSet<string> users = new HashSet<string>();
 
             lock (m_users)
             {
-                knownUsers = m_users.ToArray<string>();
+                foreach (string user in m_users)
+                    users.Add(user);
             }
-            return knownUsers;
+            if (!inclSelf)
+                users.Remove(m_uid);
+            return users.ToArray();
         }
 
         public void AddListener(INetworkListener listener)
@@ -86,6 +97,13 @@ namespace Ceebeetle
             lock (m_listeners)
             {
                 m_listeners.Add(listener);
+            }
+        }
+        public void RemoveListener(INetworkListener listener)
+        {
+            lock (m_listeners)
+            {
+                m_listeners.Remove(listener);
             }
         }
 
@@ -125,6 +143,8 @@ namespace Ceebeetle
         void ICeebeetlePeer.OnUserConnected(string uid)
         {
             AddKnownUser(uid);
+            if (0 != string.Compare(m_uid, uid))
+                OnUserConnectedEvent(uid);
         }
         void ICeebeetlePeer.PingAll(string requester)
         {
@@ -158,15 +178,46 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.RequestFile(string sender, string recipient, string filename)
         {
-            System.Diagnostics.Debug.Write("Requesting file: " + filename);
-            if (0 == string.Compare(sender, m_uid))
-                m_fileTransferResponseCallback(recipient, filename, true);
+            System.Diagnostics.Debug.Write("Requested file: " + filename);
+            if (null != m_fileTransferResponseCallback)
+            {
+                if (0 == string.Compare(sender, m_uid))
+                    m_fileTransferResponseCallback(recipient, filename, true);
+            }
         }
         void ICeebeetlePeer.CancelFile(string sender, string recipient, string filename)
         {
             System.Diagnostics.Debug.Write("Canceling file: " + filename);
-            if (0 == string.Compare(sender, m_uid))
-                m_fileTransferResponseCallback(recipient, filename, false);
+            if (null != m_fileTransferResponseCallback)
+            {
+                if (0 == string.Compare(sender, m_uid))
+                    m_fileTransferResponseCallback(recipient, filename, false);
+            }
+        }
+        void ICeebeetlePeer.SendFileData(string sender, string recipient, string filename, byte[] data)
+        {
+            if (0 == string.Compare(m_uid, recipient))
+            {
+                try
+                {
+                    INetworkListener[] listeners = GetListeners();
+
+                    foreach (INetworkListener listener in listeners)
+                        listener.OnFileData(sender, m_uid, filename, data);
+                }
+                catch (System.IO.IOException ioex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("IO Exception in SendFileData: {0}", ioex.Message));
+                }
+                catch (System.ServiceModel.CommunicationException commEx)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in SendFileData: {0}", commEx.Message));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Exception in SendFileData: {0}", ex.Message));
+                }
+            }
         }
         public void OnConnected()
         {
@@ -188,6 +239,50 @@ namespace Ceebeetle
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.Write(string.Format("Exception in OnConnected: {0}", ex.Message));
+            }
+        }
+        public void OnDisconnected()
+        {
+            try
+            {
+                INetworkListener[] listeners = GetListeners();
+
+                foreach (INetworkListener listener in listeners)
+                    listener.OnDisconnected();
+            }
+            catch (System.IO.IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", ioex.Message));
+            }
+            catch (System.ServiceModel.CommunicationException commEx)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", commEx.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", ex.Message));
+            }
+        }
+        private void OnUserConnectedEvent(string uid)
+        {
+            try
+            {
+                INetworkListener[] listeners = GetListeners();
+
+                foreach (INetworkListener listener in listeners)
+                    listener.OnUser(uid);
+            }
+            catch (System.IO.IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("IO Exception in OnUser: {0}", ioex.Message));
+            }
+            catch (System.ServiceModel.CommunicationException commEx)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnUser: {0}", commEx.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception in OnUser: {0}", ex.Message));
             }
         }
     }

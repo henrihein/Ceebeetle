@@ -1069,7 +1069,7 @@ namespace Ceebeetle
         }
         private void btnChat_Click(object sender, RoutedEventArgs e)
         {
-            if (null == m_chatWnd)
+            if ((null == m_chatWnd) || (m_chatWnd.IsDefunct))
                 m_chatWnd = new ChatWnd();
             m_chatWnd.Show();
         }

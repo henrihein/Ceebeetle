@@ -11,6 +11,7 @@ namespace Ceebeetle
     {
         nwc_none = 0,
         nwc_connect,
+        nwc_disconnect,
         nwc_post,
         nwc_pingMesh,
         nwc_pingRespond,
@@ -48,9 +49,10 @@ namespace Ceebeetle
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     class CCBP2PNetworker
     {
+        private bool m_working;
         private string m_uid;
         private Thread m_worker;
-        private ManualResetEvent m_closeSignal;
+        private ManualResetEvent m_closeSignal, m_filexferSignal;
         private AutoResetEvent m_cmdSignal;
         private ICeebeetlePeer m_clientChannel;
         private Queue<CCBNetworkerCommandData> m_commandList;
@@ -69,8 +71,10 @@ namespace Ceebeetle
 
         public CCBP2PNetworker()
         {
+            m_working = true;
             m_commandList = new Queue<CCBNetworkerCommandData>();
             m_closeSignal = new ManualResetEvent(false);
+            m_filexferSignal = new ManualResetEvent(false);
             m_cmdSignal = new AutoResetEvent(false);
             m_worker = new Thread(new ThreadStart(Listener));
             m_factory = null;
@@ -78,11 +82,12 @@ namespace Ceebeetle
             m_fileWorker = null;
             m_peer = new CeebeetlePeerImpl();
             m_peer.PingCallback = new CeebeetlePeerImpl.OnPingedD(PingCallback);
+            m_peer.FileTransferResponseCallback = new CeebeetlePeerImpl.OnFileTransferResponseD(OnFileTransferResponse);
         }
 
-        public string[] GetKnownUsers()
+        public string[] GetKnownUsers(bool inclSelf = true)
         {
-            return m_peer.GetKnownUsers();
+            return m_peer.GetKnownUsers(inclSelf);
         }
 
         public void AddListener(INetworkListener listener)
@@ -103,18 +108,63 @@ namespace Ceebeetle
         }
         public void Stop()
         {
-            if (m_worker.IsAlive)
+            if (null != m_fileWorker)
             {
-                m_closeSignal.Set();
-                m_worker.Join();
+                if (null != m_peer)
+                    m_peer.RemoveListener(m_fileWorker);
+                m_fileWorker.Stop();
+                m_fileWorker = null;
             }
+            m_closeSignal.Set();
+            m_worker.Join();
             if (null != m_host)
             {
                 m_host.Close();
                 m_host = null;
             }
-            if (null != m_fileWorker)
-                m_fileWorker.Stop();
+        }
+        private void Close()
+        {
+            m_working = false;
+            try
+            {
+                if (null != m_clientChannel)
+                    ((ICommunicationObject)m_clientChannel).Close();
+            }
+            catch (CommunicationException commEx)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Communication when closing channel: {0}", commEx.Message));
+                ((ICommunicationObject)m_clientChannel).Abort();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception when closing channel: {0}", ex.Message));
+                ((ICommunicationObject)m_clientChannel).Abort();
+            }
+            finally
+            {
+                m_clientChannel = null;
+            }
+            try
+            {
+                if (null != m_factory)
+                    m_factory.Close();
+            }
+            catch (CommunicationException commEx)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Communication when closing factory: {0}", commEx.Message));
+                m_factory.Abort();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception when closing factory: {0}", ex.Message));
+                m_factory.Abort();
+            }
+            finally
+            {
+                m_factory = null;
+            }
+            
         }
         public void PostMessage(string message)
         {
@@ -142,7 +192,10 @@ namespace Ceebeetle
                 lock (this)
                 {
                     if (null == m_fileWorker)
+                    {
                         m_fileWorker = new CCBP2PFileWorker();
+                        m_peer.AddListener(m_fileWorker);
+                    }
                     fileWorker = m_fileWorker;
                 }
             }
@@ -155,6 +208,7 @@ namespace Ceebeetle
                 CCBP2PFileWorker fileWorker = GetFileWorker();
 
                 fileWorker.FileRequested(recipient, filename);
+                m_filexferSignal.Set();
             }
             else
             {
@@ -223,6 +277,11 @@ namespace Ceebeetle
             }
             return false;
         }
+        public void StartDisconnect()
+        {
+            QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_disconnect));
+            m_cmdSignal.Set();
+        }
         public void PingMesh()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_pingMesh));
@@ -250,6 +309,9 @@ namespace Ceebeetle
                     case CCBNetworkerCommand.nwc_connect:
                         Connect();
                         break;
+                    case CCBNetworkerCommand.nwc_disconnect:
+                        m_working = false;
+                        break;
                     case CCBNetworkerCommand.nwc_post:
                         if (null != m_clientChannel)
                         {
@@ -274,11 +336,11 @@ namespace Ceebeetle
                         break;
                     case CCBNetworkerCommand.nwc_requestFileTransfer:
                         if (null != m_clientChannel)
-                            m_clientChannel.RequestFile(m_uid, cmd.m_data[0], cmd.m_data[1]);
+                            m_clientChannel.RequestFile(cmd.m_data[0], m_uid, cmd.m_data[1]);
                         break;
                     case CCBNetworkerCommand.nwc_cancelFileTransfer:
                         if (null != m_clientChannel)
-                            m_clientChannel.CancelFile(m_uid, cmd.m_data[0], cmd.m_data[1]);
+                            m_clientChannel.CancelFile(cmd.m_data[0], m_uid, cmd.m_data[1]);
                         break;
                     default:
                         System.Diagnostics.Debug.Write(string.Format("Networker: Ignoring {0} command.", cmd.m_cmd));
@@ -296,14 +358,14 @@ namespace Ceebeetle
         }
         public void Listener()
         {
-            WaitHandle[] waitors = new WaitHandle[2] { m_closeSignal, m_cmdSignal };
+            WaitHandle[] waitors = new WaitHandle[3] { m_closeSignal, m_cmdSignal, m_filexferSignal };
 
             if (null == m_host)
             {
                 m_host = new ServiceHost(this);
                 m_host.Open();
             }
-            for (; ; )
+            while (m_working)
             {
                 int ixSig = WaitHandle.WaitAny(waitors);
 
@@ -313,11 +375,44 @@ namespace Ceebeetle
                 {
                     ExecuteNextCommand();
                 }
+                else if ((2 == ixSig) && (null != m_clientChannel))
+                {
+                    CCBP2PFileWorker fileWorker = GetFileWorker();
+                    string fileToSend = fileWorker.HasData();
+
+                    if (null != fileToSend)
+                    {
+                        CCBP2PFileDataEnvelope dataTosend = null;
+                        int cb = fileWorker.RetrieveDataToSend(fileToSend, ref dataTosend);
+
+                        if ((0 != cb) && (null != dataTosend))
+                        {
+                            try
+                            {
+                                System.Diagnostics.Debug.Write(string.Format("Sending {0} bytes from {1}", cb, dataTosend.m_localFileName));
+                                m_clientChannel.SendFileData(m_uid, dataTosend.m_recipient, dataTosend.m_localFileName, dataTosend.m_bytes);
+                                fileWorker.MarkDataSent(fileToSend, dataTosend);
+                            }
+                            catch (CommunicationException commEx)
+                            {
+                                System.Diagnostics.Debug.Write("Exception sending file data: " + commEx.Message);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.Write("Exception sending file data: " + ex.Message);
+                            }
+                        }
+                    }
+                }
                 else
                     System.Diagnostics.Debug.Write(string.Format("Error return waiting for handles in networker: {0}", ixSig));
             }
+            Close();
+            m_peer.OnDisconnected();
             System.Diagnostics.Debug.Write("Chat listener thread exiting.");
         }
 
     }
+
+
 }
