@@ -19,8 +19,6 @@ namespace Ceebeetle
     public partial class P2PReceiveFileWnd : CCBChildWindow
     {
         private CCBFileReceived m_filedata;
-        private string m_filename;
-        private string m_sender;
 
         public string Path
         {

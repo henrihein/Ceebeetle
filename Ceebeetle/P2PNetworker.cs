@@ -109,6 +109,7 @@ namespace Ceebeetle
         }
         public void Stop()
         {
+            m_closeSignal.Set();
             if (null != m_fileWorker)
             {
                 if (null != m_peer)
@@ -116,7 +117,6 @@ namespace Ceebeetle
                 m_fileWorker.Stop();
                 m_fileWorker = null;
             }
-            m_closeSignal.Set();
             m_worker.Join();
             if (null != m_host)
             {
@@ -197,7 +197,7 @@ namespace Ceebeetle
                 {
                     if (null == m_fileWorker)
                     {
-                        m_fileWorker = new CCBP2PFileWorker();
+                        m_fileWorker = new CCBP2PFileWorker(m_closeSignal);
                         m_peer.AddListener(m_fileWorker);
                     }
                     fileWorker = m_fileWorker;
@@ -400,18 +400,21 @@ namespace Ceebeetle
                                 if (fileWorker.IsSent(fileToSend, ref hash))
                                 {
                                     m_clientChannel.OnFileComplete(m_uid, dataTosend.m_recipient, dataTosend.m_localFileName, hash);
+                                    fileWorker.FileFinalized(fileToSend);
                                 }
                             }
                             catch (CommunicationException commEx)
                             {
                                 System.Diagnostics.Debug.WriteLine("Exception sending file data: " + commEx.Message);
+                                fileWorker.FileOnError(fileToSend);
                             }
                             catch (Exception ex)
                             {
                                 System.Diagnostics.Debug.WriteLine("Exception sending file data: " + ex.Message);
+                                fileWorker.FileOnError(fileToSend);
                             }
                         }
-                        if (!fileWorker.ScanForWork())
+                        if (!fileWorker.HasWork())
                             m_filexferSignal.Reset();
                     }
                 }

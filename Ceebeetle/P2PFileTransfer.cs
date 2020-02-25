@@ -67,19 +67,33 @@ namespace Ceebeetle
         private long m_filesize;
         private long m_bytesSent;
         private MD5 m_hash;
-        private bool m_complete;
+        private bool m_finalized;
+        private bool m_error;
+        private bool m_closed;
 
         public byte[] Hash
         {
             get { return m_hash.Hash; }
         }
-        public bool Complete
+        public bool Finalized
         {
-            get { return m_complete; }
+            get { return m_finalized; }
         }
         public string LocalName
         {
             get { return m_localFile; }
+        }
+        public string RemoteName
+        {
+            get { return m_remoteFile; }
+        }
+        public bool Error
+        {
+            get { return m_error; }
+        }
+        public bool Closed
+        {
+            get { return m_closed; }
         }
 
         public CCBP2PFile(string localFile, string remoteFile, string recipient)
@@ -91,9 +105,11 @@ namespace Ceebeetle
             m_offsetCur = 0;
             m_filePtr = null;
             m_filesize = -1;
+            m_finalized = false;
             m_bytesSent = 0;
-            m_hash = MD5.Create();
-            m_complete = false;
+            m_hash = null;
+            m_error = false;
+            m_closed = false;
         }
         private void InitFileSize()
         {
@@ -112,16 +128,9 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.WriteLine("Exception getting file size: " + ex.Message);
             }
         }
-        public bool HasWork()
+        public void OnError()
         {
-            //An uninitialized file has work.
-            if (-1 == m_filesize)
-                return true;
-            return m_offsetCur < m_filesize;
-        }
-        public bool GetWork(ref byte[] data)
-        {
-            return false;
+            m_error = true;
         }
         public bool IsLoaded()
         {
@@ -134,6 +143,13 @@ namespace Ceebeetle
         public bool HasDataToSend()
         {
             return m_bytesSent < m_offsetCur;
+        }
+        public bool HasLoadWork()
+        {
+            //An uninitialized file has work.
+            if (-1 == m_filesize)
+                return true;
+            return m_offsetCur < m_filesize;
         }
         public long LoadNextBlob()
         {
@@ -150,14 +166,21 @@ namespace Ceebeetle
                 else
                     curBlobSize = (int)(m_filesize - m_offsetCur);
                 m_offsetCur += m_filePtr.Read(m_data, 0, curBlobSize);
+                if (null == m_hash)
+                    m_hash = MD5.Create();
                 if (m_offsetCur == m_filesize)
                     m_hash.TransformFinalBlock(m_data, 0, curBlobSize);
                 else
                     m_hash.TransformBlock(m_data, 0, curBlobSize, null, 0);
             }
+            catch (CryptographicUnexpectedOperationException unexpected)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("Crypto Exception hashing file {0}: {1}", m_localFile, unexpected.Message));
+            }
             catch (IOException ioex)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("IO Exception reading file {0}: {1}", m_localFile, ioex.Message));
+                m_error = true;
             }
             catch (Exception ex)
             {
@@ -189,6 +212,10 @@ namespace Ceebeetle
         {
             m_bytesSent += data.Size;
         }
+        public void MarkFinalized()
+        {
+            m_finalized = true;
+        }
         public void WriteData(long offset, byte[] bytes)
         {
             try
@@ -207,8 +234,9 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write(string.Format("Exception writing file {0}: {1}", m_localFile, ex.Message));
             }
         }
-        public bool OnComplete(byte[] hash)
+        public bool OnFinalized(byte[] hash)
         {
+            m_finalized = true;
             Close();
             return true;
         }
@@ -231,24 +259,34 @@ namespace Ceebeetle
             }
             if (null != m_hash)
                 m_hash.Clear();
-            m_complete = true;
+            m_closed = true;
+        }
+    }
+
+    public class CCBP2PFileList : Dictionary<string, CCBP2PFile>
+    {
+        public enum FileListType
+        {
+            flt_none = 0,
+            flt_local,
+            flt_remote
         }
     }
 
     public class CCBP2PFileWorker : INetworkListener
     {
-        private Dictionary<string, CCBP2PFile> m_inbox;
-        private Dictionary<string, CCBP2PFile> m_outbox;
+        private CCBP2PFileList m_inbox;
+        private CCBP2PFileList m_outbox;
         AutoResetEvent m_signal;
-        private bool m_working;
+        private ManualResetEvent m_closeSignal;
         private Thread m_dataPumpThread;
 
-        public CCBP2PFileWorker() : base()
+        public CCBP2PFileWorker(ManualResetEvent closeEvent) : base()
         {
-            m_inbox = new Dictionary<string, CCBP2PFile>();
-            m_outbox = new Dictionary<string, CCBP2PFile>();
+            m_closeSignal = closeEvent;
+            m_inbox = new CCBP2PFileList();
+            m_outbox = new CCBP2PFileList();
             m_signal = new AutoResetEvent(false);
-            m_working = true;
             m_dataPumpThread = null;
         }
 
@@ -257,6 +295,7 @@ namespace Ceebeetle
             if (null == m_dataPumpThread)
             {
                 m_dataPumpThread = new Thread(FileDataPump);
+                m_dataPumpThread.Priority = ThreadPriority.BelowNormal;
                 m_dataPumpThread.Start();
             }
         }
@@ -283,9 +322,25 @@ namespace Ceebeetle
                 }
             }
         }
+        public void FileFinalized(string filename)
+        {
+            lock (m_outbox)
+            {
+                if (m_outbox.ContainsKey(filename))
+                    m_outbox[filename].MarkFinalized();
+            }
+
+        }
+        public void FileOnError(string filename)
+        {
+            lock (m_outbox)
+            {
+                if (m_outbox.ContainsKey(filename))
+                    m_outbox[filename].OnError();
+            }
+        }
         public void Stop()
         {
-            m_working = false;
             m_signal.Set();
             if (null != m_dataPumpThread)
                 m_dataPumpThread.Join();
@@ -293,22 +348,20 @@ namespace Ceebeetle
 
         public bool HasWork()
         {
-            if (!m_working)
-                return false;
             lock (m_outbox)
             {
-                foreach (string filename in m_outbox.Keys)
-                {
-                    if (m_outbox[filename].HasWork())
+                if (0 < m_outbox.Keys.Count)
+                    return true;
+            }
+            lock (m_inbox)
+            {
+                if (0 < m_inbox.Keys.Count)
                         return true;
-                }
             }
             return false;
         }
         public string HasData()
         {
-            if (!m_working)
-                return null;
             lock (m_outbox)
             {
                 foreach (string filename in m_outbox.Keys)
@@ -388,18 +441,8 @@ namespace Ceebeetle
             if (null != nextFileToLoad)
             {
                 //Do not load while file has data yet to be sent.
-                if (nextFileToLoad.HasDataToSend())
-                    m_signal.Set();
-                else
-                {
-                    long cbLoaded = nextFileToLoad.LoadNextBlob();
-
-                    //If 0 bytes were loaded, the file is done, or has an error -- either case, close it out.
-                    if (0 == cbLoaded)
-                        nextFileToLoad.Close();
-                    else
-                        return cbLoaded;
-                }
+                if (!nextFileToLoad.HasDataToSend())
+                    return nextFileToLoad.LoadNextBlob();
             }
             return 0;
         }
@@ -414,41 +457,92 @@ namespace Ceebeetle
         }
         public void FileDataPump()
         {
-            while (m_working)
+            WaitHandle[] waitors = new WaitHandle[2]{m_signal, m_closeSignal};
+
+            for (; ; )
             {
-                m_signal.WaitOne();
-                if (m_working)
+                if (HasWork())
                 {
                     LoadNext();
+                    ScanForWork();
+                    //Don't starve others
+                    if (m_closeSignal.WaitOne(23))
+                        break;
+                }
+                else
+                {
+                    if (1 == WaitHandle.WaitAny(waitors))
+                        break;
                 }
             }
+            //Not necessary to close file handles if we are exiting, but closing here
+            //for cleanliness in case we ever need to restart the file data pump.
+            CloseAll();
         }
 
-        public bool ScanForWork()
+        private void CloseAll(CCBP2PFileList files)
         {
-            bool hasWork = false;
-            List<CCBP2PFile> files = new List<CCBP2PFile>();
-
-            lock (m_outbox)
+            lock (files)
             {
-                foreach (CCBP2PFile file in m_outbox.Values)
-                    files.Add(file);
-            }
-            foreach (CCBP2PFile scanFile in files)
-            {
-                if (scanFile.HasWork())
-                    hasWork = true;
-                else if (scanFile.Complete)
+                foreach (CCBP2PFile file in files.Values)
                 {
-                    lock (m_outbox)
+                    try
                     {
-                        m_outbox.Remove(scanFile.LocalName);
+                        file.Close();
+                    }
+                    catch (IOException ioex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(string.Format("IO Exception closing file {0}: {1}", file.LocalName, ioex.Message));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(string.Format("Exception closing file {0}: {1}", file.LocalName, ex.Message));
                     }
                 }
             }
-            if (hasWork)
-                m_signal.Set();
-            return hasWork;
+        }
+        private void CloseAll()
+        {
+            CloseAll(m_inbox);
+            CloseAll(m_outbox);
+        }
+        private List<CCBP2PFile> ScanForWork(CCBP2PFileList filelist)
+        {
+            List<CCBP2PFile> files = new List<CCBP2PFile>();
+
+            lock (filelist)
+            {
+                foreach (CCBP2PFile file in filelist.Values)
+                    files.Add(file);
+            }
+            return files;
+        }
+        private void RemoveFile(CCBP2PFileList filelist, string file)
+        {
+            lock (filelist)
+            {
+                filelist.Remove(file);
+            }
+        }
+        private void ScanForWork()
+        {
+            List<CCBP2PFile> inWork = ScanForWork(m_inbox);
+            List<CCBP2PFile> outWork = ScanForWork(m_outbox);
+
+            foreach (CCBP2PFile infile in inWork)
+            {
+                if (infile.Closed)
+                    RemoveFile(m_inbox, infile.RemoteName);
+                else if (infile.Error || infile.Finalized)
+                    infile.Close();
+            }
+            foreach (CCBP2PFile outfile in outWork)
+            {
+                if (outfile.Closed)
+                    RemoveFile(m_outbox, outfile.LocalName);
+                else if (outfile.Error || outfile.Finalized)
+                    outfile.Close();
+            }
         }
 
         #region INetworkListener
@@ -498,7 +592,7 @@ namespace Ceebeetle
                 if (null == infile)
                     System.Diagnostics.Debug.WriteLine(string.Format("No file data for {0}, ignoring file completion event.", filename));
                 else
-                    infile.OnComplete(hash);
+                    infile.OnFinalized(hash);
             }
             catch (IOException ioex)
             {
