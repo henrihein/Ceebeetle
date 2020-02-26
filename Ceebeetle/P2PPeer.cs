@@ -16,6 +16,7 @@ namespace Ceebeetle
         void OnReceivingFile(string uidFrom, string filename);
         void OnFileData(string filename, long offset, byte[] data);
         void OnFileComplete(string filename, byte[] hash);
+        void OnFileError(string sender, string recipient, string filename);
     }
 
     [ServiceContract(CallbackContract = typeof(ICeebeetlePeer))]
@@ -40,6 +41,8 @@ namespace Ceebeetle
         void SendFileData(string sender, string recipient, string filename, long offset, byte[] bytes);
         [OperationContract(IsOneWay = true)]
         void OnFileComplete(string sender, string recipient, string filename, byte[] hash);
+        [OperationContract(IsOneWay = true)]
+        void OnFileError(string sender, string recipient, string filename);
     }
 
     public class CeebeetlePeerImpl : ICeebeetlePeer
@@ -244,6 +247,31 @@ namespace Ceebeetle
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.Write(string.Format("Exception in OnFileComplete: {0}", ex.Message));
+                }
+            }
+        }
+        void ICeebeetlePeer.OnFileError(string sender, string recipient, string filename)
+        {
+            if ((0 == string.Compare(m_uid, recipient)) || (0 == string.Compare(m_uid, recipient)))
+            {
+                try
+                {
+                    INetworkListener[] listeners = GetListeners();
+
+                    foreach (INetworkListener listener in listeners)
+                        listener.OnFileError(sender, recipient, filename);
+                }
+                catch (System.IO.IOException ioex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("IO Exception in OnFileError: {0}", ioex.Message));
+                }
+                catch (System.ServiceModel.CommunicationException commEx)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnFileError: {0}", commEx.Message));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write(string.Format("Exception in OnFileError: {0}", ex.Message));
                 }
             }
         }

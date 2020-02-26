@@ -58,6 +58,7 @@ namespace Ceebeetle
         ShowMessageD m_showMessageCallback;
         ShowUserConnectD m_showUserConnectCallback;
         private CCBFileReceived.FileRecivedPromptD m_fileReceivedCB;
+        List<string> m_errorFiles;
 
         public bool IsDefunct
         {
@@ -66,6 +67,7 @@ namespace Ceebeetle
 
         public ChatWnd()
         {
+            m_errorFiles = new List<string>();
             m_exit = false;
             m_connected = false;
             m_wasConnected = false;
@@ -193,6 +195,16 @@ namespace Ceebeetle
             CCBFileReceived filedata = new CCBFileReceived(sender, m_p2p.UserId, filename);
 
             this.Dispatcher.BeginInvoke(m_fileReceivedCB, new object[1] { filedata });
+        }
+        void INetworkListener.OnFileError(string sender, string recipient, string filename)
+        {
+            if (m_p2p.IsMe(recipient))
+            {
+                lock(m_errorFiles)
+                {
+                    m_errorFiles.Add(filename);
+                }
+            }
         }
         #endregion
         private void InitChatWindow()

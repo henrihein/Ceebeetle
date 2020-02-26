@@ -60,6 +60,7 @@ namespace Ceebeetle
 
         private string m_localFile;
         private string m_remoteFile;
+        private string m_sender;
         private string m_recipient;
         private int m_offsetCur;
         private byte[] m_data;
@@ -67,9 +68,11 @@ namespace Ceebeetle
         private long m_filesize;
         private long m_bytesSent;
         private MD5 m_hash;
+        private byte[] m_remoteHash;
         private bool m_finalized;
         private bool m_error;
         private bool m_closed;
+        private DateTime m_tick;
 
         public byte[] Hash
         {
@@ -79,6 +82,10 @@ namespace Ceebeetle
         {
             get { return m_finalized; }
         }
+        public bool NeedHashCheck
+        {
+            get { return (null == m_hash) && (null != m_remoteHash); }
+        }
         public string LocalName
         {
             get { return m_localFile; }
@@ -86,6 +93,14 @@ namespace Ceebeetle
         public string RemoteName
         {
             get { return m_remoteFile; }
+        }
+        public string Sender
+        {
+            get { return m_recipient; }
+        }
+        public string Recipient
+        {
+            get { return m_recipient; }
         }
         public bool Error
         {
@@ -96,11 +111,12 @@ namespace Ceebeetle
             get { return m_closed; }
         }
 
-        public CCBP2PFile(string localFile, string remoteFile, string recipient)
+        public CCBP2PFile(string localFile, string remoteFile, string sender, string recipient)
         {
             m_data = new byte[BlobSize];
             m_localFile = localFile;
             m_remoteFile = remoteFile;
+            m_sender = sender;
             m_recipient = recipient;
             m_offsetCur = 0;
             m_filePtr = null;
@@ -108,16 +124,24 @@ namespace Ceebeetle
             m_finalized = false;
             m_bytesSent = 0;
             m_hash = null;
+            m_remoteHash = null;
             m_error = false;
             m_closed = false;
+            m_tick = DateTime.Now;
         }
-        private void InitFileSize()
+        public virtual bool IsDone()
+        {
+            if (m_finalized)
+                return CheckHash();
+            return false;
+        }
+        private long GetFileSize(string localFile)
         {
             try
             {
-                FileInfo fi = new FileInfo(m_localFile);
+                FileInfo fi = new FileInfo(localFile);
 
-                m_filesize = fi.Length;
+                return fi.Length;
             }
             catch (IOException ioex)
             {
@@ -127,6 +151,11 @@ namespace Ceebeetle
             {
                 System.Diagnostics.Debug.WriteLine("Exception getting file size: " + ex.Message);
             }
+            return 0;
+        }
+        private void InitFileSize()
+        {
+            m_filesize = GetFileSize(m_localFile);
         }
         public void OnError()
         {
@@ -142,14 +171,22 @@ namespace Ceebeetle
         }
         public bool HasDataToSend()
         {
+            if (m_error)
+                return false;
             return m_bytesSent < m_offsetCur;
         }
         public bool HasLoadWork()
         {
+            if (m_error)
+                return false;
             //An uninitialized file has work.
             if (-1 == m_filesize)
                 return true;
             return m_offsetCur < m_filesize;
+        }
+        public bool CheckNode(string sender, string recipient)
+        {
+            return (0 == string.Compare(m_sender, sender)) && (0 == string.Compare(m_recipient, recipient));
         }
         public long LoadNextBlob()
         {
@@ -160,7 +197,7 @@ namespace Ceebeetle
                 if (-1 == m_filesize)
                     InitFileSize();
                 if (null == m_filePtr)
-                    m_filePtr = new FileStream(m_localFile, FileMode.Open);
+                    m_filePtr = new FileStream(m_localFile, FileMode.Open, FileAccess.Read, FileShare.Read);
                 if ((m_offsetCur + BlobSize) < m_filesize)
                     curBlobSize = BlobSize;
                 else
@@ -176,6 +213,7 @@ namespace Ceebeetle
             catch (CryptographicUnexpectedOperationException unexpected)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("Crypto Exception hashing file {0}: {1}", m_localFile, unexpected.Message));
+                m_error = true;
             }
             catch (IOException ioex)
             {
@@ -186,6 +224,7 @@ namespace Ceebeetle
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("Exception reading file {0}: {1}", m_localFile, ex.Message));
             }
+            m_tick = DateTime.Now;
             return curBlobSize;
         }
         public int RetrieveDataToSend(ref CCBP2PFileDataEnvelope data)
@@ -211,6 +250,7 @@ namespace Ceebeetle
         public void MarkDataSent(CCBP2PFileDataEnvelope data)
         {
             m_bytesSent += data.Size;
+            m_tick = DateTime.Now;
         }
         public void MarkFinalized()
         {
@@ -233,9 +273,12 @@ namespace Ceebeetle
             {
                 System.Diagnostics.Debug.Write(string.Format("Exception writing file {0}: {1}", m_localFile, ex.Message));
             }
+            m_tick = DateTime.Now;
         }
         public bool OnFinalized(byte[] hash)
         {
+            m_remoteHash = new byte[hash.Length];
+            hash.CopyTo(m_remoteHash, 0);
             m_finalized = true;
             Close();
             return true;
@@ -261,6 +304,78 @@ namespace Ceebeetle
                 m_hash.Clear();
             m_closed = true;
         }
+        protected bool CheckHash()
+        {
+            if ((null != m_remoteHash) && (null != m_hash) && (m_remoteHash.Length == m_hash.Hash.Length))
+            {
+                for (uint ixb = 0; ixb < m_remoteHash.Length; ixb++)
+                    if (m_remoteHash[ixb] != m_hash.Hash[ixb])
+                        return false;
+                return true;
+            }
+            return false;
+        }
+        public bool CalcLocalHash(WaitHandle closeEvent)
+        {
+            m_tick = DateTime.Now;
+            try
+            {
+                FileStream filePtr = null;
+                byte[] dataBlock = new byte[BlobSize];
+                long filelen = GetFileSize(m_localFile);
+                long offset = 0;
+
+                m_hash = MD5.Create();
+                if (!m_closed)
+                    Close();
+                filePtr = new FileStream(m_localFile, FileMode.Open);
+                while (offset < filelen)
+                {
+                    int curBlockSize = (int)(((long)offset + (long)BlobSize) > filelen ? (filelen - offset) : (long)BlobSize);
+
+                    filePtr.Read(dataBlock, 0, curBlockSize);
+                    if ((offset + curBlockSize) >= filelen)
+                        m_hash.TransformFinalBlock(dataBlock, 0, curBlockSize);
+                    else
+                        m_hash.TransformBlock(dataBlock, 0, curBlockSize, null, 0);
+                    if (closeEvent.WaitOne(0))
+                        break;
+                }
+                filePtr.Close();
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("IO Exception in CheckHash {0}: {1}", m_localFile, ioex.Message));
+                m_error = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(string.Format("Exception in CheckHash {0}: {1}", m_localFile, ex.Message));
+                m_error = true;
+            }
+            return false;
+        }
+        public bool IsObsolete()
+        {
+            DateTime dtComp = m_tick.AddSeconds(61 * 5);
+
+            return dtComp < DateTime.Now;
+        }
+    }
+
+    public class CCBP2POutFile : CCBP2PFile
+    {
+        public CCBP2POutFile(string filename, string sender, string recipient)
+            : base(filename, null, sender, recipient)
+        {
+        }
+
+        public override bool IsDone()
+        {
+            if (IsSent())
+                return Finalized;
+            return false;
+        }
     }
 
     public class CCBP2PFileList : Dictionary<string, CCBP2PFile>
@@ -277,7 +392,7 @@ namespace Ceebeetle
     {
         private CCBP2PFileList m_inbox;
         private CCBP2PFileList m_outbox;
-        AutoResetEvent m_signal;
+        private ManualResetEvent m_signal;
         private ManualResetEvent m_closeSignal;
         private Thread m_dataPumpThread;
 
@@ -286,7 +401,7 @@ namespace Ceebeetle
             m_closeSignal = closeEvent;
             m_inbox = new CCBP2PFileList();
             m_outbox = new CCBP2PFileList();
-            m_signal = new AutoResetEvent(false);
+            m_signal = new ManualResetEvent(false);
             m_dataPumpThread = null;
         }
 
@@ -299,13 +414,13 @@ namespace Ceebeetle
                 m_dataPumpThread.Start();
             }
         }
-        public void FileRequested(string recipient, string filename)
+        public void FileRequested(string sender, string recipient, string filename)
         {
             lock(m_outbox)
             {
                 if (!m_outbox.ContainsKey(filename))
                 {
-                    m_outbox[filename] = new CCBP2PFile(filename, null, recipient);
+                    m_outbox[filename] = new CCBP2POutFile(filename, sender, recipient);
                     m_signal.Set();
                 }
             }
@@ -360,14 +475,50 @@ namespace Ceebeetle
             }
             return false;
         }
-        public string HasData()
+        public string HasUploadWork()
         {
             lock (m_outbox)
             {
                 foreach (string filename in m_outbox.Keys)
                 {
-                    if (m_outbox[filename].HasDataToSend())
+                    if (!m_outbox[filename].Finalized)
                         return filename;
+                }
+            }
+            return null;
+        }
+        public string HasErrorFile(ref string sender, ref string recipient)
+        {
+            lock (m_outbox)
+            {
+                foreach (string filename in m_outbox.Keys)
+                {
+                    CCBP2PFile outfile = m_outbox[filename];
+
+                    if (outfile.Error)
+                    {
+                        sender = outfile.Sender;
+                        recipient = outfile.Recipient;
+                        //Remove object first, so we don't go in a tizzy when 
+                        //getting the notification back.
+                        m_outbox.Remove(filename);
+                        return outfile.LocalName;
+                    }
+                }
+            }
+            lock (m_inbox)
+            {
+                foreach(string filename in m_inbox.Keys)
+                {
+                    CCBP2PFile infile = m_inbox[filename];
+
+                    if (infile.Error)
+                    {
+                        sender = infile.Sender;
+                        recipient = infile.Recipient;
+                        m_inbox.Remove(filename);
+                        return infile.RemoteName;
+                    }
                 }
             }
             return null;
@@ -393,7 +544,7 @@ namespace Ceebeetle
                     fileToSend.MarkDataSent(data);
             }
         }
-        public bool IsSent(string filename, ref byte[] hash)
+        public bool IsSent(string filename, ref byte[] hash, ref string recipient)
         {
             CCBP2PFile file = null;
 
@@ -408,6 +559,7 @@ namespace Ceebeetle
                 {
                     hash = new byte[file.Hash.Length];
                     file.Hash.CopyTo(hash, 0);
+                    recipient = file.Recipient;
                     return true;
                 }
             }
@@ -446,9 +598,9 @@ namespace Ceebeetle
             }
             return 0;
         }
-        public void PrepareInFile(string recipient, string remoteFile, string localFile)
+        public void PrepareInFile(string sender, string recipient, string remoteFile, string localFile)
         {
-            CCBP2PFile newFile = new CCBP2PFile(localFile, remoteFile, recipient);
+            CCBP2PFile newFile = new CCBP2PFile(localFile, remoteFile, sender, recipient);
 
             lock (m_inbox)
             {
@@ -471,6 +623,7 @@ namespace Ceebeetle
                 }
                 else
                 {
+                    m_signal.Reset();
                     if (1 == WaitHandle.WaitAny(waitors))
                         break;
                 }
@@ -524,6 +677,8 @@ namespace Ceebeetle
                 filelist.Remove(file);
             }
         }
+        //We want to report errors to the mesh. So the files with errors are 
+        //removed in HasErrorFile, which are called by the networker thread.
         private void ScanForWork()
         {
             List<CCBP2PFile> inWork = ScanForWork(m_inbox);
@@ -531,14 +686,20 @@ namespace Ceebeetle
 
             foreach (CCBP2PFile infile in inWork)
             {
-                if (infile.Closed)
+                if (infile.NeedHashCheck)
+                {
+                    infile.CalcLocalHash(m_closeSignal);
+                }
+                if (infile.IsDone())
                     RemoveFile(m_inbox, infile.RemoteName);
                 else if (infile.Error || infile.Finalized)
                     infile.Close();
+                else if (infile.IsObsolete())
+                    infile.OnError();
             }
             foreach (CCBP2PFile outfile in outWork)
             {
-                if (outfile.Closed)
+                if (outfile.IsDone())
                     RemoveFile(m_outbox, outfile.LocalName);
                 else if (outfile.Error || outfile.Finalized)
                     outfile.Close();
@@ -561,6 +722,10 @@ namespace Ceebeetle
         void INetworkListener.OnReceivingFile(string uidFrom, string filename)
         {
         }
+        //We write the data directly on the networker thread. The reason is that if the write is fast, it's ok;
+        //if it's slow, the file worker thread would back up while the chunks came in, leaving significant parts
+        //of the file in memory. With only 2 threads, it's better to write the data out immediately. If the file
+        //transfer system needs to scale up, this should be changed and more file worker threads should be added.
         void INetworkListener.OnFileData(string filename, long offset, byte[] data)
         {
             System.Diagnostics.Debug.WriteLine(string.Format("Receiving {0} bytes of {1}\n", data.Length, filename));
@@ -582,6 +747,8 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.WriteLine(string.Format("Exception OnFileData {0}: {1}", filename, ex.Message));
             }
         }
+        //After having written the file, we mark it as finalized, which will make the file worker thread
+        //calculate and check the hash. 
         void INetworkListener.OnFileComplete(string filename, byte[] hash)
         {
             System.Diagnostics.Debug.WriteLine(string.Format("Completing file: {0}\n", filename));
@@ -592,7 +759,10 @@ namespace Ceebeetle
                 if (null == infile)
                     System.Diagnostics.Debug.WriteLine(string.Format("No file data for {0}, ignoring file completion event.", filename));
                 else
+                {
                     infile.OnFinalized(hash);
+                    m_signal.Set();
+                }
             }
             catch (IOException ioex)
             {
@@ -601,6 +771,39 @@ namespace Ceebeetle
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("Exception OnFileData {0}: {1}", filename, ex.Message));
+            }
+        }
+        void INetworkListener.OnFileError(string sender, string recipient, string filename)
+        {
+            System.Diagnostics.Debug.WriteLine(string.Format("Completing file: {0}\n", filename));
+            try
+            {
+                CCBP2PFile infile = GetInFile(filename);
+
+                if ((null != infile) && infile.CheckNode(sender, recipient))
+                {
+                    infile.OnError();
+                    m_signal.Set();
+                }
+                lock (m_outbox)
+                {
+                    foreach (CCBP2PFile outfile in m_outbox.Values)
+                    {
+                        if ((0 == string.Compare(outfile.LocalName, filename)) && outfile.CheckNode(sender, recipient))
+                        {
+                            outfile.OnError();
+                            m_signal.Set();
+                        }
+                    }
+                }
+            }
+            catch (IOException ioex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("IO Exception OnFileError {0}: {1}", filename, ioex.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("Exception OnFileError {0}: {1}", filename, ex.Message));
             }
         }
         #endregion

@@ -89,7 +89,12 @@ namespace Ceebeetle
         {
             return m_peer.GetKnownUsers(inclSelf);
         }
-
+        public bool IsMe(string uid)
+        {
+            if (null != m_uid)
+                return 0 == string.Compare(m_uid, uid);
+            return false;
+        }
         public void AddListener(INetworkListener listener)
         {
             m_peer.AddListener(listener);
@@ -179,7 +184,7 @@ namespace Ceebeetle
         {
             CCBP2PFileWorker fileWorker = GetFileWorker();
 
-            fileWorker.PrepareInFile(m_uid, remoteFilename, localFilename);
+            fileWorker.PrepareInFile(sender, m_uid, remoteFilename, localFilename);
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_requestFileTransfer, sender, remoteFilename));
         }
         public void CancelFileTransfer(string sender, string filename)
@@ -211,7 +216,7 @@ namespace Ceebeetle
             {
                 CCBP2PFileWorker fileWorker = GetFileWorker();
 
-                fileWorker.FileRequested(recipient, filename);
+                fileWorker.FileRequested(m_uid, recipient, filename);
                 m_filexferSignal.Set();
             }
             else
@@ -360,6 +365,19 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.WriteLine("Exception in ExecuteNextCommand: " + ex.Message);
             }
         }
+        private bool CheckFileWorkerForErrors(CCBP2PFileWorker fileworker)
+        {
+            string sender = null;
+            string recipient = null;
+            string filename = fileworker.HasErrorFile(ref sender, ref recipient);
+
+            if (null != filename)
+            {
+                m_clientChannel.OnFileError(sender, recipient, filename);
+                return true;
+            }
+            return false;
+        }
         public void Listener()
         {
             WaitHandle[] waitors = new WaitHandle[3] { m_closeSignal, m_cmdSignal, m_filexferSignal };
@@ -382,13 +400,14 @@ namespace Ceebeetle
                 else if ((2 == ixSig) && (null != m_clientChannel))
                 {
                     CCBP2PFileWorker fileWorker = GetFileWorker();
-                    string fileToSend = fileWorker.HasData();
+                    string fileToSend = fileWorker.HasUploadWork();
 
                     if (null != fileToSend)
                     {
                         CCBP2PFileDataEnvelope dataTosend = null;
                         int cb = fileWorker.RetrieveDataToSend(fileToSend, ref dataTosend);
                         byte[] hash = null;
+                        string recipient = null;
 
                         if ((0 != cb) && (null != dataTosend))
                         {
@@ -397,9 +416,9 @@ namespace Ceebeetle
                                 System.Diagnostics.Debug.Write(string.Format("Sending {0} bytes from {1}", cb, dataTosend.m_localFileName));
                                 m_clientChannel.SendFileData(m_uid, dataTosend.m_recipient, dataTosend.m_localFileName, dataTosend.m_start, dataTosend.m_bytes);
                                 fileWorker.MarkDataSent(fileToSend, dataTosend);
-                                if (fileWorker.IsSent(fileToSend, ref hash))
+                                if (fileWorker.IsSent(fileToSend, ref hash, ref recipient))
                                 {
-                                    m_clientChannel.OnFileComplete(m_uid, dataTosend.m_recipient, dataTosend.m_localFileName, hash);
+                                    m_clientChannel.OnFileComplete(m_uid, recipient, dataTosend.m_localFileName, hash);
                                     fileWorker.FileFinalized(fileToSend);
                                 }
                             }
@@ -414,9 +433,16 @@ namespace Ceebeetle
                                 fileWorker.FileOnError(fileToSend);
                             }
                         }
-                        if (!fileWorker.HasWork())
-                            m_filexferSignal.Reset();
+                        else if (fileWorker.IsSent(fileToSend, ref hash, ref recipient))
+                        {
+                            m_clientChannel.OnFileComplete(m_uid, recipient, fileToSend, hash);
+                            fileWorker.FileFinalized(fileToSend);
+                        }
                     }
+                    if (!fileWorker.HasWork())
+                        m_filexferSignal.Reset();
+                    while (CheckFileWorkerForErrors(fileWorker))
+                        ;
                 }
                 else
                     System.Diagnostics.Debug.WriteLine(string.Format("Error return waiting for handles in networker: {0}", ixSig));
