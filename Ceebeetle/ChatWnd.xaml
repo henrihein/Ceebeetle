@@ -4,18 +4,21 @@
         xmlns:src="clr-namespace:Ceebeetle"
         Title="Ceebeetle Chat" Height="338" Width="553" Closing="CCBChildWindow_Closing" Icon="/Ceebeetle;component/Resources/chat.ico">
     <Grid>
-        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,9,6" Name="btnClose" VerticalAlignment="Bottom" Width="141" Click="btnClose_Click" />
-        <Button Content="_Connect" Height="24" HorizontalAlignment="Right" Margin="0,91,12,0" Name="btnConnect" VerticalAlignment="Top" Width="157" Click="btnConnect_Click" TextInput="btnConnect_TextInput" />
         <FlowDocumentScrollViewer Margin="24,26,213,61" Name="chatContent" FontSize="9" BorderThickness="2" BorderBrush="Black">
             <FlowDocumentScrollViewer.Document>
                 <FlowDocument />
             </FlowDocumentScrollViewer.Document>
         </FlowDocumentScrollViewer>
-        <Button Content="_Send" Height="26" HorizontalAlignment="Right" Margin="0,0,213,18" Name="btnSend" VerticalAlignment="Bottom" Width="90" Click="btnSend_Click" IsDefault="True" />
         <TextBox Height="26" Margin="24,0,318,18" Name="tbChatText" VerticalAlignment="Bottom" />
-        <Label Height="25" HorizontalAlignment="Left" Margin="24,0,0,0" Name="lStatus" VerticalAlignment="Top" Width="503" />
+        <Button Content="_Send" Height="26" HorizontalAlignment="Right" Margin="0,0,213,18" Name="btnSend" VerticalAlignment="Bottom" Width="90" Click="btnSend_Click" IsDefault="True" ToolTip="Send chat text to all connected Ceebeetle users" />
+        <Label Height="25" HorizontalAlignment="Left" Margin="24,0,0,0" Name="lStatus" VerticalAlignment="Top" Width="474" />
+        <Button Height="24" HorizontalAlignment="Right" Margin="0,2,7,0" Name="btnErrorList" VerticalAlignment="Top" Width="24" Click="btnErrorList_Click" ToolTip="Show all errors in chat window">
+            <Image Source="/Ceebeetle;component/Resources/errorlist.ico" />
+        </Button>
         <Label Content="User or host name:" Height="25" HorizontalAlignment="Right" Margin="0,26,12,0" Name="label1" VerticalAlignment="Top" Width="157" />
-        <TextBox Height="23" HorizontalAlignment="Right" Margin="0,62,12,0" Name="tbUserId" VerticalAlignment="Top" Width="157" />
-        <Button Content="Send _File" Height="26" HorizontalAlignment="Right" Margin="0,212,12,0" Name="btnSendFile" VerticalAlignment="Top" Width="138" Click="btnSendFile_Click" />
+        <TextBox Height="23" HorizontalAlignment="Right" Margin="0,58,12,0" Name="tbUserId" VerticalAlignment="Top" Width="157" />
+        <Button Content="_Connect" Height="24" HorizontalAlignment="Right" Margin="0,91,12,0" Name="btnConnect" VerticalAlignment="Top" Width="157" Click="btnConnect_Click" TextInput="btnConnect_TextInput" />
+        <Button Content="Send _File" Height="26" HorizontalAlignment="Right" Margin="0,212,12,0" Name="btnSendFile" VerticalAlignment="Top" Width="138" Click="btnSendFile_Click" ToolTip="Send a file to a specified recipient" />
+        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,9,6" Name="btnClose" VerticalAlignment="Bottom" Width="141" Click="btnClose_Click" />
     </Grid>
 </src:CCBChildWindow>

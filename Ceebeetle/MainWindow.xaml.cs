@@ -63,12 +63,13 @@ namespace Ceebeetle
             try
             {
                 m_config.Initialize();
+                CCBLogConfig.InitLogging(m_config);
                 tbStatus.Text = System.String.Format("{0} [v{1}]", m_config.DocPath, System.Environment.Version.ToString());
             }
             catch (System.Reflection.TargetInvocationException ex)
             {
-                System.Diagnostics.Debug.Write("Error caught in Main.");
-                System.Diagnostics.Debug.Write(ex.ToString());
+                System.Diagnostics.Debug.WriteLine("Error caught in Main.");
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
             m_worker.ProgressChanged += new ProgressChangedEventHandler(Worker_OnProgressChanged);
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
@@ -97,11 +98,12 @@ namespace Ceebeetle
                         evtArgs.Cancel = true;
                 }
                 if (!m_storeManager.SaveStores(m_config))
-                    System.Diagnostics.Debug.Write("Failed to write store file. Ignoring for now.");
+                    CCBLogConfig.GetLogger().Log("Failed to write store file. Ignoring for now.");
+                CCBLogConfig.Close();
             }
             catch (IOException iox)
             {
-                System.Diagnostics.Debug.Write(iox.ToString());
+                CCBLogConfig.GetLogger().Log(iox.ToString());
                 evtArgs.Cancel = true;
             }
         }

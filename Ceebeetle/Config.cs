@@ -13,7 +13,6 @@ namespace Ceebeetle
         private static readonly uint m_backupCount = 8;
         private static readonly string m_filenameTemplate = @"ceebeetle{0:D2}.{1}";
         private static readonly string m_storenameTemplate = @"ceebeetleStore{0:D2}.{1}";
-
         private string m_filename;
         private string m_tmpFilename;
         private string m_docLocation = null;
@@ -21,6 +20,12 @@ namespace Ceebeetle
         private string m_tmpFullPath;
         public string DocPath { get { return m_docFullPath; } }
         public string TmpPath { get { return m_tmpFullPath; } }
+        private LOGLEVEL m_loglevel = LOGLEVEL.LOGERROR;
+
+        public LOGLEVEL LogLevel
+        {
+            get { return m_loglevel; }
+        }
 
         public CCBConfig()
         {
@@ -28,6 +33,11 @@ namespace Ceebeetle
             m_tmpFilename = MakeTempFileName(m_version);
             m_docLocation = null;
             m_docFullPath = null;
+#if DEBUG
+            m_loglevel = LOGLEVEL.LOGDEBUG;
+#else
+            m_loglevel = LOGLEVEL.LOGERROR;
+#endif
         }
         private string MakeFileName(uint version)
         {
@@ -52,11 +62,11 @@ namespace Ceebeetle
         }
         private string MakeDocPath(string filename)
         {
-            InitializeDocLocation();
             return System.IO.Path.Combine(m_docLocation, filename);
         }
         public void Initialize()
         {
+            InitializeDocLocation();
             m_tmpFullPath = MakeDocPath(m_tmpFilename);
             m_docFullPath = MakeDocPath(m_filename);
         }
@@ -135,6 +145,12 @@ namespace Ceebeetle
                 System.Diagnostics.Debug.Write(string.Format("Exception backing up {0} [{1}]", path, eex.Message));
             }
             return false;
+        }
+        public string MakeLogFilePath(long ix)
+        {
+            string filename = string.Format("ceebeetle{0}.log", ix % 16);
+
+            return System.IO.Path.Combine(m_docLocation, filename);
         }
     }
 }

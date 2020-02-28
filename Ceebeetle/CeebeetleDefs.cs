@@ -17,6 +17,7 @@ namespace Ceebeetle
         tsuParseError = 0x801
     }
 
+    //Sundry UI events and callbacks
     public delegate void DOnKnownUIUpdate();
     public delegate void DOnNewCharacter(CCBCharacter newCharacter);
     public delegate void DOnCreateNewGame(CCBGameTemplate template, string name);
@@ -26,6 +27,9 @@ namespace Ceebeetle
     public delegate void DOnCopyBagItems(CCBBag targetBag, string[] bagItems);
     public delegate bool DOnDeleteBagItems(CCBBag targetBag, string[] bagItems);
     public delegate void DOnCopyName(string name);
+    //Merge actions
     public delegate TStatusUpdate DMergeGame(CCBGame game);
     public delegate TStatusUpdate DMergeTemplate(CCBGameTemplate template);
+    //P2P events
+    public delegate void DOnFileTransferError(string sender, string filename);
 }

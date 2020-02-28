@@ -51,14 +51,16 @@ namespace Ceebeetle
     {
         private bool m_exit, m_connected, m_wasConnected;
         private CCBP2PNetworker m_p2p;
-        private delegate void ShowOnConnectedD();
-        private delegate void ShowMessageD(string uid, string message);
-        private delegate void ShowUserConnectD(string uid);
-        ShowOnConnectedD m_showConnectedCallback;
-        ShowMessageD m_showMessageCallback;
-        ShowUserConnectD m_showUserConnectCallback;
+        private delegate void DShowOnConnected();
+        private delegate void DShowMessage(string uid, string message);
+        private delegate void DShowLastError();
+        private delegate void DShowUserConnect(string uid);
+        DShowOnConnected m_showConnectedCallback;
+        DShowMessage m_showMessageCallback;
+        DShowUserConnect m_showUserConnectCallback;
+        DShowLastError m_showLastErrorCallback;
         private CCBFileReceived.FileRecivedPromptD m_fileReceivedCB;
-        List<string> m_errorFiles;
+        List<string> m_errorList;
 
         public bool IsDefunct
         {
@@ -67,16 +69,18 @@ namespace Ceebeetle
 
         public ChatWnd()
         {
-            m_errorFiles = new List<string>();
+            m_errorList = new List<string>();
             m_exit = false;
             m_connected = false;
             m_wasConnected = false;
-            m_showConnectedCallback = new ShowOnConnectedD(ShowOnConnected);
+            m_showConnectedCallback = new DShowOnConnected(ShowOnConnected);
             m_fileReceivedCB = new CCBFileReceived.FileRecivedPromptD(PromptForFileReceived);
-            m_showUserConnectCallback = new ShowUserConnectD(ShowUserConnect);
-            m_showMessageCallback = new ShowMessageD(ShowMessage);
+            m_showUserConnectCallback = new DShowUserConnect(ShowUserConnect);
+            m_showMessageCallback = new DShowMessage(ShowMessage);
+            m_showLastErrorCallback = new DShowLastError(ShowLastError);
             m_p2p = new CCBP2PNetworker();
             m_p2p.AddListener(this);
+            m_p2p.OnFileTransferErrorCallback = new DOnFileTransferError(OnFileTransferError);
             InitializeComponent();
             SetHostNameTo(tbUserId);
             InitMinSize();
@@ -199,14 +203,13 @@ namespace Ceebeetle
         void INetworkListener.OnFileError(string sender, string recipient, string filename)
         {
             if (m_p2p.IsMe(recipient))
-            {
-                lock(m_errorFiles)
-                {
-                    m_errorFiles.Add(filename);
-                }
-            }
+                ShowError("Remote error on " + filename);
         }
         #endregion
+        private void OnFileTransferError(string sender, string filename)
+        {
+            ShowError(string.Format("{0} from {1} had an error. Download canceled.", filename, sender));
+        }
         private void InitChatWindow()
         {
             FlowDocument doc = chatContent.Document;
@@ -245,6 +248,25 @@ namespace Ceebeetle
                 Log("Exception in ChatWnd, adding chat text. " + fex.Message);
             }
         }
+        private void AddErrorText(string text)
+        {
+            try
+            {
+                Paragraph pAdd = new Paragraph();
+
+                pAdd.Background = Brushes.AntiqueWhite;
+                pAdd.Foreground = Brushes.DarkRed;
+                pAdd.FontSize = chatContent.Document.FontSize - 2;
+                pAdd.Inlines.Add(new Run(text));
+                pAdd.Padding = new Thickness(1);
+                pAdd.Margin = new Thickness(0);
+                chatContent.Document.Blocks.Add(pAdd);
+            }
+            catch (Exception fex)
+            {
+                Log("Exception in ChatWnd, adding chat text. " + fex.Message);
+            }
+        }
         private void EnableUI(bool enable = true)
         {
             btnSend.IsEnabled = enable;
@@ -276,7 +298,23 @@ namespace Ceebeetle
         {
             AddChatText(string.Format("{0}:{1}", uid, message));
         }
-
+        private void ShowLastError()
+        {
+            lock (m_errorList)
+            {
+                if (0 < m_errorList.Count)
+                    lStatus.Content = m_errorList[m_errorList.Count - 1];
+            }
+        }
+        private void ShowError(string errorText)
+        {
+            CCBLogConfig.GetLogger().Error("Adding Chat window error: {0}", errorText);
+            lock (m_errorList)
+            {
+                m_errorList.Add(errorText);
+            }
+            Application.Current.Dispatcher.BeginInvoke(m_showLastErrorCallback);
+        }
         public void Exit()
         {
             m_exit = true;
@@ -310,7 +348,14 @@ namespace Ceebeetle
         {
             Close();
         }
-
+        private void btnErrorList_Click(object sender, RoutedEventArgs e)
+        {
+            lock (m_errorList)
+            {
+                foreach (string errText in m_errorList)
+                    AddErrorText(errText);
+            }
+        }
         private void btnConnect_TextInput(object sender, TextCompositionEventArgs e)
         {
             Validate();
@@ -328,9 +373,12 @@ namespace Ceebeetle
             {
                 //Check it and Send it.
                 if (File.Exists(sendFileWnd.Filename))
-                    m_p2p.StartFileTransfer(sendFileWnd.Recipient, sendFileWnd.Filename);
+                {
+                    if (!m_p2p.StartFileTransfer(sendFileWnd.Recipient, sendFileWnd.Filename))
+                        ShowError("Already sending " + sendFileWnd.Filename);
+                }
                 else
-                    lStatus.Content = string.Format("{0} does not exist, canceling send.", sendFileWnd.Filename);
+                    ShowError(string.Format("{0} does not exist, canceling send.", sendFileWnd.Filename));
             }
         }
 

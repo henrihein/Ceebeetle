@@ -47,7 +47,7 @@ namespace Ceebeetle
     }
 
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
-    class CCBP2PNetworker
+    class CCBP2PNetworker : CCBLogging
     {
         private bool m_working;
         private string m_uid;
@@ -58,6 +58,8 @@ namespace Ceebeetle
         private Queue<CCBNetworkerCommandData> m_commandList;
         private CeebeetlePeerImpl m_peer;
         private CCBP2PFileWorker m_fileWorker;
+        private DOnFileTransferError m_onFileError;
+
         #region WCFObjects
         private ServiceHost m_host;
         private DuplexChannelFactory<ICeebeetlePeer> m_factory;
@@ -67,6 +69,10 @@ namespace Ceebeetle
         public string UserId
         {
             get { return m_uid; }
+        }
+        public DOnFileTransferError OnFileTransferErrorCallback
+        {
+            set { m_onFileError = value; }
         }
 
         public CCBP2PNetworker()
@@ -83,6 +89,7 @@ namespace Ceebeetle
             m_peer = new CeebeetlePeerImpl();
             m_peer.PingCallback = new CeebeetlePeerImpl.OnPingedD(PingCallback);
             m_peer.FileTransferResponseCallback = new CeebeetlePeerImpl.OnFileTransferResponseD(OnFileTransferResponse);
+            m_onFileError = null;
         }
 
         public string[] GetKnownUsers(bool inclSelf = true)
@@ -139,12 +146,12 @@ namespace Ceebeetle
             }
             catch (CommunicationException commEx)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Communication when closing channel: {0}", commEx.Message));
+                Error(string.Format("Communication when closing channel: {0}", commEx.Message));
                 ((ICommunicationObject)m_clientChannel).Abort();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Exception when closing channel: {0}", ex.Message));
+                Error(string.Format("Exception when closing channel: {0}", ex.Message));
                 ((ICommunicationObject)m_clientChannel).Abort();
             }
             finally
@@ -158,12 +165,12 @@ namespace Ceebeetle
             }
             catch (CommunicationException commEx)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Communication when closing factory: {0}", commEx.Message));
+                Error(string.Format("Communication when closing factory: {0}", commEx.Message));
                 m_factory.Abort();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Exception when closing factory: {0}", ex.Message));
+                Error(string.Format("Exception when closing factory: {0}", ex.Message));
                 m_factory.Abort();
             }
             finally
@@ -176,9 +183,15 @@ namespace Ceebeetle
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_post, message));
         }
-        public void StartFileTransfer(string recipient, string filename)
+        public bool StartFileTransfer(string recipient, string filename)
         {
+            if (null != m_fileWorker)
+            {
+                if (m_fileWorker.IsUploading(filename))
+                    return false;
+            }
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_startFileTransfer, recipient, filename));
+            return true;
         }
         public void RequestFileTransfer(string sender, string remoteFilename, string localFilename)
         {
@@ -186,6 +199,7 @@ namespace Ceebeetle
 
             fileWorker.PrepareInFile(sender, m_uid, remoteFilename, localFilename);
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_requestFileTransfer, sender, remoteFilename));
+            m_filexferSignal.Set();
         }
         public void CancelFileTransfer(string sender, string filename)
         {
@@ -206,6 +220,7 @@ namespace Ceebeetle
                         m_peer.AddListener(m_fileWorker);
                     }
                     fileWorker = m_fileWorker;
+                    fileWorker.OnFileTransferErrorCallback = m_onFileError;
                 }
             }
             return fileWorker;
@@ -247,11 +262,11 @@ namespace Ceebeetle
             }
             catch (InvalidOperationException eex)
             {
-                System.Diagnostics.Debug.WriteLine("Internal error: trying to get command while command list is empty." + eex.Message);
+                Error("Internal error: trying to get command while command list is empty." + eex.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Error getting command: {0}", ex.Message));
+                Error(string.Format("Error getting command: {0}", ex.Message));
             }
             return new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_none);
         }
@@ -278,11 +293,11 @@ namespace Ceebeetle
             }
             catch (CommunicationException commEx)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Communication exception connecting: {0}", commEx.Message));
+                Error(string.Format("Communication exception connecting: {0}", commEx.Message));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Exception connecting: {0}", ex.Message));
+                Error(string.Format("Exception connecting: {0}", ex.Message));
             }
             return false;
         }
@@ -328,7 +343,7 @@ namespace Ceebeetle
                             if ((null != cmd.m_data) && (0 < cmd.m_data.Length))
                                 m_clientChannel.ChatMessage(m_uid, cmd.m_data[0]);
                             else
-                                System.Diagnostics.Debug.WriteLine("Internal error: m_data does not contain data.");
+                                Error("Internal error: m_data does not contain data.");
                         }
                         break;
                     case CCBNetworkerCommand.nwc_pingMesh:
@@ -352,17 +367,17 @@ namespace Ceebeetle
                             m_clientChannel.CancelFile(cmd.m_data[0], m_uid, cmd.m_data[1]);
                         break;
                     default:
-                        System.Diagnostics.Debug.WriteLine(string.Format("Networker: Ignoring {0} command.", cmd.m_cmd));
+                        Error(string.Format("Networker: Ignoring {0} command.", cmd.m_cmd));
                         break;
                 }
             }
             catch (NullReferenceException nex)
             {
-                System.Diagnostics.Debug.WriteLine("Null reference in ExecuteNextCommand: " + nex.Message);
+                Error("Null reference in ExecuteNextCommand: " + nex.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Exception in ExecuteNextCommand: " + ex.Message);
+                Error("Exception in ExecuteNextCommand: " + ex.Message);
             }
         }
         private bool CheckFileWorkerForErrors(CCBP2PFileWorker fileworker)
@@ -424,12 +439,12 @@ namespace Ceebeetle
                             }
                             catch (CommunicationException commEx)
                             {
-                                System.Diagnostics.Debug.WriteLine("Exception sending file data: " + commEx.Message);
+                                Error("Exception sending file data: " + commEx.Message);
                                 fileWorker.FileOnError(fileToSend);
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine("Exception sending file data: " + ex.Message);
+                                Error("Exception sending file data: " + ex.Message);
                                 fileWorker.FileOnError(fileToSend);
                             }
                         }
@@ -439,20 +454,26 @@ namespace Ceebeetle
                             fileWorker.FileFinalized(fileToSend);
                         }
                     }
-                    if (!fileWorker.HasWork())
+                    if (fileWorker.HasWork())
+                    {
+                        if (m_closeSignal.WaitOne(73))
+                            break;
+                        while (CheckFileWorkerForErrors(fileWorker))
+                        {
+                            if (m_closeSignal.WaitOne(0))
+                                break;
+                        }
+                    }
+                    else
                         m_filexferSignal.Reset();
-                    while (CheckFileWorkerForErrors(fileWorker))
-                        ;
                 }
                 else
-                    System.Diagnostics.Debug.WriteLine(string.Format("Error return waiting for handles in networker: {0}", ixSig));
+                    Fatal(string.Format("Error return waiting for handles in networker: {0}", ixSig));
             }
             Close();
             m_peer.OnDisconnected();
-            System.Diagnostics.Debug.WriteLine("Chat listener thread exiting.");
+            Debug("Chat listener thread exiting.");
         }
 
     }
-
-
 }

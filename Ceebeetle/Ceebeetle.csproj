@@ -80,6 +80,7 @@
     <Compile Include="ImportGames.xaml.cs">
       <DependentUpon>ImportGames.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="NamePicker.xaml.cs">
       <DependentUpon>NamePicker.xaml</DependentUpon>
     </Compile>
@@ -231,6 +232,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\chat.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\errorlist.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -133,15 +133,15 @@ namespace Ceebeetle
             }
             catch (System.IO.IOException ioex)
             {
-                System.Diagnostics.Debug.Write(string.Format("IO Exception in ChatMessage: {0}", ioex.Message));
+                CCBLogConfig.GetLogger().Error("IO Exception in ChatMessage: {0}", ioex.Message);
             }
             catch (System.ServiceModel.CommunicationException commEx)
             {
-                System.Diagnostics.Debug.Write(string.Format("Comm Exception in ChatMessage: {0}", commEx.Message));
+                CCBLogConfig.GetLogger().Error("Comm Exception in ChatMessage: {0}", commEx.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in ChatMessage: {0}", ex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in ChatMessage: {0}", ex.Message);
             }
         }
         //Sent in response to PingAll.
@@ -169,21 +169,22 @@ namespace Ceebeetle
                 }
                 catch (System.IO.IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception in OnNewFile: {0}", ioex.Message));
+
+                    CCBLogConfig.GetLogger().Error("IO Exception in OnNewFile: {0}", ioex.Message);
                 }
                 catch (System.ServiceModel.CommunicationException commEx)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnNewFile: {0}", commEx.Message));
+                    CCBLogConfig.GetLogger().Error("Comm Exception in OnNewFile: {0}", commEx.Message);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Exception in OnNewFile: {0}", ex.Message));
+                    CCBLogConfig.GetLogger().Error("Exception in OnNewFile: {0}", ex.Message);
                 }
             }
         }
         void ICeebeetlePeer.RequestFile(string sender, string recipient, string filename)
         {
-            System.Diagnostics.Debug.Write("Requested file: " + filename);
+            CCBLogConfig.GetLogger().Debug("Requested file: " + filename);
             if (null != m_fileTransferResponseCallback)
             {
                 if (0 == string.Compare(sender, m_uid))
@@ -192,7 +193,7 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.CancelFile(string sender, string recipient, string filename)
         {
-            System.Diagnostics.Debug.Write("Canceling file: " + filename);
+            CCBLogConfig.GetLogger().Debug("Canceling file: " + filename);
             if (null != m_fileTransferResponseCallback)
             {
                 if (0 == string.Compare(sender, m_uid))
@@ -213,15 +214,15 @@ namespace Ceebeetle
                 }
                 catch (System.IO.IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception in SendFileData: {0}", ioex.Message));
+                    CCBLogConfig.GetLogger().Error("IO Exception in SendFileData: {0}", ioex.Message);
                 }
                 catch (System.ServiceModel.CommunicationException commEx)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in SendFileData: {0}", commEx.Message));
+                    CCBLogConfig.GetLogger().Error("Comm Exception in SendFileData: {0}", commEx.Message);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Exception in SendFileData: {0}", ex.Message));
+                    CCBLogConfig.GetLogger().Error("Exception in SendFileData: {0}", ex.Message);
                 }
             }
         }
@@ -238,15 +239,15 @@ namespace Ceebeetle
                 }
                 catch (System.IO.IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception in OnFileComplete: {0}", ioex.Message));
+                    CCBLogConfig.GetLogger().Error("IO Exception in OnFileComplete: {0}", ioex.Message);
                 }
                 catch (System.ServiceModel.CommunicationException commEx)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnFileComplete: {0}", commEx.Message));
+                    CCBLogConfig.GetLogger().Error("Comm Exception in OnFileComplete: {0}", commEx.Message);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Exception in OnFileComplete: {0}", ex.Message));
+                    CCBLogConfig.GetLogger().Error("Exception in OnFileComplete: {0}", ex.Message);
                 }
             }
         }
@@ -263,15 +264,15 @@ namespace Ceebeetle
                 }
                 catch (System.IO.IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("IO Exception in OnFileError: {0}", ioex.Message));
+                    CCBLogConfig.GetLogger().Error("IO Exception in OnFileError: {0}", ioex.Message);
                 }
                 catch (System.ServiceModel.CommunicationException commEx)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnFileError: {0}", commEx.Message));
+                    CCBLogConfig.GetLogger().Error("Comm Exception in OnFileError: {0}", commEx.Message);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write(string.Format("Exception in OnFileError: {0}", ex.Message));
+                    CCBLogConfig.GetLogger().Error("Exception in OnFileError: {0}", ex.Message);
                 }
             }
         }
@@ -286,15 +287,15 @@ namespace Ceebeetle
             }
             catch (System.IO.IOException ioex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnConnected: {0}", ioex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnConnected: {0}", ioex.Message);
             }
             catch (System.ServiceModel.CommunicationException commEx)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnConnected: {0}", commEx.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnConnected: {0}", commEx.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnConnected: {0}", ex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnConnected: {0}", ex.Message);
             }
         }
         public void OnDisconnected()
@@ -308,15 +309,15 @@ namespace Ceebeetle
             }
             catch (System.IO.IOException ioex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", ioex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnDisconnected: {0}", ioex.Message);
             }
             catch (System.ServiceModel.CommunicationException commEx)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", commEx.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnDisconnected: {0}", commEx.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnDisconnected: {0}", ex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnDisconnected: {0}", ex.Message);
             }
         }
         private void OnUserConnectedEvent(string uid)
@@ -330,15 +331,15 @@ namespace Ceebeetle
             }
             catch (System.IO.IOException ioex)
             {
-                System.Diagnostics.Debug.Write(string.Format("IO Exception in OnUser: {0}", ioex.Message));
+                CCBLogConfig.GetLogger().Error("IO Exception in OnUser: {0}", ioex.Message);
             }
             catch (System.ServiceModel.CommunicationException commEx)
             {
-                System.Diagnostics.Debug.Write(string.Format("Comm Exception in OnUser: {0}", commEx.Message));
+                CCBLogConfig.GetLogger().Error("Comm Exception in OnUser: {0}", commEx.Message);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Write(string.Format("Exception in OnUser: {0}", ex.Message));
+                CCBLogConfig.GetLogger().Error("Exception in OnUser: {0}", ex.Message);
             }
         }
     }
