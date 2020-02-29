@@ -186,6 +186,7 @@ namespace Ceebeetle
         {
             P2PReceiveFileWnd prompt = new P2PReceiveFileWnd(filedata);
 
+            prompt.Owner = this;
             if (true == prompt.ShowDialog())
             {
                 Log("Ready to receive the file {0} to {1}.", filedata.Name, prompt.Path);
@@ -369,6 +370,7 @@ namespace Ceebeetle
         {
             P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers(false));
 
+            sendFileWnd.Owner = this;
             if (true == sendFileWnd.ShowDialog())
             {
                 //Check it and Send it.

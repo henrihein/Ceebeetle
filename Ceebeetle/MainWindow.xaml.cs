@@ -85,6 +85,7 @@ namespace Ceebeetle
         {
             m_timer.Stop();
             m_timer.Close();
+            Save();
             if (null != m_chatWnd)
                 m_chatWnd.Exit();
             try
@@ -637,6 +638,11 @@ namespace Ceebeetle
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            Save();
+        }
+
+        private void Save()
+        {
             CEditMode editMode = CEditModeProperty.GetEditNode(tbItem);
 
             if (null == editMode) return;
@@ -808,14 +814,15 @@ namespace Ceebeetle
             }
             Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
 
+            templatePickerWnd.Owner = this;
             templatePickerWnd.Show();
         }
 
         private void SetDefaultView()
         {
             gbItemView.Header = "Modify";
-            btnSave.Content = "Save";
             btnSave.IsEnabled = true;
+            btnSave.Visibility = Visibility.Hidden;
             tbItem.Text = "";
             tbItem.IsEnabled = true;
             tbValue.Text = "";
@@ -829,7 +836,8 @@ namespace Ceebeetle
         {
             SetDefaultView();
             gbItemView.Header = "Add Character";
-            btnSave.Content = "Add";
+            btnSave.Content = "Add Character";
+            btnSave.Visibility = Visibility.Visible;
             tbItem.Text = "New Hero";
             ResetEntitiesList();
             return EEditMode.em_AddCharacter;
@@ -838,7 +846,8 @@ namespace Ceebeetle
         {
             SetDefaultView();
             gbItemView.Header = "Add Game";
-            btnSave.Content = "Add";
+            btnSave.Content = "Add Game";
+            btnSave.Visibility = Visibility.Visible;
             tbItem.Text = "New Game";
             ResetEntitiesList();
             return EEditMode.em_AddGame;
@@ -847,7 +856,8 @@ namespace Ceebeetle
         {
             SetDefaultView();
             gbItemView.Header = "Add Property";
-            btnSave.Content = "Add";
+            btnSave.Content = "Add Property";
+            btnSave.Visibility = Visibility.Visible;
             tbItem.Text = "New Property";
             tbValue.IsEnabled = true;
             ResetEntitiesList();
@@ -857,7 +867,8 @@ namespace Ceebeetle
         {
             SetDefaultView();
             gbItemView.Header = "Add Bag";
-            btnSave.Content = "Add";
+            btnSave.Content = "Add Bag";
+            btnSave.Visibility = Visibility.Visible;
             tbItem.Text = "New Bag";
             ResetEntitiesList();
             return EEditMode.em_AddBag;
@@ -866,7 +877,8 @@ namespace Ceebeetle
         {
             SetDefaultView();
             gbItemView.Header = "Add Bag Item";
-            btnSave.Content = "Add";
+            btnSave.Content = "Add Bag Item";
+            btnSave.Visibility = Visibility.Visible;
             tbItem.Text = "New Item";
             ResetEntitiesList();
             cbCountable.Visibility = System.Windows.Visibility.Visible;
@@ -1018,6 +1030,7 @@ namespace Ceebeetle
             System.Diagnostics.Debug.Assert(null != bagNode);
             BagItemPicker bagPickerWnd = new BagItemPicker(new BagItemPicker.BagInfo(bagNode.ID, bagNode.Bag, gameNode.Game.GetAllBags(bagNode.Bag)));
 
+            bagPickerWnd.Owner = this;
             bagPickerWnd.CopyBagItemsCallback = new DOnCopyBagItems(OnCopyBagItems);
             bagPickerWnd.DeleteBagItemsCallback = new DOnDeleteBagItems(OnDeleteBagItems);
             bagPickerWnd.Show();
@@ -1032,6 +1045,7 @@ namespace Ceebeetle
         {
             NamePicker namePickerWnd = new NamePicker();
 
+            namePickerWnd.Owner = this;
             namePickerWnd.CopyNameCallback = new DOnCopyName(OnCopyName);
             namePickerWnd.Show();
         }
@@ -1044,6 +1058,7 @@ namespace Ceebeetle
         {
             ExportGames exportGamesWnd = new ExportGames();
 
+            exportGamesWnd.Owner = this;
             exportGamesWnd.GameList = m_games.GetGames();
             exportGamesWnd.GameTemplateList = m_games.GetGameTemplates();
             exportGamesWnd.Show();
@@ -1052,6 +1067,7 @@ namespace Ceebeetle
         {
             ImportGames importGamesWnd = new ImportGames(new DMergeGame(MergeGameCallback), new DMergeTemplate(MergeTemplateCallback));
 
+            importGamesWnd.Owner = this;
             importGamesWnd.Show();
         }
         private void btnTemplates_Click(object sender, RoutedEventArgs e)
@@ -1067,13 +1083,27 @@ namespace Ceebeetle
             CCBGame game = FindCurrentGame(true);
             StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game, m_config.GetStoreFilePath());
 
+            storeWnd.Owner = this;
             storeWnd.Show();
         }
         private void btnChat_Click(object sender, RoutedEventArgs e)
         {
             if ((null == m_chatWnd) || (m_chatWnd.IsDefunct))
+            {
                 m_chatWnd = new ChatWnd();
+                m_chatWnd.Owner = this;
+            }
             m_chatWnd.Show();
+        }
+
+        private void tbItem_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Save();
+        }
+
+        private void tbValue_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Save();
         }
     }
 }
