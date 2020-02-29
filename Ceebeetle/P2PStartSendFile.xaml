@@ -2,16 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:src="clr-namespace:Ceebeetle"
-        Title="Send File" Height="333" Width="546">
+        Title="Send File" Height="333" Width="494">
     <Grid>
         <Label Content="Send to:" Height="26" HorizontalAlignment="Left" Margin="12,57,0,0" Name="label1" VerticalAlignment="Top" Width="139" />
-        <ListBox Margin="12,89,328,15" Name="lbUsers" SelectionChanged="lbUsers_SelectionChanged" />
-        <Button Content="_Send now" Height="24" HorizontalAlignment="Right" Margin="0,0,230,15" Name="btnSend" VerticalAlignment="Bottom" Width="78" Click="btnSend_Click" />
+        <ListBox Margin="12,89,0,15" Name="lbUsers" SelectionChanged="lbUsers_SelectionChanged" HorizontalAlignment="Left" Width="184" />
+        <Button Content="_Send now" Height="24" HorizontalAlignment="Left" Margin="216,0,0,15" Name="btnSend" VerticalAlignment="Bottom" Width="78" Click="btnSend_Click" />
         <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,17,15" Name="btnClose" VerticalAlignment="Bottom" Width="123" Click="btnClose_Click" />
         <Label Content="File to send:" Height="26" HorizontalAlignment="Left" Margin="12,0,0,0" Name="label2" VerticalAlignment="Top" Width="92" />
-        <TextBox Height="24" Margin="12,0,328,241" Name="tbFile" VerticalAlignment="Bottom" TextChanged="tbFile_TextChanged" />
-        <Button Content="_Browse..." Height="24" HorizontalAlignment="Right" Margin="0,29,230,0" Name="btnBrowse" VerticalAlignment="Top" Width="78" Click="btnBrowse_Click" />
-        <Label Content="In Progress" Height="26" HorizontalAlignment="Left" Margin="329,12,0,0" Name="label3" VerticalAlignment="Top" Width="178" />
-        <ListView Margin="329,43,30,75" Name="lvCurrentItems" />
+        <TextBox Margin="12,25,141,0" Name="tbFile" TextChanged="tbFile_TextChanged" Height="24" VerticalAlignment="Top" />
+        <Button Content="_Browse..." Height="24" HorizontalAlignment="Right" Margin="0,25,17,0" Name="btnBrowse" VerticalAlignment="Top" Width="110" Click="btnBrowse_Click" />
+        <Label Content="In Progress" Height="26" Margin="307,57,54,0" Name="label3" VerticalAlignment="Top" />
+        <ListView Margin="307,89,17,58" Name="lvCurrentItems" />
     </Grid>
 </src:CCBChildWindow>

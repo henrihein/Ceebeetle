@@ -4,7 +4,7 @@
         xmlns:src="clr-namespace:Ceebeetle"
         Title="Receiving File" Height="250" Width="482">
     <Grid>
-        <Label Content="Receiving a file from {0}" Height="27" HorizontalAlignment="Left" Margin="12,2,0,0" Name="lSender" VerticalAlignment="Top" Width="372" />
+        <Label Content="Receiving a file from {0}" Height="27" Margin="12,2,76,0" Name="lSender" VerticalAlignment="Top" />
         <Label Content="" Height="29" Margin="12,38,15,0" Name="lFilename" VerticalAlignment="Top" />
         <Label Content="Save to:" Height="25" HorizontalAlignment="Left" Margin="12,90,0,0" Name="label3" VerticalAlignment="Top" Width="68" />
         <TextBox Height="25" Margin="77,92,91,0" Name="tbFilename" VerticalAlignment="Top" TextChanged="tbFilename_TextChanged" />

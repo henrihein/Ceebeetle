@@ -255,9 +255,12 @@ namespace Ceebeetle
             {
                 lock (m_commandList)
                 {
-                    CCBNetworkerCommandData cmd = m_commandList.Dequeue();
+                    if (0 < m_commandList.Count)
+                    {
+                        CCBNetworkerCommandData cmd = m_commandList.Dequeue();
 
-                    return cmd;
+                        return cmd;
+                    }
                 }
             }
             catch (InvalidOperationException eex)

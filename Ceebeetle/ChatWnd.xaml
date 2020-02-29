@@ -11,7 +11,7 @@
         </FlowDocumentScrollViewer>
         <TextBox Height="26" Margin="24,0,318,18" Name="tbChatText" VerticalAlignment="Bottom" />
         <Button Content="_Send" Height="26" HorizontalAlignment="Right" Margin="0,0,213,18" Name="btnSend" VerticalAlignment="Bottom" Width="90" Click="btnSend_Click" IsDefault="True" ToolTip="Send chat text to all connected Ceebeetle users" />
-        <Label Height="25" HorizontalAlignment="Left" Margin="24,0,0,0" Name="lStatus" VerticalAlignment="Top" Width="474" />
+        <Label Height="25" Margin="24,0,33,0" Name="lStatus" VerticalAlignment="Top" />
         <Button Height="24" HorizontalAlignment="Right" Margin="0,2,7,0" Name="btnErrorList" VerticalAlignment="Top" Width="24" Click="btnErrorList_Click" ToolTip="Show all errors in chat window">
             <Image Source="/Ceebeetle;component/Resources/errorlist.ico" />
         </Button>
