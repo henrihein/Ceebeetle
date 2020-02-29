@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace Ceebeetle
 {
@@ -32,19 +33,29 @@ namespace Ceebeetle
         }
     }
 
-    public partial class CCBChildWindow : Window
+    public partial class CCBChildWindow : CCBWindow
     {
-        public CCBChildWindow()
-            : base()
+        public CCBChildWindow() : base()
         {
             WindowManager.OnNewWindow(this);
         }
-
         void OnChildWindowClosing(object sender, EventArgs evt)
         {
             WindowManager.OnWindowClosing(this);
         }
+    }
+    public partial class CCBWindow : Window
+    {
+        public CCBWindow() : base()
+        {
+        }
 
+        public void InitMinSize()
+        {
+            MinWidth = Width;
+            MinHeight = Height;
+
+        }
         protected void SetTooltip(ContentControl ctl, string strTooltip)
         {
             if (ctl.ToolTip is string)
@@ -56,6 +67,33 @@ namespace Ceebeetle
                 if (null != ttip)
                     ttip.Content = strTooltip;
             }
+        }
+        protected bool BrowseForFile(TextBox tb)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            if (0 < tb.Text.Length)
+            {
+                ofd.FileName = tb.Text;
+            }
+            if (true == ofd.ShowDialog())
+            {
+                tb.Text = ofd.FileName;
+                return true;
+            }
+            return false;
+        }
+        protected bool BrowseForSave(TextBox tb, bool promptOverwrite = false)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+
+            sfd.OverwritePrompt = promptOverwrite;
+            if (true == sfd.ShowDialog())
+            {
+                tb.Text = sfd.FileName;
+                return true;
+            }
+            return false;
         }
         protected int IntFromTextbox(TextBox ctl, System.Windows.Controls.Label txStatus)
         {
@@ -80,5 +118,30 @@ namespace Ceebeetle
                     ctl.SelectedIndex = (ctl.Items.Count - 1);
             }
         }
+        #region WndLogging
+        protected void Assert(bool exp)
+        {
+            System.Diagnostics.Debug.Assert(exp);
+        }
+        protected void Log(string text)
+        {
+            string wndTitle = this.Title;
+            System.Diagnostics.Debug.Write(wndTitle + ":" + text);
+        }
+        protected void Log(string text, int iPar)
+        {
+            Log(string.Format(text, iPar));
+        }
+        protected void Log(string text, string textPar)
+        {
+            Log(string.Format(text, textPar));
+        }
+        protected void Log(string text, string textPar1, string textPar2)
+        {
+            Log(string.Format(text, textPar1, textPar2));
+        }
+        #endregion
     }
+
+
 }

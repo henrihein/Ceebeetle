@@ -38,6 +38,7 @@ namespace Ceebeetle
         DOnCreateNewGame m_onCreateNewGameD;
         DOnCreateNewTemplate m_onCreateNewTemplateD;
         CCBTreeViewGameAdder m_gameAdderEntry;
+        ChatWnd m_chatWnd;
 
         public MainWindow()
         {
@@ -57,16 +58,18 @@ namespace Ceebeetle
             m_timer = new Timer(133337);
             m_timer.Elapsed += new ElapsedEventHandler(OnTimer);
             m_timer.Start();
+            m_chatWnd = null;
             InitializeComponent();
             try
             {
                 m_config.Initialize();
+                CCBLogConfig.InitLogging(m_config);
                 tbStatus.Text = System.String.Format("{0} [v{1}]", m_config.DocPath, System.Environment.Version.ToString());
             }
             catch (System.Reflection.TargetInvocationException ex)
             {
-                System.Diagnostics.Debug.Write("Error caught in Main.");
-                System.Diagnostics.Debug.Write(ex.ToString());
+                System.Diagnostics.Debug.WriteLine("Error caught in Main.");
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
             m_worker.ProgressChanged += new ProgressChangedEventHandler(Worker_OnProgressChanged);
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
@@ -82,6 +85,8 @@ namespace Ceebeetle
         {
             m_timer.Stop();
             m_timer.Close();
+            if (null != m_chatWnd)
+                m_chatWnd.Exit();
             try
             {
                 //Save here always, in case there was some problem with the dirty logic.
@@ -93,11 +98,12 @@ namespace Ceebeetle
                         evtArgs.Cancel = true;
                 }
                 if (!m_storeManager.SaveStores(m_config))
-                    System.Diagnostics.Debug.Write("Failed to write store file. Ignoring for now.");
+                    CCBLogConfig.GetLogger().Log("Failed to write store file. Ignoring for now.");
+                CCBLogConfig.Close();
             }
             catch (IOException iox)
             {
-                System.Diagnostics.Debug.Write(iox.ToString());
+                CCBLogConfig.GetLogger().Log(iox.ToString());
                 evtArgs.Cancel = true;
             }
         }
@@ -1062,6 +1068,12 @@ namespace Ceebeetle
             StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game, m_config.GetStoreFilePath());
 
             storeWnd.Show();
+        }
+        private void btnChat_Click(object sender, RoutedEventArgs e)
+        {
+            if ((null == m_chatWnd) || (m_chatWnd.IsDefunct))
+                m_chatWnd = new ChatWnd();
+            m_chatWnd.Show();
         }
     }
 }

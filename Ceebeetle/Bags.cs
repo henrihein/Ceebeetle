@@ -225,7 +225,7 @@ namespace Ceebeetle
         {
             return m_name;
         }
-        public CCBBagItem AddItem(string item)
+        public virtual CCBBagItem AddItem(string item)
         {
             CCBBagItem bagItem = new CCBBagItem(item);
 
@@ -243,7 +243,7 @@ namespace Ceebeetle
             m_items.Add(bagItem);
             return bagItem;
         }
-        public CCBBagItem Add(CCBBagItem item)
+        public virtual CCBBagItem Add(CCBBagItem item)
         {
             if (null == m_items)
                 m_items = new List<CCBBagItem>();

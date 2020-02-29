@@ -21,15 +21,18 @@
                 <Button Name="btnStore" Click="btnStore_Click">
                     <Image Source="/Ceebeetle;component/Resources/store.bmp" ToolTip="Create a store for characters to shop" />
                 </Button>
+                <Button Name="btnChat" Click="btnChat_Click">
+                    <Image Source="/Ceebeetle;component/Resources/chat.ico" ToolTip="Connect with other Ceebeetle apps. Chat and exchange stores and characters." />
+                </Button>
             </ToolBar>
         </ToolBarTray>
-        <Grid Margin="12,0,12,26" Height="396" VerticalAlignment="Bottom">
-            <TreeView Height="344" HorizontalAlignment="Left" Margin="16,6,0,0" Name="tvGames" VerticalAlignment="Top" Width="190" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
-            <Button Content="Close" Height="32" HorizontalAlignment="Left" Margin="494,358,0,0" Name="btnClose" VerticalAlignment="Top" Width="167" Click="btnClose_Click" ToolTip="Exit app" />
-            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Left" Margin="16,358,455,0" Name="btnDelete" VerticalAlignment="Top" Width="190" Click="btnDelete_Click" IsEnabled="False" ToolTip="Delete selected item" />
-            <Button Content="Test..." Height="20" HorizontalAlignment="Left" Margin="406,365,0,0" Name="btnTest" VerticalAlignment="Top" Width="78" Click="btnTest_Click" />
-            <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,358,0,0" Name="btnAddGame" VerticalAlignment="Top" Width="123" IsEnabled="False" />
-            <GroupBox Header="Edit" Height="331" HorizontalAlignment="Left" Margin="221,6,0,0" Name="gbItemView" VerticalAlignment="Top" Width="434">
+        <Grid Margin="12,50,12,26" Height="396" VerticalAlignment="Stretch">
+            <TreeView Margin="16,6,455,46" Name="tvGames" SelectedItemChanged="OnItemSelected" IsEnabled="True" />
+            <Button Content="Close" Height="32" HorizontalAlignment="Right" Margin="0,0,0,6" Name="btnClose" VerticalAlignment="Bottom" Width="167" Click="btnClose_Click" ToolTip="Exit app" />
+            <Button Content="Enable Delete" Height="27" HorizontalAlignment="Left" Margin="16,0,0,11" Name="btnDelete" VerticalAlignment="Bottom" Width="190" Click="btnDelete_Click" IsEnabled="False" ToolTip="Delete selected item" />
+            <Button Content="Test..." Height="20" HorizontalAlignment="Right" Margin="0,0,177,11" Name="btnTest" VerticalAlignment="Bottom" Width="78" Click="btnTest_Click" />
+            <Button Content="Add Game" Height="25" HorizontalAlignment="Left" Margin="227,0,0,13" Name="btnAddGame" VerticalAlignment="Bottom" Width="123" IsEnabled="False" />
+            <GroupBox Header="Edit" HorizontalAlignment="Right" Margin="0,6,6,59" Name="gbItemView" Width="434">
                 <Grid Height="310">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30*" />
@@ -41,18 +44,18 @@
                         <ColumnDefinition Width="12*" />
                         <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
-                    <ListBox Height="198" HorizontalAlignment="Left" Margin="15,94,0,0" Name="lbEntities" VerticalAlignment="Top" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
-                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Left" Margin="77,19,0,0" Name="btnSave" VerticalAlignment="Top" Width="134" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" />
+                    <ListBox HorizontalAlignment="Left" Margin="15,94,0,18" Name="lbEntities" Width="210" SelectionMode="Multiple" Grid.ColumnSpan="3" />
+                    <Button Content="Add Character..." Height="27" HorizontalAlignment="Right" Margin="0,19,4,0" Name="btnSave" VerticalAlignment="Top" Width="134" IsEnabled="False" Visibility="Visible" Click="btnSave_Click" Grid.Column="2" />
                     <TextBox Height="27" HorizontalAlignment="Left" Margin="15,19,0,0" Name="tbItem" VerticalAlignment="Top" Width="210" Grid.ColumnSpan="3" />
-                    <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,0,0,230" Name="tbValue" VerticalAlignment="Bottom" Width="210" />
-                    <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Left" Margin="77,54,0,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
-                    <Button Content="Templates" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,202,0,0" Name="btnTemplates" VerticalAlignment="Top" Width="134" Click="OnGameTemplatesClicked" ToolTip="Create and use templates for different games" />
-                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,235,0,0" Name="btnNamePicker" VerticalAlignment="Top" Width="134" Click="btnNamePicker_Click" ToolTip="Pick and generate character names" />
-                    <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Left" Margin="77,267,0,0" Name="btnBagPicker" VerticalAlignment="Top" Width="134" Click="OnBagPickerClicked" ToolTip="Pick random items out of a bag" />
+                    <TextBox Grid.ColumnSpan="3" Height="26" HorizontalAlignment="Left" Margin="16,54,0,0" Name="tbValue" VerticalAlignment="Top" Width="210" />
+                    <CheckBox Content="Item with a count" Grid.Column="2" Height="16" HorizontalAlignment="Right" Margin="0,54,4,0" Name="cbCountable" VerticalAlignment="Top" Width="134" IsEnabled="True" Checked="OnIsCountableChecked" Unchecked="OnIsCountableChecked" />
+                    <Button Content="Templates" Grid.Column="2" Height="25" HorizontalAlignment="Right" Margin="0,0,4,83" Name="btnTemplates" VerticalAlignment="Bottom" Width="134" Click="OnGameTemplatesClicked" ToolTip="Create and use templates for different games" />
+                    <Button Content="Pick Names" Grid.Column="2" Height="25" HorizontalAlignment="Right" Margin="0,0,4,50" Name="btnNamePicker" VerticalAlignment="Bottom" Width="134" Click="btnNamePicker_Click" ToolTip="Pick and generate character names" />
+                    <Button Content="Pick Items" Grid.Column="2" Height="25" HorizontalAlignment="Right" Margin="0,0,4,18" Name="btnBagPicker" VerticalAlignment="Bottom" Width="134" Click="OnBagPickerClicked" ToolTip="Pick random items out of a bag" />
                 </Grid>
             </GroupBox>
         </Grid>
-        <TextBlock Height="19" HorizontalAlignment="Left" Margin="11,455,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Top" Width="429" DataContext="{Binding}" />
-        <TextBlock Height="22" HorizontalAlignment="Left" Margin="459,455,0,0" Name="tbLastError" Text="" VerticalAlignment="Top" Width="214" />
+        <TextBlock Height="19" HorizontalAlignment="Left" Margin="11,0,0,0" Name="tbStatus" Text="Status" VerticalAlignment="Bottom" Width="429" DataContext="{Binding}" />
+        <TextBlock Height="22" HorizontalAlignment="Right" Margin="0,0,12,-3" Name="tbLastError" Text="" VerticalAlignment="Bottom" Width="214" />
     </Grid>
 </Window>

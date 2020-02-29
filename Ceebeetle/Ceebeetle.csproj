@@ -42,6 +42,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -63,6 +64,9 @@
       <DependentUpon>BagSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="CeebeetleExceptions.cs" />
+    <Compile Include="ChatWnd.xaml.cs">
+      <DependentUpon>ChatWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CreateStoreWnd.xaml.cs">
       <DependentUpon>CreateStoreWnd.xaml</DependentUpon>
     </Compile>
@@ -76,6 +80,7 @@
     <Compile Include="ImportGames.xaml.cs">
       <DependentUpon>ImportGames.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="NamePicker.xaml.cs">
       <DependentUpon>NamePicker.xaml</DependentUpon>
     </Compile>
@@ -89,6 +94,15 @@
     <Compile Include="Names\malenames.cs" />
     <Compile Include="Names\NordicDwarvenNames.cs" />
     <Compile Include="Names\TolkienDwarvenNames.cs" />
+    <Compile Include="P2PFileTransfer.cs" />
+    <Compile Include="P2PNetworker.cs" />
+    <Compile Include="P2PPeer.cs" />
+    <Compile Include="P2PReceiveFileWnd.xaml.cs">
+      <DependentUpon>P2PReceiveFileWnd.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="P2PStartSendFile.xaml.cs">
+      <DependentUpon>P2PStartSendFile.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StockTemplates.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="StoreManager.xaml.cs">
@@ -104,6 +118,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BagSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ChatWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -149,6 +167,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="P2PReceiveFileWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="P2PStartSendFile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="StoreManager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -176,6 +202,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="ceebeetle.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -202,6 +229,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\storemgr.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\chat.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\errorlist.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
