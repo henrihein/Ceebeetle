@@ -43,6 +43,11 @@ namespace Ceebeetle
         {
             WindowManager.OnWindowClosing(this);
         }
+        public void Show(Window owner)
+        {
+            this.Owner = owner;
+            this.Show();
+        }
     }
     public partial class CCBWindow : Window
     {

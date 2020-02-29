@@ -34,6 +34,7 @@ namespace Ceebeetle
             m_game = game;
             m_bag = null;
             InitializeComponent();
+            InitMinSize();
             Populate();
             Validate();
         }

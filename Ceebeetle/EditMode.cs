@@ -33,7 +33,10 @@ namespace Ceebeetle
             object propValue = ctl.GetValue(EditMode);
 
             if (null != propValue)
-                return (CEditMode)propValue;
+            {
+                if (propValue is CEditMode)
+                    return (CEditMode)propValue;
+            }
             return null;
         }
         public static void SetEditNode(DependencyObject ctl, CEditMode value)

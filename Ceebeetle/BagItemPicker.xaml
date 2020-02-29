@@ -5,23 +5,23 @@
         Title="Pick items from bag" Height="445" Width="635">
     <Grid>
         <ListBox HorizontalAlignment="Left" Margin="12,46,0,13" Name="lbBagItems" Width="190" SelectionMode="Multiple" SelectionChanged="lbBagItems_SelectionChanged" />
-        <ListBox Height="159" HorizontalAlignment="Left" Margin="217,46,0,0" Name="lbPickedItems" VerticalAlignment="Top" Width="190" SelectionMode="Multiple" />
+        <ListBox Margin="217,46,206,201" Name="lbPickedItems" SelectionMode="Multiple" />
         <Label Content="Picked items:" Height="28" HorizontalAlignment="Right" Margin="0,12,200,0" Name="label1" VerticalAlignment="Top" Width="190" />
         <Label Content="Items in bag:" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label2" VerticalAlignment="Top" Width="161" />
-        <Label Content="From:" Height="27" HorizontalAlignment="Left" Margin="217,230,0,0" Name="label3" VerticalAlignment="Top" Width="54" />
-        <ComboBox Height="26" HorizontalAlignment="Left" Margin="277,230,0,0" Name="cbSelectionMode" VerticalAlignment="Top" Width="130">
+        <Label Content="From:" Height="27" HorizontalAlignment="Left" Margin="217,0,0,149" Name="label3" VerticalAlignment="Bottom" Width="54" />
+        <ComboBox Height="26" HorizontalAlignment="Right" Margin="0,0,206,150" Name="cbSelectionMode" VerticalAlignment="Bottom" Width="130">
             <ComboBoxItem Content="All" />
             <ComboBoxItem Content="Selected Items" />
             <ComboBoxItem Content="Unselected items" />
         </ComboBox>
-        <Button Content="_Pick" Height="28" HorizontalAlignment="Left" Margin="277,262,0,0" Name="btnPickNow" VerticalAlignment="Top" Width="130" Click="btnPickNow_Click" ToolTip="Pick a random item" />
-        <Button Content="Pick all _Selected" Height="28" HorizontalAlignment="Left" Margin="277,297,0,0" Name="btnPickAllSelected" VerticalAlignment="Top" Width="130" Click="btnPickAllSelected_Click" />
-        <Button Content="_Undo" Height="28" HorizontalAlignment="Left" Margin="277,331,0,0" Name="btnUndo" VerticalAlignment="Top" Width="130" Click="OnUndoPick" ToolTip="Undo last pick" />
-        <Button Content="_Reset" Height="28" HorizontalAlignment="Left" Margin="277,365,0,0" Name="btnReset" VerticalAlignment="Top" Width="130" Click="OnReset" ToolTip="Reset the list" />
+        <Button Content="_Pick" Height="28" HorizontalAlignment="Left" Margin="277,0,0,116" Name="btnPickNow" VerticalAlignment="Bottom" Width="130" Click="btnPickNow_Click" ToolTip="Pick a random item" />
+        <Button Content="Pick all _Selected" Height="28" HorizontalAlignment="Left" Margin="277,0,0,81" Name="btnPickAllSelected" VerticalAlignment="Bottom" Width="130" Click="btnPickAllSelected_Click" />
+        <Button Content="_Undo" Height="28" HorizontalAlignment="Left" Margin="277,0,0,47" Name="btnUndo" VerticalAlignment="Bottom" Width="130" Click="OnUndoPick" ToolTip="Undo last pick" />
+        <Button Content="_Reset" Height="28" HorizontalAlignment="Left" Margin="277,0,0,13" Name="btnReset" VerticalAlignment="Bottom" Width="130" Click="OnReset" ToolTip="Reset the list" />
         <Label Content="Target bag:" Height="28" HorizontalAlignment="Left" Margin="421,12,0,0" Name="label4" VerticalAlignment="Top" Width="171" />
-        <ListBox Height="158" HorizontalAlignment="Left" Margin="421,46,0,0" Name="lbTargetBag" VerticalAlignment="Top" Width="175" SelectionChanged="lbTargetBag_SelectionChanged" />
-        <Button Content="_Copy Item(s)" Height="28" HorizontalAlignment="Left" Margin="465,229,0,0" Name="btnCopy" VerticalAlignment="Top" Width="127" Click="btnCopy_Click" ToolTip="Copy picked items to selected target bag" />
-        <Button Content="_Delete Item(s)" Height="28" HorizontalAlignment="Left" Margin="465,262,0,0" Name="btnDelete" VerticalAlignment="Top" Width="127" Click="btnDelete_Click" ToolTip="Delete picked items from the bag '{0}'. Cannot be undone." />
-        <Button Content="Close" Height="28" HorizontalAlignment="Left" Margin="431,366,0,0" Name="btnClosePicker" VerticalAlignment="Top" Width="165" Click="OnClosePicker" />
+        <ListBox Margin="0,46,17,202" Name="lbTargetBag" SelectionChanged="lbTargetBag_SelectionChanged" HorizontalAlignment="Right" Width="175" />
+        <Button Content="_Copy Item(s)" Height="28" HorizontalAlignment="Right" Margin="0,0,21,149" Name="btnCopy" VerticalAlignment="Bottom" Width="127" Click="btnCopy_Click" ToolTip="Copy picked items to selected target bag" />
+        <Button Content="_Delete Item(s)" Height="28" HorizontalAlignment="Right" Margin="0,0,21,116" Name="btnDelete" VerticalAlignment="Bottom" Width="127" Click="btnDelete_Click" ToolTip="Delete picked items from the bag '{0}'. Cannot be undone." />
+        <Button Content="Close" Height="28" HorizontalAlignment="Right" Margin="0,0,17,12" Name="btnClosePicker" VerticalAlignment="Bottom" Width="165" Click="OnClosePicker" />
     </Grid>
 </src:CCBChildWindow>

@@ -67,6 +67,7 @@ namespace Ceebeetle
             m_copyBagItemsCallback = null;
             m_deleteBagItemsCallback = null;
             InitializeComponent();
+            InitMinSize();
             PopulateItems();
             CheckBagItems();
             cbSelectionMode.SelectedIndex = 0;

@@ -26,6 +26,7 @@ namespace Ceebeetle
         public GameTemplatePicker(CCBGame gameModel, DOnCreateNewGame newGameCallback, DOnCreateNewTemplate newTemplateCallback, CCBGameTemplateList userList)
         {
             InitializeComponent();
+            InitMinSize();
             if (null == gameModel)
             {
                 m_modelName = InitializeNewGameButtonText("Game");

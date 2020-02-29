@@ -5,12 +5,12 @@
         Title="Import Games or Templates" Height="347" Width="386">
     <Grid>
         <Label Content="From: " Height="24" HorizontalAlignment="Left" Margin="13,12,0,0" Name="label2" VerticalAlignment="Top" Width="45" />
-        <TextBox Height="24" HorizontalAlignment="Right" Margin="0,12,140,0" Name="tbSource" VerticalAlignment="Top" Width="160" ToolTip="Source file to load games or templates from." TextChanged="tbSource_TextChanged" />
-        <Button Content="_Browse" Height="24" HorizontalAlignment="Left" Margin="233,12,0,0" Name="btnBrowse" VerticalAlignment="Top" Width="119" ToolTip="Browse for target" Click="btnBrowse_Click" />
-        <Button Content="Close" Height="24" HorizontalAlignment="Left" Margin="233,271,0,0" Name="btnClose" VerticalAlignment="Top" Width="119" Click="btnClose_Click" />
-        <Label Height="24" HorizontalAlignment="Left" Margin="13,271,0,0" Name="tStatus" VerticalAlignment="Top" Width="148" />
-        <Button Content="_Merge game" Height="23" HorizontalAlignment="Left" Margin="233,234,0,0" Name="btnMerge" VerticalAlignment="Top" Width="119" Click="btnMerge_Click" />
-        <ListBox Height="212" HorizontalAlignment="Left" Margin="13,45,0,0" Name="lbGames" VerticalAlignment="Top" Width="211" SelectionMode="Single" SelectionChanged="lbGames_SelectionChanged" />
-        <Button Content="_View" Height="25" HorizontalAlignment="Left" Margin="233,45,0,0" Name="btnView" VerticalAlignment="Top" Width="119" Click="btnView_Click" />
+        <TextBox Height="24" HorizontalAlignment="Left" Margin="64,12,0,0" Name="tbSource" VerticalAlignment="Top" Width="160" ToolTip="Source file to load games or templates from." TextChanged="tbSource_TextChanged" />
+        <Button Content="_Browse" Height="24" HorizontalAlignment="Right" Margin="0,12,12,0" Name="btnBrowse" VerticalAlignment="Top" Width="119" ToolTip="Browse for target" Click="btnBrowse_Click" />
+        <Button Content="Close" Height="24" HorizontalAlignment="Right" Margin="0,0,12,13" Name="btnClose" VerticalAlignment="Bottom" Width="119" Click="btnClose_Click" />
+        <Label Height="24" HorizontalAlignment="Left" Margin="13,0,0,13" Name="tStatus" VerticalAlignment="Bottom" Width="148" />
+        <Button Content="_Merge game" Height="23" HorizontalAlignment="Right" Margin="0,0,12,51" Name="btnMerge" VerticalAlignment="Bottom" Width="119" Click="btnMerge_Click" />
+        <ListBox HorizontalAlignment="Left" Margin="13,45,0,51" Name="lbGames" Width="211" SelectionMode="Single" SelectionChanged="lbGames_SelectionChanged" />
+        <Button Content="_View" Height="25" HorizontalAlignment="Right" Margin="0,45,12,0" Name="btnView" VerticalAlignment="Top" Width="119" Click="btnView_Click" />
     </Grid>
 </src:CCBChildWindow>

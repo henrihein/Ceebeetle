@@ -31,6 +31,7 @@ namespace Ceebeetle
             m_store = store;
             m_keepStore = false;
             InitializeComponent();
+            InitMinSize();
             tbStoreName.Text = store.Name;
             btnDeleteItem.IsEnabled = false;
             Populate();

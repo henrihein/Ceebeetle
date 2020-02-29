@@ -19,14 +19,14 @@
         <Button Content="_Pick" Height="24" HorizontalAlignment="Left" Margin="20,322,0,0" Name="btnPick" VerticalAlignment="Top" Width="168" Click="btnPick_Click" ToolTip="Picks a name of selected type" />
         <Button Content="_Generate" Height="24" HorizontalAlignment="Left" Margin="20,350,0,0" Name="btnGenerate" VerticalAlignment="Top" Width="168" Click="btnGenerate_Click" ToolTip="Generates a random name of the selected type" />
         <Label Content="Names" Height="29" HorizontalAlignment="Left" Margin="211,12,0,0" Name="label1" VerticalAlignment="Top" Width="312" />
-        <ListBox Height="234" HorizontalAlignment="Left" Margin="211,38,0,0" Name="lbPicked" VerticalAlignment="Top" Width="209" SelectionChanged="lbPicked_SelectionChanged" ToolTip="Picked and generated names" />
-        <Button Content="_Copy Name to current game item" HorizontalAlignment="Left" Margin="211,322,0,42" Name="btnCopy" Width="209" Click="btnCopy_Click" ToolTip="Copies selected name to the currently selected item in the main window" />
+        <ListBox Margin="211,38,145,116" Name="lbPicked" SelectionChanged="lbPicked_SelectionChanged" ToolTip="Picked and generated names" />
+        <Button Content="_Copy Name to current game item" HorizontalAlignment="Left" Margin="211,0,0,42" Name="btnCopy" Width="209" Click="btnCopy_Click" ToolTip="Copies selected name to the currently selected item in the main window" Height="24" VerticalAlignment="Bottom" />
         <Button Content="Copy name to Clip_board" Height="24" HorizontalAlignment="Left" Margin="211,0,0,14" Name="btnCopyToClipboard" VerticalAlignment="Bottom" Width="209" ToolTip="Copies selected name to the clipboard" Click="btnCopyToClipboard_Click" />
         <Button Content="_Delete Name" Height="28" HorizontalAlignment="Right" Margin="0,38,12,0" Name="btnDelete" VerticalAlignment="Top" Width="95" ToolTip="Delete selected name from list" />
         <Button Content="_Reset List" Height="28" HorizontalAlignment="Right" Margin="0,72,12,0" Name="btnReset" VerticalAlignment="Top" Width="95" Click="btnReset_Click" ToolTip="Reset the list of names" />
-        <Button Content="Close" Height="29" HorizontalAlignment="Left" Margin="458,352,0,0" Name="btnClose" VerticalAlignment="Top" Width="95" Click="btnClose_Click" ToolTip="Close this window" />
+        <Button Content="Close" Height="29" HorizontalAlignment="Right" Margin="0,0,12,7" Name="btnClose" VerticalAlignment="Bottom" Width="111" Click="btnClose_Click" ToolTip="Close this window" />
         <CheckBox Content="_Use prefix:" Height="23" HorizontalAlignment="Left" Margin="20,268,0,0" Name="cbUsePrefix" VerticalAlignment="Top" Width="166" Checked="cbUsePrefix_Checked" />
         <TextBox Height="23" HorizontalAlignment="Left" Margin="20,286,0,0" Name="tbPrefix" VerticalAlignment="Top" Width="168" />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="211,286,0,0" Name="lasterror" VerticalAlignment="Top" Width="342" BorderThickness="0" IsReadOnly="True" />
+        <TextBox Height="23" Margin="211,0,12,79" Name="lasterror" VerticalAlignment="Bottom" BorderThickness="0" IsReadOnly="True" />
     </Grid>
 </src:CCBChildWindow>

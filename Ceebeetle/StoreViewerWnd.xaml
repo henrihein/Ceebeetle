@@ -4,12 +4,12 @@
         xmlns:src="clr-namespace:Ceebeetle"
         Title="Ceebeetle Store Viewer" Height="386" Width="478">
     <Grid>
-        <Label Content="Stores" Height="24" HorizontalAlignment="Right" Margin="0,12,243,0" Name="label1" VerticalAlignment="Top" Width="122" />
-        <ListBox Margin="12,0,243,84" Name="lbStores" Height="223" VerticalAlignment="Bottom" SelectionChanged="lbStores_SelectionChanged" />
+        <Label Content="Stores" Height="24" HorizontalAlignment="Left" Margin="91,12,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
+        <ListBox Margin="12,40,243,84" Name="lbStores" SelectionChanged="lbStores_SelectionChanged" />
         <Button Content="_Delete Store" Height="21" HorizontalAlignment="Left" Margin="12,0,0,49" Name="btnDeleteStore" VerticalAlignment="Bottom" Width="201" Click="btnDeleteStore_Click" />
-        <Button Content="_Print Store" Height="21" HorizontalAlignment="Left" Margin="12,312,0,0" Name="btnPrint" VerticalAlignment="Top" Width="201" Click="btnPrint_Click" />
-        <ListBox Height="194" HorizontalAlignment="Left" Margin="248,40,0,0" Name="lbItems" VerticalAlignment="Top" Width="171" SelectionChanged="lbItems_SelectionChanged" />
-        <Button Content="Delete _Item" Height="21" HorizontalAlignment="Left" Margin="248,0,0,84" Name="btnDeleteItem" VerticalAlignment="Bottom" Width="170" Click="btnDeleteItem_Click" />
+        <Button Content="_Print Store" Height="21" HorizontalAlignment="Left" Margin="12,0,0,14" Name="btnPrint" VerticalAlignment="Bottom" Width="201" Click="btnPrint_Click" />
+        <ListBox HorizontalAlignment="Right" Margin="0,40,37,113" Name="lbItems" Width="171" SelectionChanged="lbItems_SelectionChanged" />
+        <Button Content="Delete _Item" Height="21" HorizontalAlignment="Right" Margin="0,0,38,84" Name="btnDeleteItem" VerticalAlignment="Bottom" Width="170" Click="btnDeleteItem_Click" />
         <Button Content="Close" Height="23" HorizontalAlignment="Right" Margin="0,0,12,12" Name="btnClose" VerticalAlignment="Bottom" Width="97" Click="btnClose_Click" />
     </Grid>
 </src:CCBChildWindow>

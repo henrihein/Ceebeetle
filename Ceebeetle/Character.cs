@@ -17,7 +17,9 @@ namespace Ceebeetle
     {
         static uint m_nextId = 1;
 
-        [DataMember(Name="Name")]
+        public readonly uint m_id;
+
+        [DataMember(Name = "Name")]
         private string m_name;
         public string Name
         {
@@ -27,7 +29,13 @@ namespace Ceebeetle
                 m_name = value;
             }
         }
-        public readonly uint     m_id;
+        [DataMember(Name = "Image")]
+        private string m_image;
+        public string Image
+        {
+            get { return m_image; }
+            set { m_image = value; }
+        }
 
         [DataMember(Name="PropertyList")]
         private CharacterPropertyList m_propertyList;
@@ -65,6 +73,7 @@ namespace Ceebeetle
             m_propertyList = new CharacterPropertyList();
             m_items = new CCBLockedBag("Items");
             m_bags = new CCBBags();
+            m_image = null;
         }
         public override string ToString()
         {

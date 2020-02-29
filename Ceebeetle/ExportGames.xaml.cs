@@ -36,6 +36,7 @@ namespace Ceebeetle
             m_gamesList = null;
             m_templateList = null;
             InitializeComponent();
+            InitMinSize();
             Validate();
         }
 

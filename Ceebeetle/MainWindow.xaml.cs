@@ -812,10 +812,10 @@ namespace Ceebeetle
                 if (null != gameNode)
                     gameModel = gameNode.Game;
             }
-            Window templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
+            CCBChildWindow templatePickerWnd = new GameTemplatePicker(gameModel, m_onCreateNewGameD, m_onCreateNewTemplateD, m_games.TemplateList);
 
-            templatePickerWnd.Owner = this;
-            templatePickerWnd.Show();
+            //templatePickerWnd.Owner = this;
+            templatePickerWnd.Show(this);
         }
 
         private void SetDefaultView()
@@ -830,6 +830,7 @@ namespace Ceebeetle
             btnDelete.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
             btnBagPicker.IsEnabled = false;
+            btnNamePicker.Visibility = Visibility.Hidden;
             btnTest.Visibility = System.Windows.Visibility.Hidden;
         }
         private EEditMode AddCharacterView()
@@ -838,6 +839,7 @@ namespace Ceebeetle
             gbItemView.Header = "Add Character";
             btnSave.Content = "Add Character";
             btnSave.Visibility = Visibility.Visible;
+            btnNamePicker.Visibility = Visibility.Visible;
             tbItem.Text = "New Hero";
             ResetEntitiesList();
             return EEditMode.em_AddCharacter;
@@ -893,6 +895,7 @@ namespace Ceebeetle
             if (null != character)
                 tbItem.Text = character.Name;
             btnDelete.IsEnabled = true;
+            btnNamePicker.Visibility = Visibility.Visible;
             btnTemplates.IsEnabled = true;
             ShowProperties(character);
             return EEditMode.em_ModifyCharacter;
@@ -1104,6 +1107,11 @@ namespace Ceebeetle
         private void tbValue_LostFocus(object sender, RoutedEventArgs e)
         {
             Save();
+        }
+
+        private void btnViewSheet_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
