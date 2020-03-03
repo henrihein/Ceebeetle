@@ -29,7 +29,7 @@ namespace Ceebeetle
         {
             m_imagePath = null;
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             btnSelect.IsEnabled = false;
         }
 

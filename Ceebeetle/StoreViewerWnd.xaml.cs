@@ -24,7 +24,7 @@ namespace Ceebeetle
         {
             m_storeMgr = storeMgr;
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             Populate();
             Validate();
         }

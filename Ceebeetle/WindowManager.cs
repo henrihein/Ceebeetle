@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 
 namespace Ceebeetle
@@ -64,11 +65,21 @@ namespace Ceebeetle
             m_logger = CCBLogConfig.GetLogger();
         }
 
-        public void InitMinSize()
+        public void CeebeetleWindowInit()
         {
             MinWidth = Width;
             MinHeight = Height;
-
+            if (null == this.Icon)
+            {
+                try
+                {
+                    this.Icon = ControlHelpers.NewImage("pack://application:,,,/Ceebeetle;component/Resources/app.ico");
+                }
+                catch (Exception ex)
+                {
+                    Log(ex.Message);
+                }
+            }
         }
         protected void SetTooltip(ContentControl ctl, string strTooltip)
         {

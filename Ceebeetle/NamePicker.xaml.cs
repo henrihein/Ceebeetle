@@ -32,7 +32,7 @@ namespace Ceebeetle
             m_random = new Random();
             m_nameGenerators = new Names.CharacterNameGenerators();
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             rbWesternFemale.IsChecked = true;
             Validate();
         }

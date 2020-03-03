@@ -33,7 +33,7 @@ namespace Ceebeetle
             m_filedata = filedata;
             InitializeComponent();
             Initialize();
-            InitMinSize();
+            CeebeetleWindowInit();
             Validat();
         }
         private void Initialize()

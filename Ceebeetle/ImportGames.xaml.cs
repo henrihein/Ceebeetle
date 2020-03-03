@@ -33,7 +33,7 @@ namespace Ceebeetle
             m_mergeTemplateCallback = mergeTemplateCallback;
             m_games = new CCBGameData();
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             Validate();
         }
 

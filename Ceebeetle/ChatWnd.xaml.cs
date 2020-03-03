@@ -83,7 +83,7 @@ namespace Ceebeetle
             m_p2p.OnFileTransferErrorCallback = new DOnFileTransferError(OnFileTransferError);
             InitializeComponent();
             SetHostNameTo(tbUserId);
-            InitMinSize();
+            CeebeetleWindowInit();
             InitChatWindow();
             Validate();
             EnableUI(false);

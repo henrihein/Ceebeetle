@@ -33,7 +33,7 @@ namespace Ceebeetle
             m_manager = manager;
             m_game = game;
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             tbChance.Text = "100";
             //TODO: Should really load on a background worker.
             m_manager.LoadStores(storeFilePath);

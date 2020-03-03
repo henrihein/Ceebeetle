@@ -24,7 +24,7 @@ namespace Ceebeetle
         {
             m_character = character;
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             if (null != character)
                 Title = string.Format(Title, character.Name);
             PopulateSheet();

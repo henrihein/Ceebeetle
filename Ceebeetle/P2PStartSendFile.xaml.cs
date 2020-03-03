@@ -35,7 +35,7 @@ namespace Ceebeetle
         public P2PStartSendFile(string[] users)
         {
             InitializeComponent();
-            InitMinSize();
+            CeebeetleWindowInit();
             Populate(users);
             Validat();
         }
