@@ -48,6 +48,11 @@ namespace Ceebeetle
             this.Owner = owner;
             this.Show();
         }
+        public bool? ShowDialog(Window owner)
+        {
+            this.Owner = owner;
+            return this.ShowDialog();
+        }
     }
     public partial class CCBWindow : Window
     {

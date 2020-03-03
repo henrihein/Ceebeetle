@@ -50,7 +50,7 @@
                 </Section>
             </FlowDocument>
         </FlowDocumentPageViewer>
-        <Button Content="Change _Image" Height="24" HorizontalAlignment="Left" Margin="7,0,0,18" Name="btnAddImage" VerticalAlignment="Bottom" Width="120" />
+        <Button Content="Change _Image" Height="24" HorizontalAlignment="Left" Margin="7,0,0,18" Name="btnAddImage" VerticalAlignment="Bottom" Width="120" Click="btnAddImage_Click" />
         <Button Content="_Print" Height="24" HorizontalAlignment="Left" Margin="150,0,0,18" Name="btnPrint" VerticalAlignment="Bottom" Width="144" />
         <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,24,18" Name="btnClose" VerticalAlignment="Bottom" Width="133" Click="btnClose_Click" />
     </Grid>

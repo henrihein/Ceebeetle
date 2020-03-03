@@ -25,7 +25,7 @@ namespace Ceebeetle
             try
             {
                 BitmapImage img2 = ControlHelpers.NewImage(@"C:\work\Games\Images\Demi4.png");
-                BitmapImage img1 = ControlHelpers.NewImage("/Ceebeetle;component/Resources/BasicAdventurer-Beater.png");
+                BitmapImage img1 = ControlHelpers.NewImage("pack://application:,,,/resources/BasicAdventurer-Beater.png");
 
                 Log("Created 2 images.");
             }
@@ -45,7 +45,13 @@ namespace Ceebeetle
             Test();
             PopulateSheet();
         }
-
+        private void UpdateCharacterImage()
+        {
+            if ((null != m_character.Image) && (0 < m_character.Image.Length))
+            {
+                elCharacterImage.Source = ControlHelpers.NewImage(m_character.Image);
+            }
+        }
         public void PopulateSheet()
         {
             try
@@ -54,11 +60,8 @@ namespace Ceebeetle
                 StringBuilder strStatText = new StringBuilder();
                 string strStatLineFmt = "{0:-1}  {1:" + string.Format("{0}", statLen) + "}\n";
 
+                UpdateCharacterImage();
                 elCharacterTitle.Inlines.Add(new Bold(new Run(m_character.Name)));
-                if ((null != m_character.Image) && (0 < m_character.Image.Length))
-                {
-                    elCharacterImage.Source = ControlHelpers.NewImage(m_character.Image);
-                }
                 elCharacterStats.Inlines.Clear();
                 foreach (CCBCharacterProperty charProp in m_character.PropertyList)
                 {
@@ -79,6 +82,18 @@ namespace Ceebeetle
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void btnAddImage_Click(object sender, RoutedEventArgs e)
+        {
+            ImagePicker imgPicker = new ImagePicker();
+
+            imgPicker.ShowDialog(this);
+            if (true == imgPicker.DialogResult)
+            {
+                m_character.Image = imgPicker.ImagePath;
+                UpdateCharacterImage();
+            }
         }
     }
 }
