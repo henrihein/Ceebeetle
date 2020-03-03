@@ -18,8 +18,6 @@
             <Image Height="80" Width="80" Source="/Ceebeetle;component/Resources/Thief.png" ToolTip="Thief"></Image>
             <Image Height="80" Width="80" Source="/Ceebeetle;component/Resources/FighterSpear.png" ToolTip="Fighter with spear"></Image>
             <Image Height="80" Width="80" Source="/Ceebeetle;component/Resources/Mage1.png" ToolTip="Mage"></Image>
-            <Image Height="80" Width="80" Source="/Ceebeetle;component/Resources/FighterSpear.png" ToolTip="Fighter with spear"></Image>
-            <Image Height="80" Width="80" Source="/Ceebeetle;component/Resources/Mage1.png" ToolTip="Mage"></Image>
         </ListBox>
         <Label Content="Select Image" Height="24" HorizontalAlignment="Left" Margin="10,5,0,0" Name="lSelectImage" VerticalAlignment="Top" Width="124" />
         <Button Content="_Browse for image" Height="24" Margin="156,69,15,0" Name="btnBrowse" VerticalAlignment="Top" Click="btnBrowse_Click" />

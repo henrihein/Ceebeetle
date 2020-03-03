@@ -20,21 +20,6 @@ namespace Ceebeetle
     {
         CCBCharacter m_character;
 
-        private void Test()
-        {
-            try
-            {
-                BitmapImage img2 = ControlHelpers.NewImage(@"C:\work\Games\Images\Demi4.png");
-                BitmapImage img1 = ControlHelpers.NewImage("pack://application:,,,/resources/BasicAdventurer-Beater.png");
-
-                Log("Created 2 images.");
-            }
-            catch (Exception ex)
-            {
-                Log(ex.Message);
-            }
-        }
-
         public CharacterSheetWnd(CCBCharacter character) : base()
         {
             m_character = character;
@@ -42,7 +27,6 @@ namespace Ceebeetle
             InitMinSize();
             if (null != character)
                 Title = string.Format(Title, character.Name);
-            Test();
             PopulateSheet();
         }
         private void UpdateCharacterImage()
@@ -93,6 +77,16 @@ namespace Ceebeetle
             {
                 m_character.Image = imgPicker.ImagePath;
                 UpdateCharacterImage();
+            }
+        }
+
+        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDialog printDlg = new PrintDialog();
+
+            if (true == printDlg.ShowDialog())
+            {
+                printDlg.PrintDocument(docSheetViewer.Document.DocumentPaginator, m_character.Name);
             }
         }
     }

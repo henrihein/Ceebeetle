@@ -19,12 +19,12 @@
                         </Table.Columns>
                         <TableRowGroup>
                             <TableRow>
-                                <TableCell Background="Aqua" RowSpan="2">
+                                <TableCell Background="AntiqueWhite" RowSpan="2">
                                     <Paragraph>
-                                        <Image Name="elCharacterImage" Source="/Ceebeetle;component/Resources/BasicAdventurer-Beater.png" Width="120" Height="120" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
+                                        <Image Name="elCharacterImage" Source="/Ceebeetle;component/Resources/BasicAdventurer-Beater.png" Width="160" Height="160" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
                                     </Paragraph>
                                 </TableCell>
-                                <TableCell Background="Red">
+                                <TableCell Background="#FFEDE3E2">
                                     <Paragraph>Stats</Paragraph>
                                 </TableCell>
                             </TableRow>
@@ -51,7 +51,7 @@
             </FlowDocument>
         </FlowDocumentPageViewer>
         <Button Content="Change _Image" Height="24" HorizontalAlignment="Left" Margin="7,0,0,18" Name="btnAddImage" VerticalAlignment="Bottom" Width="120" Click="btnAddImage_Click" />
-        <Button Content="_Print" Height="24" HorizontalAlignment="Left" Margin="150,0,0,18" Name="btnPrint" VerticalAlignment="Bottom" Width="144" />
+        <Button Content="_Print" Height="24" HorizontalAlignment="Left" Margin="150,0,0,18" Name="btnPrint" VerticalAlignment="Bottom" Width="144" Click="btnPrint_Click" />
         <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,24,18" Name="btnClose" VerticalAlignment="Bottom" Width="133" Click="btnClose_Click" />
     </Grid>
 </src:CCBChildWindow>
