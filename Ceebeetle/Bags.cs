@@ -127,6 +127,10 @@ namespace Ceebeetle
         {
             m_count = item.Count;
         }
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", base.ToString(), m_count);
+        }
     }
 
     #region PredicateHelper
@@ -270,6 +274,20 @@ namespace Ceebeetle
             if (!ReferenceEquals(null, item))
                 return m_items.Remove(item);
             return false;
+        }
+        public string RenderString()
+        {
+            StringBuilder sb = new StringBuilder();
+            bool firstItem = true;
+
+            foreach (CCBBagItem item in m_items)
+            {
+                if (!firstItem)
+                    sb.Append(", ");
+                sb.Append(item.ToString());
+                firstItem = false;
+            }
+            return sb.ToString();
         }
     }
     //Bag with fixed name

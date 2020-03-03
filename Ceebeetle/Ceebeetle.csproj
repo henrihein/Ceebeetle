@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -64,6 +64,9 @@
       <DependentUpon>BagSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="CeebeetleExceptions.cs" />
+    <Compile Include="CharacterSheetWnd.xaml.cs">
+      <DependentUpon>CharacterSheetWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ChatWnd.xaml.cs">
       <DependentUpon>ChatWnd.xaml</DependentUpon>
     </Compile>
@@ -118,6 +121,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BagSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CharacterSheetWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -210,7 +217,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="app.ico" />
+    <Resource Include="Resources\app.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\export.bmp" />
@@ -235,6 +242,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\errorlist.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\BasicAdventurer-Beater.png" />
+    <Resource Include="Resources\Demi4.png" />
+    <Resource Include="Resources\Elf.png" />
+    <Resource Include="Resources\FighterBow.png" />
+    <Resource Include="Resources\FighterF.png" />
+    <Resource Include="Resources\FighterHammer.png" />
+    <Resource Include="Resources\FighterKnight.png" />
+    <Resource Include="Resources\FighterSpear.png" />
+    <Resource Include="Resources\Mage1.png" />
+    <Resource Include="Resources\Thief.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

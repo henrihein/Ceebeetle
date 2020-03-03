@@ -504,6 +504,14 @@ namespace Ceebeetle
             }
             return null;
         }
+        private CCBCharacter FindCurrentCharacter()
+        {
+            CCBTreeViewCharacter characterNode = FindCharacterFromNode((TreeViewItem)tvGames.SelectedItem);
+
+            if (null != characterNode)
+                return characterNode.Character;
+            return null;
+        }
         private CCBTreeViewBag FindBagFromNode(TreeViewItem node)
         {
             while (null != node)
@@ -831,6 +839,7 @@ namespace Ceebeetle
             cbCountable.Visibility = System.Windows.Visibility.Hidden;
             btnBagPicker.IsEnabled = false;
             btnNamePicker.Visibility = Visibility.Hidden;
+            btnViewSheet.Visibility = Visibility.Hidden;
             btnTest.Visibility = System.Windows.Visibility.Hidden;
         }
         private EEditMode AddCharacterView()
@@ -897,6 +906,7 @@ namespace Ceebeetle
             btnDelete.IsEnabled = true;
             btnNamePicker.Visibility = Visibility.Visible;
             btnTemplates.IsEnabled = true;
+            btnViewSheet.Visibility = Visibility.Visible;
             ShowProperties(character);
             return EEditMode.em_ModifyCharacter;
         }
@@ -1111,7 +1121,16 @@ namespace Ceebeetle
 
         private void btnViewSheet_Click(object sender, RoutedEventArgs e)
         {
+            CCBCharacter curCharacter = FindCurrentCharacter();
 
+            if (null == curCharacter)
+                tbLastError.Text = "No character selected";
+            else
+            {
+                CharacterSheetWnd sheet = new CharacterSheetWnd(curCharacter);
+
+                sheet.Show(this);
+            }
         }
     }
 }

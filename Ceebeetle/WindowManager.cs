@@ -51,8 +51,12 @@ namespace Ceebeetle
     }
     public partial class CCBWindow : Window
     {
-        public CCBWindow() : base()
+        private CCBLogger m_logger;
+
+        public CCBWindow()
+            : base()
         {
+            m_logger = CCBLogConfig.GetLogger();
         }
 
         public void InitMinSize()
@@ -131,7 +135,13 @@ namespace Ceebeetle
         protected void Log(string text)
         {
             string wndTitle = this.Title;
-            System.Diagnostics.Debug.Write(wndTitle + ":" + text);
+
+            if ((null == wndTitle) || (0 == wndTitle.Length))
+                wndTitle = "Ceebeetle Window";
+            if (null == m_logger)
+                System.Diagnostics.Debug.Write(wndTitle + ":" + text);
+            else
+                m_logger.Log(wndTitle + ":" + text);
         }
         protected void Log(string text, int iPar)
         {

@@ -1,0 +1,57 @@
+﻿<src:CCBChildWindow x:Class="Ceebeetle.CharacterSheetWnd"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:src="clr-namespace:Ceebeetle"
+        Title="Character Sheet for {0}" Height="400" Width="502">
+    <Grid>
+        <FlowDocumentPageViewer Margin="8,6,24,52" Name="docSheetViewer" BorderBrush="Black" BorderThickness="1" FontFamily="Bookman Old Style">
+            <FlowDocument ColumnWidth="400" IsOptimalParagraphEnabled="True" IsHyphenationEnabled="True" FontFamily="Bookman Old Style">
+                <Section FontSize="28">
+                    <Paragraph Margin="0" Name="elCharacterTitle">
+                    </Paragraph>
+                    <BlockUIContainer>
+                        <Separator Height="8" BorderBrush="Black" BorderThickness="8"></Separator>
+                    </BlockUIContainer>
+                    <Table Margin="0">
+                        <Table.Columns>
+                            <TableColumn></TableColumn>
+                            <TableColumn></TableColumn>
+                        </Table.Columns>
+                        <TableRowGroup>
+                            <TableRow>
+                                <TableCell Background="Aqua" RowSpan="2">
+                                    <Paragraph>
+                                        <Image Name="elCharacterImage" Source="/Ceebeetle;component/Resources/BasicAdventurer-Beater.png" Width="120" Height="120" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
+                                    </Paragraph>
+                                </TableCell>
+                                <TableCell Background="Red">
+                                    <Paragraph>Stats</Paragraph>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow FontSize="11">
+                                <TableCell Background="Beige">
+                                    <Paragraph Name="elCharacterStats">ST 11</Paragraph>
+                                </TableCell>
+                            </TableRow>
+                        </TableRowGroup>
+                        <TableRowGroup>
+                            <TableRow>
+                                <TableCell ColumnSpan="2">
+                                    <Paragraph FontSize="14" FontWeight="Bold">Items</Paragraph>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell ColumnSpan="2">
+                                    <Paragraph FontSize="11" Name="elCharacterItems"></Paragraph>
+                                </TableCell>
+                            </TableRow>
+                        </TableRowGroup>
+                    </Table>
+                </Section>
+            </FlowDocument>
+        </FlowDocumentPageViewer>
+        <Button Content="Change _Image" Height="24" HorizontalAlignment="Left" Margin="7,0,0,18" Name="btnAddImage" VerticalAlignment="Bottom" Width="120" />
+        <Button Content="_Print" Height="24" HorizontalAlignment="Left" Margin="150,0,0,18" Name="btnPrint" VerticalAlignment="Bottom" Width="144" />
+        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,24,18" Name="btnClose" VerticalAlignment="Bottom" Width="133" Click="btnClose_Click" />
+    </Grid>
+</src:CCBChildWindow>

@@ -241,5 +241,17 @@ namespace Ceebeetle
                 Add(new CCBCharacterProperty(templateProperty));
             }
         }
+
+        public int GetLongestNameLen(int minlen = 0)
+        {
+            int len = minlen;
+
+            foreach (CCBCharacterProperty prop in this)
+            {
+                if (len < prop.Name.Length)
+                    len = prop.Name.Length;
+            }
+            return len;
+        }
     }
 }

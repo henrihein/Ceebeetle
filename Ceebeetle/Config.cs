@@ -8,7 +8,7 @@ namespace Ceebeetle
 {
     public class CCBConfig
     {
-        private static readonly uint m_version = 11;
+        private static readonly uint m_version = 12;
         private static readonly uint m_minVersion = 10;
         private static readonly uint m_backupCount = 8;
         private static readonly string m_filenameTemplate = @"ceebeetle{0:D2}.{1}";

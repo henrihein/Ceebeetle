@@ -1,9 +1,22 @@
 ﻿using System;
 using System.Windows;
 using System.Collections.Generic;
+using System.Windows.Media.Imaging;
 
 namespace Ceebeetle
 {
+    public class ControlHelpers
+    {
+        static public BitmapImage NewImage(string uri)
+        {
+            BitmapImage bmSrc = new BitmapImage();
+            bmSrc.BeginInit();
+            bmSrc.UriSource = new Uri(uri);
+            bmSrc.EndInit();
+            return bmSrc;
+        }
+    }
+
     public class StoreItemViewer
     {
         private CCBStoreItem m_item;
