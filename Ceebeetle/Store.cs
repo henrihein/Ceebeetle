@@ -434,6 +434,7 @@ namespace Ceebeetle
     }
 
     [DataContract(Name = "Store")]
+    [KnownType(typeof(CCBP2PStore))]
     public class CCBStore : CCBBag
     {
         [DataMember(Name = "StoreType")]
@@ -477,8 +478,8 @@ namespace Ceebeetle
         private string BuildItemsString()
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.Append("Item\tCost\tItem count\r\n");
+            string lnFormat = "{0,-54}\t{1,24}\t{2, 24}\r\n";
+            sb.Append(string.Format(lnFormat, "Item", "Cost", "Item count"));
             foreach (CCBStoreItem item in Items)
             {
                 string itemCount;
@@ -487,7 +488,7 @@ namespace Ceebeetle
                     itemCount = "-";
                 else
                     itemCount = string.Format("{0}", item.Count);
-                sb.Append(string.Format("{0}\t{1}\t{2}\r\n", item.Item, item.Cost, itemCount));
+                sb.Append(string.Format(lnFormat, item.Item, item.Cost, itemCount));
             }
             return sb.ToString();
         }
