@@ -18,7 +18,8 @@
         <Label Content="User or host name:" Height="25" HorizontalAlignment="Right" Margin="0,26,12,0" Name="label1" VerticalAlignment="Top" Width="157" />
         <TextBox Height="23" HorizontalAlignment="Right" Margin="0,58,12,0" Name="tbUserId" VerticalAlignment="Top" Width="157" />
         <Button Content="_Connect" Height="24" HorizontalAlignment="Right" Margin="0,91,12,0" Name="btnConnect" VerticalAlignment="Top" Width="157" Click="btnConnect_Click" TextInput="btnConnect_TextInput" />
+        <Button Content="Publish _Store" Height="26" HorizontalAlignment="Right" Margin="0,177,13,0" Name="btnStore" VerticalAlignment="Top" Width="136" Click="btnStore_Click" ToolTip="Publish a store for others to view" />
         <Button Content="Send _File" Height="26" HorizontalAlignment="Right" Margin="0,212,12,0" Name="btnSendFile" VerticalAlignment="Top" Width="138" Click="btnSendFile_Click" ToolTip="Send a file to a specified recipient" />
-        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,9,6" Name="btnClose" VerticalAlignment="Bottom" Width="141" Click="btnClose_Click" />
+        <Button Content="_Close" Height="26" HorizontalAlignment="Right" Margin="0,0,9,6" Name="btnClose" VerticalAlignment="Bottom" Width="141" Click="btnClose_Click" />
     </Grid>
 </src:CCBChildWindow>

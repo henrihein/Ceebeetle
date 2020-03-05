@@ -19,7 +19,7 @@ namespace Ceebeetle
 {
     public class CCBFileReceived
     {
-        public delegate void FileRecivedPromptD(CCBFileReceived filedata);
+        public delegate void DFileRecivedPrompt(CCBFileReceived filedata);
         private string m_sender;
         private string m_uid;
         private string m_filename;
@@ -59,22 +59,26 @@ namespace Ceebeetle
         DShowMessage m_showMessageCallback;
         DShowUserConnect m_showUserConnectCallback;
         DShowLastError m_showLastErrorCallback;
-        private CCBFileReceived.FileRecivedPromptD m_fileReceivedCB;
+        private CCBFileReceived.DFileRecivedPrompt m_fileReceivedCB;
         List<string> m_errorList;
+        private CCBGameData m_gameData;
+        private CCBStoreManager m_storeData;
 
         public bool IsDefunct
         {
             get { return m_wasConnected && !m_connected; }
         }
 
-        public ChatWnd()
+        public ChatWnd(CCBGameData gameData, CCBStoreManager storeData)
         {
+            m_gameData = gameData;
+            m_storeData = storeData;
             m_errorList = new List<string>();
             m_exit = false;
             m_connected = false;
             m_wasConnected = false;
             m_showConnectedCallback = new DShowOnConnected(ShowOnConnected);
-            m_fileReceivedCB = new CCBFileReceived.FileRecivedPromptD(PromptForFileReceived);
+            m_fileReceivedCB = new CCBFileReceived.DFileRecivedPrompt(PromptForFileReceived);
             m_showUserConnectCallback = new DShowUserConnect(ShowUserConnect);
             m_showMessageCallback = new DShowMessage(ShowMessage);
             m_showLastErrorCallback = new DShowLastError(ShowLastError);
@@ -227,12 +231,14 @@ namespace Ceebeetle
         {
             try
             {
+                DateTime tNow = DateTime.Now;
                 Paragraph pAdd = new Paragraph();
+                string outtext = string.Format("{0}:{1}", tNow, text);
 
                 if (bold)
-                    pAdd.Inlines.Add(new Bold(new Run(text)));
+                    pAdd.Inlines.Add(new Bold(new Run(outtext)));
                 else
-                    pAdd.Inlines.Add(new Run(text));
+                    pAdd.Inlines.Add(new Run(outtext));
                 pAdd.Padding = new Thickness(1);
                 if (bold)
                     pAdd.Margin = new Thickness(1);
@@ -272,6 +278,7 @@ namespace Ceebeetle
         {
             btnSend.IsEnabled = enable;
             btnSendFile.IsEnabled = enable;
+            btnStore.IsEnabled = enable;
         }
         private void ShowOnConnected()
         {
@@ -365,6 +372,17 @@ namespace Ceebeetle
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
             m_p2p.PostMessage(tbChatText.Text);
+        }
+        private void OnStorePicked(CCBStore store)
+        {
+            Log("Store picked: " + store.Name);
+        }
+        private void btnStore_Click(object sender, RoutedEventArgs e)
+        {
+            StorePickerWnd storePickerWnd = new StorePickerWnd(m_storeData.Stores);
+
+            storePickerWnd.StorePickedCallback = new DStorePicked(OnStorePicked);
+            storePickerWnd.Show();
         }
         private void btnSendFile_Click(object sender, RoutedEventArgs e)
         {

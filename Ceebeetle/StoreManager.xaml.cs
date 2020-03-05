@@ -27,7 +27,7 @@ namespace Ceebeetle
             m_manager = null;
             m_game = null;
         }
-        public StoreManagerWnd(CCBStoreManager manager, CCBGame game, string storeFilePath)
+        public StoreManagerWnd(CCBStoreManager manager, CCBGame game)
         {
             m_initialized = false;
             m_manager = manager;
@@ -35,8 +35,6 @@ namespace Ceebeetle
             InitializeComponent();
             CeebeetleWindowInit();
             tbChance.Text = "100";
-            //TODO: Should really load on a background worker.
-            m_manager.LoadStores(storeFilePath);
             Populate();
             Validate();
             m_initialized = true;
@@ -189,7 +187,7 @@ namespace Ceebeetle
             tbMinCost.Text = "";
             tbMaxCost.Text = "";
             tbLimit.Text = "";
-            cbItemAvailable.IsChecked = null;
+            cbItemAvailable.IsChecked = false;
         }
         private void UpdateProperties()
         {

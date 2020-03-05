@@ -129,6 +129,8 @@ namespace Ceebeetle
         }
         public override string ToString()
         {
+            if (-1 == m_count)
+                return base.ToString();
             return string.Format("{0} ({1})", base.ToString(), m_count);
         }
     }

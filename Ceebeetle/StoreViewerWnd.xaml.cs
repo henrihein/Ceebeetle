@@ -99,6 +99,7 @@ namespace Ceebeetle
 
                 lbStores.Items.RemoveAt(ixCur);
                 SelectListboxItem(lbStores, ixCur);
+                m_storeMgr.DeleteStore(curStore);
             }
         }
 

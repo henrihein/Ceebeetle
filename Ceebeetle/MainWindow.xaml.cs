@@ -73,7 +73,7 @@ namespace Ceebeetle
             }
             m_worker.ProgressChanged += new ProgressChangedEventHandler(Worker_OnProgressChanged);
             m_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(Worker_OnPersistenceCompleted);
-            m_loaderD = new DoWorkEventHandler(m_games.LoadGames);
+            m_loaderD = new DoWorkEventHandler(Worker_Load);
             m_worker.DoWork += m_loaderD;
             m_worker.RunWorkerAsync(m_config);
             SetDefaultView();
@@ -216,6 +216,11 @@ namespace Ceebeetle
                 }
             }
         }
+        private void Worker_Load(object sender, DoWorkEventArgs evtArgs)
+        {
+            m_storeManager.LoadStores(m_config.GetStoreFilePath());
+            m_games.LoadGames(sender, evtArgs);
+        }
         private void Worker_OnProgressChanged(object sender, ProgressChangedEventArgs evtArgs)
         {
             //Overloading the progress mechanism to remove the loader task.
@@ -234,6 +239,7 @@ namespace Ceebeetle
                 tsu = (TStatusUpdate)evtArgs.Result;
             TStatusUpdate[] args = new TStatusUpdate[1] { tsu };
 
+            m_storeManager.Unlock();
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 OnCharacterListUpdate(args);
@@ -1093,17 +1099,22 @@ namespace Ceebeetle
         }
         private void btnStore_Click(object sender, RoutedEventArgs e)
         {
-            CCBGame game = FindCurrentGame(true);
-            StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game, m_config.GetStoreFilePath());
+            if (m_storeManager.Locked)
+                tbStatus.Text = "Store is locked.";
+            else
+            {
+                CCBGame game = FindCurrentGame(true);
+                StoreManagerWnd storeWnd = new StoreManagerWnd(m_storeManager, game);
 
-            storeWnd.Owner = this;
-            storeWnd.Show();
+                storeWnd.Owner = this;
+                storeWnd.Show();
+            }
         }
         private void btnChat_Click(object sender, RoutedEventArgs e)
         {
             if ((null == m_chatWnd) || (m_chatWnd.IsDefunct))
             {
-                m_chatWnd = new ChatWnd();
+                m_chatWnd = new ChatWnd(m_games, m_storeManager);
                 m_chatWnd.Owner = this;
             }
             m_chatWnd.Show();

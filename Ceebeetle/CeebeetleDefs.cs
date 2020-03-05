@@ -27,9 +27,11 @@ namespace Ceebeetle
     public delegate void DOnCopyBagItems(CCBBag targetBag, string[] bagItems);
     public delegate bool DOnDeleteBagItems(CCBBag targetBag, string[] bagItems);
     public delegate void DOnCopyName(string name);
+    public delegate void DStorePicked(CCBStore store);
     //Merge actions
     public delegate TStatusUpdate DMergeGame(CCBGame game);
     public delegate TStatusUpdate DMergeTemplate(CCBGameTemplate template);
-    //P2P events
+    //P2P events and callbacks
     public delegate void DOnFileTransferError(string sender, string filename);
+    public delegate CCBStore DSelectStoreToPublish();
 }

@@ -109,10 +109,14 @@
     <Compile Include="P2PStartSendFile.xaml.cs">
       <DependentUpon>P2PStartSendFile.xaml</DependentUpon>
     </Compile>
+    <Compile Include="P2PStore.cs" />
     <Compile Include="StockTemplates.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="StoreManager.xaml.cs">
       <DependentUpon>StoreManager.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="StorePickerWnd.xaml.cs">
+      <DependentUpon>StorePickerWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="StoreViewerWnd.xaml.cs">
       <DependentUpon>StoreViewerWnd.xaml</DependentUpon>
@@ -190,6 +194,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="StoreManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StorePickerWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

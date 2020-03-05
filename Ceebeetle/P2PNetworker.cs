@@ -59,6 +59,7 @@ namespace Ceebeetle
         private CeebeetlePeerImpl m_peer;
         private CCBP2PFileWorker m_fileWorker;
         private DOnFileTransferError m_onFileError;
+        private DSelectStoreToPublish m_selectStoreCallback;
 
         #region WCFObjects
         private ServiceHost m_host;
@@ -73,6 +74,10 @@ namespace Ceebeetle
         public DOnFileTransferError OnFileTransferErrorCallback
         {
             set { m_onFileError = value; }
+        }
+        public DSelectStoreToPublish SelectStoreCallback
+        {
+            set { m_selectStoreCallback = value; }
         }
 
         public CCBP2PNetworker()
@@ -90,6 +95,7 @@ namespace Ceebeetle
             m_peer.PingCallback = new CeebeetlePeerImpl.OnPingedD(PingCallback);
             m_peer.FileTransferResponseCallback = new CeebeetlePeerImpl.OnFileTransferResponseD(OnFileTransferResponse);
             m_onFileError = null;
+            m_selectStoreCallback = null;
         }
 
         public string[] GetKnownUsers(bool inclSelf = true)
@@ -129,7 +135,8 @@ namespace Ceebeetle
                 m_fileWorker.Stop();
                 m_fileWorker = null;
             }
-            m_worker.Join();
+            if (m_worker.IsAlive)
+                m_worker.Join();
             if (null != m_host)
             {
                 m_host.Close();

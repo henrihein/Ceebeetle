@@ -260,6 +260,7 @@ namespace Ceebeetle
         [DataMember(Name = "Stores")]
         private List<CCBStore> m_stores;
         static private bool m_dirty = false;
+        private bool m_locked;
 
         public CCBStorePlaceTypeList Places
         {
@@ -277,13 +278,26 @@ namespace Ceebeetle
         {
             get { return m_dirty; }
         }
+        public bool Locked
+        {
+            get { return m_locked; }
+        }
 
         public CCBStoreManager()
         {
             m_places = new CCBStorePlaceTypeList();
             m_stores = new List<CCBStore>();
+            m_locked = true;
         }
 
+        public void Lock()
+        {
+            m_locked = true;
+        }
+        public void Unlock()
+        {
+            m_locked = false;
+        }
         public CCBStorePlaceType AddPlaceType(string placeTypeName)
         {
             CCBStorePlaceType newPlaceType = new CCBStorePlaceType(placeTypeName);
@@ -302,6 +316,7 @@ namespace Ceebeetle
         public bool SaveStores(CCBConfig conf)
         {
             XmlWriter xmlWriter = null;
+            CCBLogger logger = CCBLogConfig.GetLogger();
 
             lock (this)
             {
@@ -321,21 +336,21 @@ namespace Ceebeetle
                     }
                     catch (System.IO.IOException ioex)
                     {
-                        System.Diagnostics.Debug.Write("Error copying file: " + ioex.ToString());
+                        logger.Error("Error copying file: " + ioex.ToString());
                     }
                     return true;
                 }
                 catch (IOException ioex)
                 {
-                    System.Diagnostics.Debug.Write("IO Exception saving store definitions: " + ioex.ToString());
+                    logger.Error("IO Exception saving store definitions: " + ioex.ToString());
                 }
                 catch (XmlException xmlex)
                 {
-                    System.Diagnostics.Debug.Write("XML Exception saving store definitions: " + xmlex.ToString());
+                    logger.Error("XML Exception saving store definitions: " + xmlex.ToString());
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write("Exception saving store definitions: " + ex.ToString());
+                    logger.Error("Exception saving store definitions: " + ex.ToString());
                 }
             }
             if (null != xmlWriter)
@@ -346,7 +361,9 @@ namespace Ceebeetle
         {
             lock (this)
             {
+                CCBLogger logger = CCBLogConfig.GetLogger();
                 XmlReader xsReader = null;
+
                 try
                 {
                     xsReader = XmlReader.Create(docPath);
@@ -361,19 +378,19 @@ namespace Ceebeetle
                 }
                 catch (System.IO.FileNotFoundException nothere)
                 {
-                    System.Diagnostics.Debug.Write(String.Format("No data file, not loading stores [{0}]", nothere.FileName));
+                    logger.Debug(String.Format("No data file, not loading stores [{0}]", nothere.FileName));
                     if (null != xsReader)
                         xsReader.Close();
                 }
                 catch (System.Runtime.Serialization.SerializationException serex)
                 {
-                    System.Diagnostics.Debug.Write(String.Format("XML parsing error, not loading stores [{0}]", serex.ToString()));
+                    logger.Error(String.Format("XML parsing error, not loading stores [{0}]", serex.ToString()));
                     if (null != xsReader)
                         xsReader.Close();
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.Write("Exception reading store document: " + ex.ToString());
+                    logger.Error("Exception reading store document: " + ex.ToString());
                     if (null != xsReader)
                         xsReader.Close();
                 }
