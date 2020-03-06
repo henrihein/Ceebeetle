@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -55,10 +56,12 @@ namespace Ceebeetle
         private delegate void DShowMessage(string uid, string message);
         private delegate void DShowLastError();
         private delegate void DShowUserConnect(string uid);
+        private delegate void DAddFileLink(string prefix, string filename);
         DShowOnConnected m_showConnectedCallback;
         DShowMessage m_showMessageCallback;
         DShowUserConnect m_showUserConnectCallback;
         DShowLastError m_showLastErrorCallback;
+        DAddFileLink m_addFileLinkCallback;
         private CCBFileReceived.DFileRecivedPrompt m_fileReceivedCB;
         List<string> m_errorList;
         private CCBGameData m_gameData;
@@ -82,15 +85,17 @@ namespace Ceebeetle
             m_showUserConnectCallback = new DShowUserConnect(ShowUserConnect);
             m_showMessageCallback = new DShowMessage(ShowMessage);
             m_showLastErrorCallback = new DShowLastError(ShowLastError);
+            m_addFileLinkCallback = new DAddFileLink(AddFileLinkCallback);
             m_p2p = new CCBP2PNetworker();
             m_p2p.AddListener(this);
-            m_p2p.OnFileTransferErrorCallback = new DOnFileTransferError(OnFileTransferError);
+            m_p2p.OnFileTransferDoneCallback = new DOnFileTransferDone(OnFileTransferDone);
             InitializeComponent();
             SetHostNameTo(tbUserId);
             CeebeetleWindowInit();
             InitChatWindow();
             Validate();
             EnableUI(false);
+            AddTestLink();
         }
 
         private void SetHostNameTo(TextBox tb)
@@ -123,6 +128,7 @@ namespace Ceebeetle
                 btnConnect.IsEnabled = (0 != tbUserId.Text.Length);
             }
         }
+
 
         #region INetworkListener
         void INetworkListener.OnMessage(string uid, string message)
@@ -211,9 +217,43 @@ namespace Ceebeetle
                 ShowError("Remote error on " + filename);
         }
         #endregion
-        private void OnFileTransferError(string sender, string filename)
+        private void OnFileTransferDone(string sender, string filename, bool success)
         {
-            ShowError(string.Format("{0} from {1} had an error. Download canceled.", filename, sender));
+            try
+            {
+                if (success)
+                {
+                    object[] args = new object[2] { string.Format("File from {0} complete: ", sender), filename };
+                    Application.Current.Dispatcher.BeginInvoke(m_addFileLinkCallback, args);
+                }
+                else
+                {
+                    ShowError(string.Format("{0} from {1} had an error. Download canceled.", filename, sender));
+                }
+            }
+            catch (NullReferenceException nex)
+            {
+                Log("Null ref exception in ChatWnd.OnConnected. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                Log("Fatal(?) exception in ChatWnd.OnConnected. " + fex.Message);
+            }
+        }
+        private void OnFileClicked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Hyperlink hl = (Hyperlink)sender;
+                string path = hl.CommandParameter.ToString();
+                string folder = System.IO.Path.GetDirectoryName(path);
+
+                Process.Start(folder);
+            }
+            catch (Exception ex)
+            {
+                CCBLogConfig.GetLogger().Log("ShowCompleteFile: " + ex.Message);
+            }
         }
         private void InitChatWindow()
         {
@@ -227,6 +267,49 @@ namespace Ceebeetle
                 doc.PagePadding = new Thickness(0);
             }
         }
+        private void AddTestLink()
+        {
+            AddLinkText("Link -> ", "Click here for fun", "fun", new RoutedEventHandler(TestLinkCB));
+        }
+        private void TestLinkCB(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Hyperlink hl = (Hyperlink)sender;
+                AddChatText("Link was clicked." + hl.CommandParameter.ToString());
+            }
+            catch (Exception ex)
+            {
+                CCBLogConfig.GetLogger().Log("TestLinkCB: " + ex.Message);
+            }
+        }
+        private void AddLinkText(string prefix, string linkText, string cmdText, RoutedEventHandler linkAction)
+        {
+            try
+            {
+                DateTime tNow = DateTime.Now;
+                string outtext = string.Format("{0}: {1}", tNow, prefix);
+                Paragraph pAdd = new Paragraph();
+                Hyperlink pLink = new Hyperlink(new Run(linkText));
+
+                pAdd.Inlines.Add(new Run(outtext));
+                pAdd.Padding = new Thickness(1);
+                pAdd.Margin = new Thickness(0);
+                pLink.AddHandler(Hyperlink.ClickEvent, linkAction);
+                pLink.CommandParameter = cmdText;
+                pAdd.Inlines.Add(pLink);
+                chatContent.Document.Blocks.Add(pAdd);
+            }
+            catch (NullReferenceException nex)
+            {
+                Log("Null ref exception in ChatWnd. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                Log("Exception in ChatWnd, adding chat text. " + fex.Message);
+            }
+        }
+
         private void AddChatText(string text, bool bold = false)
         {
             try
@@ -322,6 +405,10 @@ namespace Ceebeetle
                 m_errorList.Add(errorText);
             }
             Application.Current.Dispatcher.BeginInvoke(m_showLastErrorCallback);
+        }
+        private void AddFileLinkCallback(string prefix, string filename)
+        {
+            AddLinkText(prefix, filename, filename, new RoutedEventHandler(OnFileClicked));
         }
         public void Exit()
         {

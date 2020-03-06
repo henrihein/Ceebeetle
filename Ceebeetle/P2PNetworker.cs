@@ -58,7 +58,7 @@ namespace Ceebeetle
         private Queue<CCBNetworkerCommandData> m_commandList;
         private CeebeetlePeerImpl m_peer;
         private CCBP2PFileWorker m_fileWorker;
-        private DOnFileTransferError m_onFileError;
+        private DOnFileTransferDone m_onFileDone;
         private DSelectStoreToPublish m_selectStoreCallback;
 
         #region WCFObjects
@@ -71,9 +71,9 @@ namespace Ceebeetle
         {
             get { return m_uid; }
         }
-        public DOnFileTransferError OnFileTransferErrorCallback
+        public DOnFileTransferDone OnFileTransferDoneCallback
         {
-            set { m_onFileError = value; }
+            set { m_onFileDone = value; }
         }
         public DSelectStoreToPublish SelectStoreCallback
         {
@@ -94,7 +94,7 @@ namespace Ceebeetle
             m_peer = new CeebeetlePeerImpl();
             m_peer.PingCallback = new CeebeetlePeerImpl.OnPingedD(PingCallback);
             m_peer.FileTransferResponseCallback = new CeebeetlePeerImpl.OnFileTransferResponseD(OnFileTransferResponse);
-            m_onFileError = null;
+            m_onFileDone = null;
             m_selectStoreCallback = null;
         }
 
@@ -227,7 +227,7 @@ namespace Ceebeetle
                         m_peer.AddListener(m_fileWorker);
                     }
                     fileWorker = m_fileWorker;
-                    fileWorker.OnFileTransferErrorCallback = m_onFileError;
+                    fileWorker.OnFileTransferDoneCallback = m_onFileDone;
                 }
             }
             return fileWorker;

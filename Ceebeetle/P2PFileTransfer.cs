@@ -477,11 +477,11 @@ namespace Ceebeetle
         private ManualResetEvent m_signal;
         private ManualResetEvent m_closeSignal;
         private Thread m_dataPumpThread;
-        private DOnFileTransferError m_fileTransferErrorCallback;
+        private DOnFileTransferDone m_fileTransferDoneCallback;
 
-        public DOnFileTransferError OnFileTransferErrorCallback
+        public DOnFileTransferDone OnFileTransferDoneCallback
         {
-            set { m_fileTransferErrorCallback = value; }
+            set { m_fileTransferDoneCallback = value; }
         }
 
         public CCBP2PFileWorker(ManualResetEvent closeEvent) : base()
@@ -491,7 +491,7 @@ namespace Ceebeetle
             m_outbox = new CCBP2PFileList();
             m_signal = new ManualResetEvent(false);
             m_dataPumpThread = null;
-            m_fileTransferErrorCallback = null;
+            m_fileTransferDoneCallback = null;
         }
 
         private void MaybeStart()
@@ -796,17 +796,21 @@ namespace Ceebeetle
 
             foreach (CCBP2PFile infile in inWork)
             {
+                if (!infile.Closed && (infile.Error || infile.Finalized))
+                    infile.Close();
                 if (infile.NeedHashCheck)
                     infile.CalcLocalHash(m_closeSignal);
                 if (infile.IsDone())
+                {
+                    if (null != m_fileTransferDoneCallback)
+                        m_fileTransferDoneCallback(infile.Sender, infile.LocalName, true);
                     RemoveFile(m_inbox, infile.RemoteName);
-                else if (!infile.Closed && (infile.Error || infile.Finalized))
-                    infile.Close();
+                }
                 if (infile.IsObsolete() || infile.Error)
                 {
                     infile.Delete();
-                    if (null != m_fileTransferErrorCallback)
-                        m_fileTransferErrorCallback(infile.Sender, infile.LocalName);
+                    if (null != m_fileTransferDoneCallback)
+                        m_fileTransferDoneCallback(infile.Sender, infile.LocalName, false);
                     RemoveFile(m_inbox, infile.RemoteName);
                 }
             }
@@ -888,7 +892,7 @@ namespace Ceebeetle
         }
         void INetworkListener.OnFileError(string sender, string recipient, string filename)
         {
-            CCBLogConfig.GetLogger().Debug("Completing file: {0}\n", filename);
+            CCBLogConfig.GetLogger().Debug("Tagging file completed with error: {0}\n", filename);
             try
             {
                 CCBP2PFile infile = GetInFile(filename);

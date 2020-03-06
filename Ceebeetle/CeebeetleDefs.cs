@@ -32,6 +32,6 @@ namespace Ceebeetle
     public delegate TStatusUpdate DMergeGame(CCBGame game);
     public delegate TStatusUpdate DMergeTemplate(CCBGameTemplate template);
     //P2P events and callbacks
-    public delegate void DOnFileTransferError(string sender, string filename);
+    public delegate void DOnFileTransferDone(string sender, string filename, bool success);
     public delegate CCBStore DSelectStoreToPublish();
 }
