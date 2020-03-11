@@ -56,16 +56,19 @@ namespace Ceebeetle
         private delegate void DShowMessage(string uid, string message);
         private delegate void DShowLastError();
         private delegate void DShowUserConnect(string uid);
-        private delegate void DAddFileLink(string prefix, string filename);
+        private delegate void DAddFileLink(string prefix, string pathName);
+        private delegate void DAddObjectLink(string prefix, string objectName);
         DShowOnConnected m_showConnectedCallback;
         DShowMessage m_showMessageCallback;
         DShowUserConnect m_showUserConnectCallback;
         DShowLastError m_showLastErrorCallback;
         DAddFileLink m_addFileLinkCallback;
+        DAddObjectLink m_addObjectLinkCallback;
         private CCBFileReceived.DFileRecivedPrompt m_fileReceivedCB;
         List<string> m_errorList;
         private CCBGameData m_gameData;
         private CCBStoreManager m_storeData;
+        private CCBCharacterList m_charactersReceived;
 
         public bool IsDefunct
         {
@@ -76,6 +79,7 @@ namespace Ceebeetle
         {
             m_gameData = gameData;
             m_storeData = storeData;
+            m_charactersReceived = new CCBCharacterList();
             m_errorList = new List<string>();
             m_exit = false;
             m_connected = false;
@@ -86,6 +90,7 @@ namespace Ceebeetle
             m_showMessageCallback = new DShowMessage(ShowMessage);
             m_showLastErrorCallback = new DShowLastError(ShowLastError);
             m_addFileLinkCallback = new DAddFileLink(AddFileLinkCallback);
+            m_addObjectLinkCallback = new DAddObjectLink(AddObjectLinkCallback);
             m_p2p = new CCBP2PNetworker();
             m_p2p.AddListener(this);
             m_p2p.OnFileTransferDoneCallback = new DOnFileTransferDone(OnFileTransferDone);
@@ -191,6 +196,36 @@ namespace Ceebeetle
         void INetworkListener.OnFileComplete(string filename, byte[] hash)
         {
         }
+        void INetworkListener.OnReceivingFile(string sender, string filename)
+        {
+            CCBFileReceived filedata = new CCBFileReceived(sender, m_p2p.UserId, filename);
+
+            this.Dispatcher.BeginInvoke(m_fileReceivedCB, new object[1] { filedata });
+        }
+        void INetworkListener.OnFileError(string sender, string recipient, string filename)
+        {
+            if (m_p2p.IsMe(recipient))
+                ShowError("Remote error on " + filename);
+        }
+        void INetworkListener.OnCharacterReceived(string sender, CCBCharacter character)
+        {
+            try
+            {
+                object[] args = new object[2] { string.Format("Received character '{0}' from {1}: ", character.Name, sender), character.Name};
+
+                m_charactersReceived.ReplaceSafe(character);
+                Application.Current.Dispatcher.BeginInvoke(m_addObjectLinkCallback, args);
+            }
+            catch (NullReferenceException nex)
+            {
+                Log("Null ref exception in ChatWnd.OnCharacterReceived. " + nex.Message);
+            }
+            catch (Exception fex)
+            {
+                Log("Fatal(?) exception in ChatWnd.OnCharacterReceived. " + fex.Message);
+            }
+        }
+        #endregion
         void PromptForFileReceived(CCBFileReceived filedata)
         {
             P2PReceiveFileWnd prompt = new P2PReceiveFileWnd(filedata);
@@ -204,18 +239,6 @@ namespace Ceebeetle
             else
                 m_p2p.CancelFileTransfer(filedata.Sender, filedata.Name);
         }
-        void INetworkListener.OnReceivingFile(string sender, string filename)
-        {
-            CCBFileReceived filedata = new CCBFileReceived(sender, m_p2p.UserId, filename);
-
-            this.Dispatcher.BeginInvoke(m_fileReceivedCB, new object[1] { filedata });
-        }
-        void INetworkListener.OnFileError(string sender, string recipient, string filename)
-        {
-            if (m_p2p.IsMe(recipient))
-                ShowError("Remote error on " + filename);
-        }
-        #endregion
         private void OnFileTransferDone(string sender, string filename, bool success)
         {
             try
@@ -223,7 +246,7 @@ namespace Ceebeetle
                 if (success)
                 {
                     object[] args = new object[2] { string.Format("File from {0} complete: ", sender), filename };
-                    Application.Current.Dispatcher.BeginInvoke(m_addFileLinkCallback, args);
+                    Application.Current.Dispatcher.BeginInvoke(m_addObjectLinkCallback, args);
                 }
                 else
                 {
@@ -251,7 +274,29 @@ namespace Ceebeetle
             }
             catch (Exception ex)
             {
-                CCBLogConfig.GetLogger().Log("ShowCompleteFile: " + ex.Message);
+                CCBLogConfig.GetLogger().Log("ChatWnd.OnFileClicked: " + ex.Message);
+            }
+        }
+        private void OnObjectClicked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Hyperlink hl = (Hyperlink)sender;
+                string name = hl.CommandParameter.ToString();
+                CCBCharacter character = m_charactersReceived.FindSafe(name);
+
+                if (null == character)
+                    AddChatText(string.Format("'{0}' not found.", name));
+                else
+                {
+                    CharacterSheetWnd characterWnd = new CharacterSheetWnd(character);
+
+                    characterWnd.Show(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                CCBLogConfig.GetLogger().Log("OnObjectClicked: " + ex.Message);
             }
         }
         private void InitChatWindow()
@@ -361,6 +406,7 @@ namespace Ceebeetle
             btnSend.IsEnabled = enable;
             btnSendFile.IsEnabled = enable;
             btnStore.IsEnabled = enable;
+            btnCharacter.IsEnabled = enable;
         }
         private void ShowOnConnected()
         {
@@ -405,9 +451,13 @@ namespace Ceebeetle
             }
             Application.Current.Dispatcher.BeginInvoke(m_showLastErrorCallback);
         }
-        private void AddFileLinkCallback(string prefix, string filename)
+        private void AddFileLinkCallback(string prefix, string objName)
         {
-            AddLinkText(prefix, filename, filename, new RoutedEventHandler(OnFileClicked));
+            AddLinkText(prefix, objName, objName, new RoutedEventHandler(OnFileClicked));
+        }
+        private void AddObjectLinkCallback(string prefix, string objName)
+        {
+            AddLinkText(prefix, objName, objName, new RoutedEventHandler(OnObjectClicked));
         }
         public void Exit()
         {
@@ -485,6 +535,17 @@ namespace Ceebeetle
                 }
                 else
                     ShowError(string.Format("{0} does not exist, canceling send.", sendFileWnd.Filename));
+            }
+        }
+        private void btnCharacter_Click(object sender, RoutedEventArgs e)
+        {
+            P2PStartSendCharacter sendCharacterWnd = new P2PStartSendCharacter(m_p2p.GetKnownUsers(false), m_gameData);
+
+            sendCharacterWnd.Owner = this;
+            //If this ever changes to a non-modal window, need to guard all games and characters in critical sections.
+            if (true == sendCharacterWnd.ShowDialog())
+            {
+                m_p2p.StartSendCharacter(sendCharacterWnd.Recipient, sendCharacterWnd.Character);
             }
         }
 

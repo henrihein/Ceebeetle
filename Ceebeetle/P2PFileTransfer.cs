@@ -960,6 +960,9 @@ namespace Ceebeetle
                 CCBLogConfig.GetLogger().Error("Exception OnFileError {0}: {1}", filename, ex.Message);
             }
         }
+        void INetworkListener.OnCharacterReceived(string sender, CCBCharacter character)
+        {
+        }
         #endregion
     }
 

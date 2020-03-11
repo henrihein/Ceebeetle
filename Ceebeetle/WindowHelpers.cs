@@ -154,4 +154,27 @@ namespace Ceebeetle
             return (m_cbMax == cbMax) && (m_cbCur == cbCur);
         }
     }
+
+    public class CCBCharacterContainer
+    {
+        public CCBCharacter Character
+        {
+            get;
+            set;
+        }
+        public CCBGame Game
+        {
+            get;
+            set;
+        }
+        public CCBCharacterContainer(CCBGame game, CCBCharacter character)
+        {
+            this.Character = character;
+            this.Game = game;
+        }
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}", this.Game.ToString(), this.Character.ToString());
+        }
+    }
 }

@@ -7,7 +7,7 @@ namespace Ceebeetle
 {
     public class CCBSettings
     {
-        public static bool m_simSlowIO = true;
+        public static bool m_simSlowIO = false;
     }
 
     public enum TStatusUpdate

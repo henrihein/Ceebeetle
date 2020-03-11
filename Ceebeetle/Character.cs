@@ -174,6 +174,14 @@ namespace Ceebeetle
                 base.Add(character);
             }
         }
+        public void ReplaceSafe(CCBCharacter character)
+        {
+            CCBCharacter findIt = FindSafe(character.Name);
+
+            if (null != findIt)
+                DeleteSafe(findIt);
+            AddSafe(character);
+        }
         public void DeleteSafe(CCBCharacter character)
         {
             CCBDirty.kDirty = true;
@@ -199,6 +207,18 @@ namespace Ceebeetle
                 }
             }
             CCBDirty.kDirty = true;
+        }
+        public CCBCharacter FindSafe(string name)
+        {
+            lock (this)
+            {
+                foreach (CCBCharacter character in this)
+                {
+                    if (character.Name.Equals(name))
+                        return character;
+                }
+            }
+            return null;
         }
     }
 

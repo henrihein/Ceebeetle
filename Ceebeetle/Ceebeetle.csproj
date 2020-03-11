@@ -106,6 +106,9 @@
     <Compile Include="P2PReceiveFileWnd.xaml.cs">
       <DependentUpon>P2PReceiveFileWnd.xaml</DependentUpon>
     </Compile>
+    <Compile Include="P2PStartSendCharacter.xaml.cs">
+      <DependentUpon>P2PStartSendCharacter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="P2PStartSendFile.xaml.cs">
       <DependentUpon>P2PStartSendFile.xaml</DependentUpon>
     </Compile>
@@ -186,6 +189,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="P2PReceiveFileWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="P2PStartSendCharacter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

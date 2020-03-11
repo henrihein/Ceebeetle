@@ -6,8 +6,6 @@
     <Grid>
         <Label Content="Send to:" Height="26" HorizontalAlignment="Left" Margin="12,57,0,0" Name="label1" VerticalAlignment="Top" Width="139" />
         <ListBox Margin="12,89,0,49" Name="lbUsers" SelectionChanged="lbUsers_SelectionChanged" HorizontalAlignment="Left" Width="184" />
-        <Button Content="_Send now" Height="24" HorizontalAlignment="Left" Margin="12,0,0,15" Name="btnSend" VerticalAlignment="Bottom" Width="184" Click="btnSend_Click" />
-        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,17,15" Name="btnClose" VerticalAlignment="Bottom" Width="123" Click="btnClose_Click" />
         <Label Content="File to send:" Height="26" HorizontalAlignment="Left" Margin="12,0,0,0" Name="label2" VerticalAlignment="Top" Width="92" />
         <TextBox Margin="12,25,141,0" Name="tbFile" TextChanged="tbFile_TextChanged" Height="24" VerticalAlignment="Top" />
         <Button Content="_Browse..." Height="24" HorizontalAlignment="Right" Margin="0,25,17,0" Name="btnBrowse" VerticalAlignment="Top" Width="110" Click="btnBrowse_Click" />
@@ -15,5 +13,7 @@
         <ScrollViewer Margin="215,90,10,49" Name="svStatus" BorderBrush="Black" BorderThickness="1">
             <StackPanel Height="205" Name="spStatus" Width="220" />
         </ScrollViewer>
+        <Button Content="_Send now" Height="24" HorizontalAlignment="Left" Margin="12,0,0,15" Name="btnSend" VerticalAlignment="Bottom" Width="184" Click="btnSend_Click" />
+        <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,17,15" Name="btnClose" VerticalAlignment="Bottom" Width="123" Click="btnClose_Click" />
     </Grid>
 </src:CCBChildWindow>

@@ -17,6 +17,7 @@ namespace Ceebeetle
         void OnFileData(string filename, long offset, byte[] data);
         void OnFileComplete(string filename, byte[] hash);
         void OnFileError(string sender, string recipient, string filename);
+        void OnCharacterReceived(string sender, CCBCharacter character);
     }
 
     [ServiceContract(CallbackContract = typeof(ICeebeetlePeer))]
@@ -36,13 +37,17 @@ namespace Ceebeetle
         void CancelFile(string sender, string recipient, string filename);
         //Todo: actually sending the data should be done on a separate, 2-way channel.
         //The current way, all data is sent to all the peers in the mesh. With a low number of peers, 
-        //not a big problem.
+        //mayb not a big problem.
         [OperationContract(IsOneWay = true)]
         void SendFileData(string sender, string recipient, string filename, long offset, byte[] bytes);
         [OperationContract(IsOneWay = true)]
         void OnFileComplete(string sender, string recipient, string filename, byte[] hash);
         [OperationContract(IsOneWay = true)]
         void OnFileError(string sender, string recipient, string filename);
+
+        [OperationContract(IsOneWay = true)]
+        void SendCharacterTo(string sender, string recipient, CCBCharacter character);
+
     }
 
     public class CeebeetlePeerImpl : ICeebeetlePeer
@@ -122,6 +127,7 @@ namespace Ceebeetle
             }
             return listeners;
         }
+        #region ICeebeetlePeer
         void ICeebeetlePeer.ChatMessage(string uid, string message)
         {
             try
@@ -158,7 +164,7 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.OnNewFile(string sender, string recipient, string filename)
         {
-            if (0 == string.Compare(m_uid, recipient))
+            if (m_uid.Equals(recipient))
             {
                 try
                 {
@@ -203,7 +209,7 @@ namespace Ceebeetle
         //On the peer implementation, the sent data is actually received data...
         void ICeebeetlePeer.SendFileData(string sender, string recipient, string filename, long offset, byte[] data)
         {
-            if (0 == string.Compare(m_uid, recipient))
+            if (m_uid.Equals(recipient))
             {
                 try
                 {
@@ -228,7 +234,7 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.OnFileComplete(string sender, string recipient, string filename, byte[] hash)
         {
-            if (0 == string.Compare(m_uid, recipient))
+            if (m_uid.Equals(recipient))
             {
                 try
                 {
@@ -253,7 +259,7 @@ namespace Ceebeetle
         }
         void ICeebeetlePeer.OnFileError(string sender, string recipient, string filename)
         {
-            if ((0 == string.Compare(m_uid, recipient)) || (0 == string.Compare(m_uid, recipient)))
+            if ((m_uid.Equals(sender)) || (m_uid.Equals(recipient)))
             {
                 try
                 {
@@ -276,6 +282,33 @@ namespace Ceebeetle
                 }
             }
         }
+        void ICeebeetlePeer.SendCharacterTo(string sender, string recipient, CCBCharacter character)
+        {
+            if (m_uid.Equals(recipient))
+            {
+                try
+                {
+                    INetworkListener[] listeners = GetListeners();
+
+                    foreach (INetworkListener listener in listeners)
+                        listener.OnCharacterReceived(sender, character);
+                }
+                catch (System.IO.IOException ioex)
+                {
+                    CCBLogConfig.GetLogger().Error("IO Exception in OnFileComplete: {0}", ioex.Message);
+                }
+                catch (System.ServiceModel.CommunicationException commEx)
+                {
+                    CCBLogConfig.GetLogger().Error("Comm Exception in OnFileComplete: {0}", commEx.Message);
+                }
+                catch (Exception ex)
+                {
+                    CCBLogConfig.GetLogger().Error("Exception in OnFileComplete: {0}", ex.Message);
+                }
+            }
+        }
+        #endregion //ICeebeetlePeer
+
         public void OnConnected()
         {
             try

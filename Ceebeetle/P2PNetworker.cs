@@ -17,32 +17,44 @@ namespace Ceebeetle
         nwc_pingRespond,
         nwc_startFileTransfer,
         nwc_requestFileTransfer,
-        nwc_cancelFileTransfer
+        nwc_cancelFileTransfer,
+        nwc_sendCharacter
     }
 
     public struct CCBNetworkerCommandData
     {
         public CCBNetworkerCommand m_cmd;
         public string[] m_data;
+        public object m_oSend;
         public CCBNetworkerCommandData(CCBNetworkerCommand cmd, string data)
         {
             m_cmd = cmd;
             m_data = new string[1]{ data };
+            m_oSend = null;
+        }
+        public CCBNetworkerCommandData(CCBNetworkerCommand cmd, string data, object oSend)
+        {
+            m_cmd = cmd;
+            m_data = new string[1] { data };
+            m_oSend = oSend;
         }
         public CCBNetworkerCommandData(CCBNetworkerCommand cmd, string data1, string data2)
         {
             m_cmd = cmd;
             m_data = new string[2] { data1, data2 };
+            m_oSend = null;
         }
         public CCBNetworkerCommandData(CCBNetworkerCommand cmd)
         {
             m_cmd = cmd;
             m_data = null;
+            m_oSend = null;
         }
         public CCBNetworkerCommandData(CCBNetworkerCommandData rhs)
         {
             m_cmd = rhs.m_cmd;
             m_data = rhs.m_data;
+            m_oSend = null;
         }
     }
 
@@ -226,6 +238,10 @@ namespace Ceebeetle
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_cancelFileTransfer, sender, filename));
         }
+        public void StartSendCharacter(string recipient, CCBCharacter character)
+        {
+            QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_sendCharacter, recipient, character));
+        }
         private CCBP2PFileWorker GetFileWorker()
         {
             CCBP2PFileWorker fileWorker = m_fileWorker;
@@ -328,23 +344,19 @@ namespace Ceebeetle
         public void StartDisconnect()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_disconnect));
-            m_cmdSignal.Set();
         }
         public void PingMesh()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_pingMesh));
-            m_cmdSignal.Set();
         }
         public void PingCallback()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_pingRespond));
-            m_cmdSignal.Set();
         }
 
         private void PostConnectCommand()
         {
             QueueCommand(new CCBNetworkerCommandData(CCBNetworkerCommand.nwc_connect));
-            m_cmdSignal.Set();
         }
         private void ExecuteNextCommand()
         {
@@ -389,6 +401,17 @@ namespace Ceebeetle
                     case CCBNetworkerCommand.nwc_cancelFileTransfer:
                         if (null != m_clientChannel)
                             m_clientChannel.CancelFile(cmd.m_data[0], m_uid, cmd.m_data[1]);
+                        break;
+                    case CCBNetworkerCommand.nwc_sendCharacter:
+                        if (null != m_clientChannel)
+                        {
+                            CCBCharacter characterToSend = (CCBCharacter)cmd.m_oSend;
+
+                            if (null != characterToSend)
+                                m_clientChannel.SendCharacterTo(m_uid, cmd.m_data[0], characterToSend);
+                            else
+                                Error("P2PNetworker: No character object in nwc_sendCharacter command.");
+                        }
                         break;
                     default:
                         Error(string.Format("Networker: Ignoring {0} command.", cmd.m_cmd));

@@ -94,13 +94,6 @@ namespace Ceebeetle
                     }
                 }
                 Application.Current.Dispatcher.Invoke(new DOnProgressUpdate(OnProgressUpdate), new object[1] { needsUpdate });
-#if false
-                foreach (CCBFileProgress.CCBFileProgressData fpData in needsUpdate)
-                {
-                    Application.Current.Dispatcher.Invoke(new DOnProgressUpdate(OnProgressUpdate), new object[1] {fpData});
-                    //fpData.OnProgressUpdate();
-                }
-#endif
             }
         }
         public void Validat()
