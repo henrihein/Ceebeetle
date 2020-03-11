@@ -143,6 +143,20 @@ namespace Ceebeetle
                 m_host = null;
             }
         }
+        public string[] GetFileList()
+        {
+            if (null != m_fileWorker)
+                return m_fileWorker.GetFileList();
+            return null;
+        }
+        public TStatusUpdate GetFileStatus(string filename, out long cbXfer, out long cbMax)
+        {
+            if (null != m_fileWorker)
+                return m_fileWorker.GetFileStatus(filename, out cbXfer, out cbMax);
+            cbXfer = 0;
+            cbMax = 0;
+            return TStatusUpdate.tsuNone;
+        }
         private void Close()
         {
             m_working = false;
@@ -438,7 +452,7 @@ namespace Ceebeetle
                         {
                             try
                             {
-                                System.Diagnostics.Debug.Write(string.Format("Sending {0} bytes from {1}", cb, dataTosend.m_localFileName));
+                                Debug(string.Format("Sending {0} bytes from {1}", cb, dataTosend.m_localFileName));
                                 m_clientChannel.SendFileData(m_uid, dataTosend.m_recipient, dataTosend.m_localFileName, dataTosend.m_start, dataTosend.m_bytes);
                                 fileWorker.MarkDataSent(fileToSend, dataTosend);
                                 if (fileWorker.IsSent(fileToSend, ref hash, ref recipient))

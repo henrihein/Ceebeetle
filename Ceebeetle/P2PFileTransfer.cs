@@ -74,6 +74,14 @@ namespace Ceebeetle
         private bool m_closed;
         private DateTime m_tick;
 
+        public long FileSize
+        {
+            get { return m_filesize; }
+        }
+        public long BytesSent
+        {
+            get { return m_bytesSent; }
+        }
         public bool Finalized
         {
             get { return m_finalized; }
@@ -672,6 +680,33 @@ namespace Ceebeetle
             }
             return false;
         }
+        public string[] GetFileList()
+        {
+            lock (m_outbox)
+            {
+                string[] fileList = new string[m_outbox.Count];
+
+                m_outbox.Keys.CopyTo(fileList, 0);
+                return fileList;
+            }
+        }
+        public TStatusUpdate GetFileStatus(string filename, out long cbXfer, out long cbMax)
+        {
+            cbXfer = 0;
+            cbMax = 0;
+            lock (m_outbox)
+            {
+                if (m_outbox.Keys.Contains(filename))
+                {
+                    CCBP2PFile outfile = m_outbox[filename];
+
+                    cbMax = outfile.FileSize;
+                    cbXfer = outfile.BytesSent;
+                    return TStatusUpdate.tsuFileWork;
+                }
+            }
+            return TStatusUpdate.tsuNone;
+        }
         private CCBP2PFile GetNextFileToLoad()
         {
             lock (m_outbox)
@@ -697,6 +732,8 @@ namespace Ceebeetle
         {
             CCBP2PFile nextFileToLoad = GetNextFileToLoad();
 
+            if (CCBSettings.m_simSlowIO)
+                Thread.Sleep(991);
             if (null != nextFileToLoad)
             {
                 //Do not load while file has data yet to be sent.

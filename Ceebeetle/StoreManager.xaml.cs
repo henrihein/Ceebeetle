@@ -160,11 +160,11 @@ namespace Ceebeetle
                 if (null == potentialStoreItem)
                     potentialStoreItem = new CCBPotentialStoreItem(itemTag);
                 potentialStoreItem.Available = bAvailable;
-                potentialStoreItem.Chance = IntFromTextbox(tbChance, txStatus);
-                potentialStoreItem.MinCost = IntFromTextbox(tbMinCost, txStatus);
-                potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost, txStatus);
+                potentialStoreItem.Chance = IntFromTextbox(tbChance);
+                potentialStoreItem.MinCost = IntFromTextbox(tbMinCost);
+                potentialStoreItem.MaxCost = IntFromTextbox(tbMaxCost);
                 if (true == cbLimit.IsChecked)
-                    potentialStoreItem.Count = IntFromTextbox(tbLimit, txStatus);
+                    potentialStoreItem.Count = IntFromTextbox(tbLimit);
                 else
                     potentialStoreItem.Count = -1;
                 potentialStoreItem.RandomizeLimit = (true == cbRandomizeLimit.IsChecked);

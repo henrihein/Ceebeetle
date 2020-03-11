@@ -26,7 +26,7 @@ namespace Ceebeetle
         {
             m_logfilepath = mainConf.MakeLogFilePath(DateTime.Now.Ticks);
             m_logger = new CCBLogger(m_logfilepath, mainConf.LogLevel);
-            m_logger.LogTime("Ceebeetle Start of log\n---------------------------------------");
+            m_logger.LogTime("Ceebeetle Start of log\n-------------------------------------------");
             m_nulllogger = new CCBLogger();
         }
 

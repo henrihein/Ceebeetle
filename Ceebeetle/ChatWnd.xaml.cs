@@ -95,7 +95,6 @@ namespace Ceebeetle
             InitChatWindow();
             Validate();
             EnableUI(false);
-            AddTestLink();
         }
 
         private void SetHostNameTo(TextBox tb)
@@ -473,7 +472,7 @@ namespace Ceebeetle
         }
         private void btnSendFile_Click(object sender, RoutedEventArgs e)
         {
-            P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers(false));
+            P2PStartSendFile sendFileWnd = new P2PStartSendFile(m_p2p.GetKnownUsers(false), m_p2p.GetFileList(), new DGetFileStatus(m_p2p.GetFileStatus));
 
             sendFileWnd.Owner = this;
             if (true == sendFileWnd.ShowDialog())

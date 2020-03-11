@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +20,11 @@ namespace Ceebeetle
     /// </summary>
     public partial class P2PStartSendFile : CCBChildWindow
     {
+        public delegate void DOnProgressUpdate(List<CCBFileProgress.CCBFileProgressData> fpDataList);
+        Timer m_timer;
+        private DGetFileStatus m_fileStatusCallback;
+        private DOnProgressUpdate m_onProgressUpdateCallback;
+        List<CCBFileProgress> m_progressList;
         private string m_recipient;
         public string Recipient
         {
@@ -29,21 +35,73 @@ namespace Ceebeetle
             get { return tbFile.Text; }
         }
 
-        private P2PStartSendFile()
+        public P2PStartSendFile(string[] users, string[] filelist, DGetFileStatus fileStatusCallback)
         {
-        }
-        public P2PStartSendFile(string[] users)
-        {
+            m_fileStatusCallback = fileStatusCallback;
+            m_progressList = new List<CCBFileProgress>();
+            m_timer = new Timer(1301);
+            m_timer.Elapsed += new ElapsedEventHandler(OnTimer);
+            m_timer.Start();
+            m_onProgressUpdateCallback = new DOnProgressUpdate(OnProgressUpdate);
             InitializeComponent();
             CeebeetleWindowInit();
-            Populate(users);
+            Populate(users, filelist);
             Validat();
         }
 
-        private void Populate(string[] users)
+        private void Populate(string[] users, string[] filelist)
         {
             if (null != users) foreach (string user in users)
                     lbUsers.Items.Add(user);
+            if (null != filelist)
+                foreach (string pathname in filelist)
+                {
+                    m_progressList.Add(CCBFileProgress.NewInstance(spStatus, pathname));
+                }
+        }
+        private void AddTestItem(string itemText, int cb)
+        {
+            Label lItem = new Label();
+            ProgressBar pb = new ProgressBar();
+
+            lItem.Content = itemText;
+            pb.Value = cb;
+            spStatus.Children.Add(lItem);
+            spStatus.Children.Add(pb);
+        }
+        private void OnProgressUpdate(List<CCBFileProgress.CCBFileProgressData> fpDataList)
+        {
+            foreach(CCBFileProgress.CCBFileProgressData fpData in fpDataList)
+                fpData.OnProgressUpdate();
+        }
+        private void OnTimer(object source, ElapsedEventArgs evtArgs)
+        {
+            if (null != m_fileStatusCallback)
+            {
+                List<CCBFileProgress.CCBFileProgressData> needsUpdate = new List<CCBFileProgress.CCBFileProgressData>();
+
+                lock(m_progressList)
+                {
+                    long cbCur, cbMax;
+
+                    foreach(CCBFileProgress fp in m_progressList)
+                    {
+                        if (TStatusUpdate.tsuFileWork == m_fileStatusCallback(fp.Filename, out cbCur, out cbMax))
+                        {
+                            if (!fp.IsCurrent(cbCur, cbMax))
+                                needsUpdate.Add(new CCBFileProgress.CCBFileProgressData(fp, cbCur, cbMax));
+                        }
+                    }
+                }
+                Application.Current.Dispatcher.Invoke(new DOnProgressUpdate(OnProgressUpdate), new object[1] { needsUpdate });
+#if false
+                foreach (CCBFileProgress.CCBFileProgressData fpData in needsUpdate)
+                {
+                    Application.Current.Dispatcher.Invoke(new DOnProgressUpdate(OnProgressUpdate), new object[1] {fpData});
+                    //fpData.OnProgressUpdate();
+                }
+#endif
+            }
         }
         public void Validat()
         {
@@ -83,6 +141,12 @@ namespace Ceebeetle
         private void lbUsers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Validat();
+        }
+
+        private void CCBChildWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            m_timer.Stop();
+            m_timer.Dispose();
         }
     }
 }

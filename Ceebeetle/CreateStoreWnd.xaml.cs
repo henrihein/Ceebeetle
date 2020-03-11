@@ -101,9 +101,9 @@ namespace Ceebeetle
 
             if (null != item)
             {
-                item.Cost = IntFromTextbox(tbCost, lbStatus);
+                item.Cost = IntFromTextbox(tbCost);
                 if (tbLimit.IsVisible)
-                    item.Count = IntFromTextbox(tbLimit, lbStatus);
+                    item.Count = IntFromTextbox(tbLimit);
             }
         }
         private void tbCost_LostFocus(object sender, RoutedEventArgs e)

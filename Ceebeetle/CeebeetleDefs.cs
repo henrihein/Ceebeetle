@@ -5,6 +5,11 @@ using System.Text;
 
 namespace Ceebeetle
 {
+    public class CCBSettings
+    {
+        public static bool m_simSlowIO = true;
+    }
+
     public enum TStatusUpdate
     {
         tsuNone = 0,
@@ -34,4 +39,5 @@ namespace Ceebeetle
     //P2P events and callbacks
     public delegate void DOnFileTransferDone(string sender, string filename, bool success);
     public delegate CCBStore DSelectStoreToPublish();
+    public delegate TStatusUpdate DGetFileStatus(string filename, out long cbXfer, out long cbMax);
 }

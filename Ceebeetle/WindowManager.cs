@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -39,6 +40,7 @@ namespace Ceebeetle
         public CCBChildWindow() : base()
         {
             WindowManager.OnNewWindow(this);
+            Closing += new CancelEventHandler(OnChildWindowClosing);
         }
         void OnChildWindowClosing(object sender, EventArgs evt)
         {
@@ -120,13 +122,13 @@ namespace Ceebeetle
             }
             return false;
         }
-        protected int IntFromTextbox(TextBox ctl, System.Windows.Controls.Label txStatus)
+        protected int IntFromTextbox(TextBox ctl)
         {
             int result = 0;
             string strNumber = ctl.Text;
 
             if (!System.Int32.TryParse(strNumber, out result))
-                txStatus.Content = string.Format("Could not convert '{0}' to number", strNumber);
+                Debug(string.Format("Could not convert '{0}' to number", strNumber));
             return result;
         }
         protected void SetTextboxInt(TextBox ctl, int num)
@@ -170,6 +172,11 @@ namespace Ceebeetle
         protected void Log(string text, string textPar1, string textPar2)
         {
             Log(string.Format(text, textPar1, textPar2));
+        }
+        protected void Debug(string text)
+        {
+            if (null != m_logger)
+                m_logger.Debug(text);
         }
         #endregion
     }
