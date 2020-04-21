@@ -46,7 +46,7 @@ namespace Ceebeetle
             CeebeetleWindowInit();
             HideCtl(helpDoc);
             tbData.Text = m_plainText;
-            m_keyphrase = SanitizeKey("CaesarAndBellaso");
+            m_keyphrase = "CaesarAndBellaso";
             SetView(CipherViewMode.cvm_plaintext);
         }
 
@@ -81,13 +81,15 @@ namespace Ceebeetle
                 switch (m_cvm)
                 {
                     case CipherViewMode.cvm_keyphrase:
-                        m_keyphrase = SanitizeKey(tbData.Text);
+                        m_keyphrase = tbData.Text;
                         break;
                     case CipherViewMode.cvm_plaintext:
                         m_plainText = tbData.Text;
+                        m_cipher = null;
                         break;
                     case CipherViewMode.cvm_cipher:
                         m_cipher = tbData.Text;
+                        m_plainText = null;
                         break;
                     default:
                         break;
@@ -108,7 +110,7 @@ namespace Ceebeetle
         }
         private bool EncodeDef()
         {
-            if (m_dirty)
+            if (m_dirty || (null == m_cipher))
             {
                 m_cipher = Encode(m_plainText);
                 return true;
@@ -121,6 +123,7 @@ namespace Ceebeetle
             char[] plainText = textData.ToArray<char>();
             char[] cipherText = new char[plainText.Length];
             int ixCipher = 0, ixKey = 0;
+            string key = SanitizeKey(m_keyphrase);
 
             for (int ix = 0; ix < plainText.Length; ix++)
             {
@@ -128,10 +131,10 @@ namespace Ceebeetle
                     cipherText[ixCipher++] = '\n';
                 else if ((' ' <= plainText[ix]) && (m_lookup.Length > (plainText[ix] - ' ')))
                 {
-                    int ixLookup = (plainText[ix] - ' ') + (m_keyphrase[ixKey++] - ' ');
+                    int ixLookup = (plainText[ix] - ' ') + (key[ixKey++] - ' ');
 
                     cipherText[ixCipher++] = m_lookup[ixLookup % m_lookup.Length];
-                    if (m_keyphrase.Length <= ixKey)
+                    if (key.Length <= ixKey)
                         ixKey = 0;
                 }
             }
@@ -142,7 +145,7 @@ namespace Ceebeetle
         }
         private bool DecodeDef()
         {
-            if (m_dirty)
+            if (m_dirty || (null == m_plainText))
             {
                 m_plainText = Decode(m_cipher);
                 return true;
@@ -155,6 +158,7 @@ namespace Ceebeetle
             char[] plainData = new char[cipherText.Length];
             char[] reverseLookup = new char[255];
             int ixKey = 0;
+            string key = SanitizeKey(m_keyphrase);
 
             //First construct the reverse lookup map
             for (int ixLookup = 0; ixLookup < m_lookup.Length; ixLookup++)
@@ -167,15 +171,17 @@ namespace Ceebeetle
                     plainData[ix] = '\n';
                 else if (cipherText[ix] < reverseLookup.Length)
                 {
-                    int chKey = m_keyphrase[ixKey++] - ' ';
+                    int chKey = key[ixKey++] - ' ';
                     int ixPlain = reverseLookup[cipherText[ix]];
 
+                    if (0 == ixPlain)   //Unknown character in cipher
+                        break;
                     if (ixPlain >= chKey)
                         ixPlain -= chKey;
                     else
                         ixPlain += m_lookup.Length - chKey;
                     plainData[ix] = (char)(' ' + ixPlain);
-                    if (m_keyphrase.Length <= ixKey)
+                    if (key.Length <= ixKey)
                         ixKey = 0;
                 }
             }
@@ -183,14 +189,15 @@ namespace Ceebeetle
         }
         private string SanitizeKey(string keyData)
         {
-            char[] newKey = new char[keyData.Length];
+            string strKey = keyData.ToUpper();
+            char[] newKey = new char[strKey.Length];
 
-            for (int ix = 0; ix < keyData.Length; ix++)
+            for (int ix = 0; ix < strKey.Length; ix++)
             {
-                if (keyData[ix] < m_lookup.Length)
-                    newKey[ix] = keyData[ix];
+                if (strKey[ix] < (' ' + m_lookup.Length))
+                    newKey[ix] = strKey[ix];
                 else
-                    newKey[ix] = (char)(' ' + keyData[ix] % m_lookup.Length);
+                    newKey[ix] = (char)(' ' + strKey[ix] % m_lookup.Length);
             }
             return new string(newKey);
         }

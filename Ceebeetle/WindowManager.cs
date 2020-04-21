@@ -145,6 +145,14 @@ namespace Ceebeetle
                     ctl.SelectedIndex = (ctl.Items.Count - 1);
             }
         }
+        protected void ShowCtl(System.Windows.UIElement ctl)
+        {
+            ctl.Visibility = Visibility.Visible;
+        }
+        protected void HideCtl(System.Windows.UIElement ctl)
+        {
+            ctl.Visibility = Visibility.Hidden;
+        }
         #region WndLogging
         protected void Assert(bool exp)
         {

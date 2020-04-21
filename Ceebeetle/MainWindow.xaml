@@ -24,6 +24,9 @@
                 <Button Name="btnChat" Click="btnChat_Click">
                     <Image Source="/Ceebeetle;component/Resources/chat.ico" ToolTip="Connect with other Ceebeetle apps. Chat and exchange stores and characters." />
                 </Button>
+                <Button Name="btnFunCipher" Click="btnFunCipher_Click">
+                    <Image Source="/Ceebeetle;component/Resources/funcipher.bmp" ToolTip="Create secret messages" />
+                </Button>
             </ToolBar>
         </ToolBarTray>
         <Grid Margin="12,50,12,26" Height="396" VerticalAlignment="Stretch">

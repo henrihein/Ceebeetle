@@ -1119,6 +1119,13 @@ namespace Ceebeetle
             }
             m_chatWnd.Show();
         }
+        private void btnFunCipher_Click(object sender, RoutedEventArgs e)
+        {
+            CCBFunCipher funCipherWnd = new CCBFunCipher();
+
+            funCipherWnd.Owner = this;
+            funCipherWnd.Show();
+        }
 
         private void tbItem_LostFocus(object sender, RoutedEventArgs e)
         {

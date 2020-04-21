@@ -47,6 +47,7 @@
                     <Hyperlink Click="btnPlain_Click" Name="hlPlainD">Plain</Hyperlink> to enter view the plain text.
                     <Italic>Because sequencing is important, any error or manual change in the cipher text can result in garbage plaintext.</Italic>
                 </Paragraph>
+                <Paragraph>You can use any character in the key phrase, and make it as long as you want. Longer keyphrases will make the ciphers harder to break.</Paragraph>
             </FlowDocument>
             </RichTextBox>
     </Grid>

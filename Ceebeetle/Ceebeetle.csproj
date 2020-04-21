@@ -63,6 +63,9 @@
     <Compile Include="BagSelector.xaml.cs">
       <DependentUpon>BagSelector.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CCBFunCipher.xaml.cs">
+      <DependentUpon>CCBFunCipher.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CeebeetleExceptions.cs" />
     <Compile Include="CharacterSheetWnd.xaml.cs">
       <DependentUpon>CharacterSheetWnd.xaml</DependentUpon>
@@ -131,6 +134,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BagSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CCBFunCipher.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -276,6 +283,12 @@
     <Resource Include="Resources\FighterSpear.png" />
     <Resource Include="Resources\Mage1.png" />
     <Resource Include="Resources\Thief.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\funcipher.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\funcipher.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
