@@ -249,19 +249,7 @@
     <Resource Include="Resources\app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\export.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\templates.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\import.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\picknames.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\store.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\storemgr.bmp" />
@@ -288,7 +276,16 @@
     <Resource Include="Resources\funcipher.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\funcipher.bmp" />
+    <Resource Include="Resources\import.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\export.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\store.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\picknames.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

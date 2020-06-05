@@ -10,10 +10,10 @@
         <Button Content="Add _Place..." HorizontalAlignment="Left" Margin="12,0,0,26" Name="btnAddPlace" Width="140" VerticalAlignment="Bottom" Click="btnAddPlace_OnClick" />
         <Label Content="Items:" Height="27" HorizontalAlignment="Left" Margin="181,12,0,0" Name="label2" VerticalAlignment="Top" Width="142" />
         <Button Content="Add from _Bag..." HorizontalAlignment="Right" Margin="0,0,282,26" Name="btnAddItemsFromBag" Width="102" VerticalAlignment="Bottom" Click="btnAddItemsFromBag_Click" />
-        <ListBox Margin="181,45,282,78" Name="lbItems" SelectionMode="Single" SelectionChanged="lbItems_SelectionChanged" />
+        <ListBox Margin="176,45,282,78" Name="lbItems" SelectionMode="Single" SelectionChanged="lbItems_SelectionChanged" />
         <TextBox Margin="176,0,282,52" Name="tbAddItem" Height="20" VerticalAlignment="Bottom" Text="" TextChanged="OnItemText_Changed" />
         <Button Content="Add _Item" Margin="176,0,0,25" Name="btnAddItem" Click="btnAddItem_Click" Height="21" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="62" />
-        <CheckBox Content="_Available" Height="20" HorizontalAlignment="Right" Margin="0,38,147,0" Name="cbItemAvailable" VerticalAlignment="Top" Width="102" Checked="cbItemAvailable_Checked" LostFocus="cbItemAvailable_LostFocus" />
+        <CheckBox Content="_Available" Height="20" HorizontalAlignment="Right" Margin="0,38,147,0" Name="cbItemAvailable" VerticalAlignment="Top" Width="102" Checked="cbItemAvailable_Checked" LostFocus="cbItemAvailable_LostFocus" ToolTip="The selected item is available in the selected place." />
         <GroupBox Height="247" HorizontalAlignment="Left" Margin="379,60,0,0" Name="gbItemDetails" VerticalAlignment="Top" Width="225" Header="Item Details"></GroupBox>
         <Grid Margin="0,64,24,0" HorizontalAlignment="Right" Width="225" Height="243" VerticalAlignment="Top">
             <Label Content="Chance:" Height="24" HorizontalAlignment="Left" Margin="13,27,0,0" Name="label3" VerticalAlignment="Top" Width="90" />
@@ -21,16 +21,16 @@
             <Label Content="Minimum cost:" Height="24" HorizontalAlignment="Left" Margin="12,68,0,0" Name="label4" VerticalAlignment="Top" Width="94" />
             <Label Content="Maximum cost:" Height="24" HorizontalAlignment="Left" Margin="13,106,0,0" Name="label5" VerticalAlignment="Top" Width="90" />
             <Label Content="Limit:" Height="24" HorizontalAlignment="Left" Margin="13,165,0,0" Name="label7" VerticalAlignment="Top" Width="90" />
-            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,33,0,0" Name="tbChance" VerticalAlignment="Top" Width="58" LostFocus="tbChance_LostFocus" />
-            <TextBox Height="24" Margin="114,68,25,0" Name="tbMinCost" VerticalAlignment="Top" LostFocus="tbMinCost_LostFocus" />
-            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,106,0,0" Name="tbMaxCost" VerticalAlignment="Top" Width="86" LostFocus="tbMaxCost_LostFocus" />
-            <CheckBox Content="_Limit Item Count" Height="21" HorizontalAlignment="Left" Margin="13,140,0,0" Name="cbLimit" VerticalAlignment="Top" Width="187" LostFocus="cbLimit_LostFocus" Checked="cbLimit_Checked" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,33,0,0" Name="tbChance" VerticalAlignment="Top" Width="58" LostFocus="tbChance_LostFocus" ToolTip="The chance the item is available in the selected place" />
+            <TextBox Height="24" Margin="114,68,25,0" Name="tbMinCost" VerticalAlignment="Top" LostFocus="tbMinCost_LostFocus" ToolTip="Minimum cost of the item in the selected place" />
+            <TextBox Height="24" HorizontalAlignment="Left" Margin="114,106,0,0" Name="tbMaxCost" VerticalAlignment="Top" Width="86" LostFocus="tbMaxCost_LostFocus" ToolTip="Maximum cost of the item in the selected place" />
+            <CheckBox Content="_Limit Item Count" Height="21" HorizontalAlignment="Left" Margin="13,140,0,0" Name="cbLimit" VerticalAlignment="Top" Width="187" LostFocus="cbLimit_LostFocus" Checked="cbLimit_Checked" ToolTip="If checked, only a limited supply of the item is available in the selected place" />
             <TextBox Height="24" HorizontalAlignment="Left" Margin="114,165,0,0" Name="tbLimit" VerticalAlignment="Top" Width="86" LostFocus="tbLimit_LostFocus" />
-            <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,192,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" LostFocus="cbRandomizeLimit_LostFocus" />
+            <CheckBox Content="_Randomize" Height="21" HorizontalAlignment="Left" Margin="114,192,0,0" Name="cbRandomizeLimit" VerticalAlignment="Top" Width="87" LostFocus="cbRandomizeLimit_LostFocus" ToolTip="If checked, Ceebeetle will select a random number of items available between 1 and the limit. Otherwise, there will be exactly 'Limit' number of items available." />
             <Button Content="_Save" Height="25" HorizontalAlignment="Left" Margin="114,197,0,0" Name="btnSaveItem" VerticalAlignment="Top" Width="89" Click="btnSaveItem_Click" Visibility="Hidden" />
         </Grid>
-        <Button Content="_Roll Store..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,108" Name="btnRollStore" VerticalAlignment="Bottom" Width="150" Click="btnRollStore_Click" />
-        <Button Content="_View Stores..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,73" Name="btnViewStores" VerticalAlignment="Bottom" Width="150" Click="btnViewStores_Click" />
+        <Button Content="_Roll Store..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,108" Name="btnRollStore" VerticalAlignment="Bottom" Width="150" Click="btnRollStore_Click" ToolTip="Create a store for the selected location. You cannot create a store in 'All'." />
+        <Button Content="_View Stores..." Height="21" HorizontalAlignment="Right" Margin="0,0,21,73" Name="btnViewStores" VerticalAlignment="Bottom" Width="150" Click="btnViewStores_Click" ToolTip="View previously created stores." />
         <Button Content="_Close" Height="24" HorizontalAlignment="Right" Margin="0,0,12,12" Name="btnClose" VerticalAlignment="Bottom" Width="224" Click="btnClose_Click" />
         <Label Content="" Height="21" HorizontalAlignment="Right" Margin="0,325,21,0" Name="txStatus" VerticalAlignment="Top" Width="233" FontSize="8" />
     </Grid>

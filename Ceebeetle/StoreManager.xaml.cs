@@ -70,6 +70,17 @@ namespace Ceebeetle
             cbRandomizeLimit.IsEnabled = itemAvailable;
             if (-1 == lbPlaces.SelectedIndex)
                 lbPlaces.SelectedIndex = 0;
+            //User must create a store in a specific location, so disable Create when All is selected:
+            switch (lbPlaces.SelectedIndex)
+            {
+                case -1:
+                case 0:
+                    btnRollStore.IsEnabled = false;
+                    break;
+                default:
+                    btnRollStore.IsEnabled = true;
+                    break;
+            }
         }
         private void tbPlace_OnChanged(object sender, TextChangedEventArgs e)
         {
@@ -225,7 +236,9 @@ namespace Ceebeetle
         }
         private void lbPlaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (m_initialized) UpdateProperties();
+            if (m_initialized) 
+                UpdateProperties();
+            Validate();
         }
         private void lbItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

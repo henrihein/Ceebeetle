@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Icon="/Ceebeetle;component/Resources/app.ico"
-        Title="Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="513" Width="707">
+        Title="Ceebeetle Character Manager" Closing="MainWindow_Closing" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="513" Width="707">
     <Grid>
         <ToolBarTray Height="38" HorizontalAlignment="Left" Margin="2,3,0,0" Name="toolBarTrayMain" VerticalAlignment="Top" Width="678" Background="#FFBFBFBE">
             <ToolBar Height="32" HorizontalAlignment="Left" Margin="14,4,0,0" Name="toolBarMain" VerticalAlignment="Top" Width="656" Background="#FFA5A6A4">
@@ -10,22 +10,22 @@
                     <Image Source="/Ceebeetle;component/Resources/templates.bmp" ToolTip="Templates: Create templates based on your games, or add a game based on a template" />
                 </Button>
                 <Button Name="btnExport" Click="btnExport_Click">
-                    <Image Source="/Ceebeetle;component/Resources/export.bmp" ToolTip="Export: Save games or templates" />
+                    <Image Source="/Ceebeetle;component/Resources/export.png" ToolTip="Export: Save games or templates" />
                 </Button>
                 <Button Name="btnImport" Click="btnImport_Click">
-                    <Image Source="/Ceebeetle;component/Resources/import.bmp" ToolTip="Import: Load games or templates from previous saves" />
+                    <Image Source="/Ceebeetle;component/Resources/import.png" ToolTip="Import: Load games or templates from previous saves" />
                 </Button>
                 <Button Name="btnNames" Click="btnPickNames_Click">
-                    <Image Source="/Ceebeetle;component/Resources/picknames.bmp" ToolTip="Pick or Generate Character Names" />
+                    <Image Source="/Ceebeetle;component/Resources/picknames.png" ToolTip="Pick or Generate Character Names" />
                 </Button>
                 <Button Name="btnStore" Click="btnStore_Click">
-                    <Image Source="/Ceebeetle;component/Resources/store.bmp" ToolTip="Create a store for characters to shop" />
+                    <Image Source="/Ceebeetle;component/Resources/store.png" ToolTip="Create a store for characters to shop" />
                 </Button>
                 <Button Name="btnChat" Click="btnChat_Click">
                     <Image Source="/Ceebeetle;component/Resources/chat.ico" ToolTip="Connect with other Ceebeetle apps. Chat and exchange stores and characters." />
                 </Button>
                 <Button Name="btnFunCipher" Click="btnFunCipher_Click">
-                    <Image Source="/Ceebeetle;component/Resources/funcipher.bmp" ToolTip="Create secret messages" />
+                    <Image Source="/Ceebeetle;component/Resources/funcipher.png" ToolTip="Create secret messages" />
                 </Button>
             </ToolBar>
         </ToolBarTray>

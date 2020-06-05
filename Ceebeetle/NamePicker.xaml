@@ -7,7 +7,7 @@
         <GroupBox Header="Name type" Height="246" HorizontalAlignment="Left" Name="grpNameTypes" VerticalAlignment="Top" Width="174" Margin="12,0,0,0">
             <Grid Height="241" Width="170">
                 <RadioButton Content="Western Female" Height="21" HorizontalAlignment="Left" Margin="13,8,0,0" Name="rbWesternFemale" VerticalAlignment="Top" Width="134" />
-                <RadioButton Content="Western male" Height="21" HorizontalAlignment="Left" Margin="13,33,0,0" Name="rbWesternMale" VerticalAlignment="Top" Width="113" />
+                <RadioButton Content="Western Male" Height="21" HorizontalAlignment="Left" Margin="13,33,0,0" Name="rbWesternMale" VerticalAlignment="Top" Width="113" />
                 <RadioButton Content="Japanese Female" Height="21" HorizontalAlignment="Left" Margin="13,60,0,0" Name="rbJapaneseFemale" VerticalAlignment="Top" Width="122" />
                 <RadioButton Content="Japanese Male" Height="21" HorizontalAlignment="Left" Margin="13,86,0,0" Name="rbJapaneseMale" VerticalAlignment="Top" Width="131" />
                 <RadioButton Content="Elven Female" Height="21" HorizontalAlignment="Left" Margin="13,112,0,0" Name="rbElvenFemale" VerticalAlignment="Top" Width="134" />
