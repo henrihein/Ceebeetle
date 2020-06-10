@@ -157,6 +157,10 @@ namespace Ceebeetle
             base.Items.Add(bagNode);
             return bagNode;
         }
+        public virtual void SetBagItem(CCBBagItem bagItem)
+        {
+            this.m_data = bagItem;
+        }
     }
 
     class CCBTreeViewGameAdder : CCBTreeViewItem

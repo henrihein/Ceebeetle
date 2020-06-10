@@ -38,7 +38,10 @@ namespace Ceebeetle
         }
         public CCBBagItem(CCBBagItem item)
         {
-            m_item = item.m_item;
+            if (null == item)
+                m_item = "";
+            else
+                m_item = item.m_item;
         }
 
         #region Comparisons

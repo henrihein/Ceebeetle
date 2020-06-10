@@ -288,9 +288,40 @@ namespace Ceebeetle
 
             return newTemplate;
         }
+        private void btn_CountableClicked(object sender, RoutedEventArgs e)
+        {
+            CCBLogConfig.GetLogger().Log("Countable clicked");
+        }
         private void OnIsCountableChecked(object sender, RoutedEventArgs e)
         {
-            tbValue.IsEnabled = (true == cbCountable.IsChecked);
+            CCBTreeViewItem selectedNode = GetSelectedNode();
+            CCBTreeViewBag bagNode = null;
+
+            bagNode = FindBagFromNode(selectedNode);
+            if (true == cbCountable.IsChecked)
+            {
+                tbValue.IsEnabled = true;
+                if (null != bagNode)
+                {
+                    CCBCountedBagItem newBagItem = new CCBCountedBagItem(selectedNode.BagItem);
+
+                    bagNode.Bag.RemoveItem(selectedNode.BagItem);
+                    bagNode.Bag.Add(newBagItem);
+                    selectedNode.SetBagItem(newBagItem);
+                }
+            }
+            else
+            {
+                tbValue.IsEnabled = false;
+                if (null != bagNode)
+                {
+                    CCBBagItem newBagItem = new CCBBagItem(selectedNode.BagItem);
+                    
+                    bagNode.Bag.RemoveItem(selectedNode.BagItem);
+                    bagNode.Bag.Add(newBagItem);
+                    selectedNode.SetBagItem(newBagItem);
+                }
+            }
         }
         public void OnCopyBagItems(CCBBag targetBag, string[] bagItems)
         {
@@ -682,6 +713,7 @@ namespace Ceebeetle
                         AddPropertiesToCharacterNode(characterNode);
                         AddBagsToCharacterNode(characterNode);
                         characterNode.EndBulkEdit();
+                        characterNode.IsSelected = true;
                     }
                     break;
                 }
@@ -693,6 +725,7 @@ namespace Ceebeetle
                     tvGames.Items.Add(gameNode);
                     AddBagToNode(gameNode, newGame.GroupItems);
                     AddOrMoveAdder();
+                    gameNode.IsSelected = true;
                     break;
                 }
                 case EEditMode.em_AddProperty:
@@ -727,7 +760,8 @@ namespace Ceebeetle
                     }
                     CCBBag newBag = characterNode.Character.AddBag(tbItem.Text);
 
-                    characterNode.Add(newBag);
+                    TreeViewItem newNode = characterNode.Add(newBag);
+                    newNode.IsSelected = true;
                     break;
                 }
                 case EEditMode.em_AddBagItem:
@@ -751,7 +785,8 @@ namespace Ceebeetle
                     }
                     else
                         newItem = bagNode.Bag.AddItem(tbItem.Text);
-                    bagNode.Add(newItem);
+                    TreeViewItem newNode = bagNode.Add(newItem);
+                    newNode.IsSelected = true;
                     break;
                 }
                 case EEditMode.em_ModifyCharacter:
@@ -984,7 +1019,6 @@ namespace Ceebeetle
             {
                 cbCountable.IsChecked = false;
             }
-            cbCountable.IsEnabled = false;
             cbCountable.Visibility = System.Windows.Visibility.Visible;
             btnBagPicker.IsEnabled = true;
             btnTemplates.IsEnabled = true;

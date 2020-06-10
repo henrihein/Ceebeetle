@@ -508,6 +508,7 @@ namespace Ceebeetle
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
             m_p2p.PostMessage(tbChatText.Text);
+            tbChatText.Text = "";
         }
         private void OnStorePicked(CCBStore store)
         {
